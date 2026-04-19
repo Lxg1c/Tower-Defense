@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"C:\\\\Users\\\\teran\\\\My project \\(4\\)\\\\Assets\\\\Scripts\")"
+    ]
+  }
+}
