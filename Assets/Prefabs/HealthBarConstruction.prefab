@@ -93,7 +93,7 @@ MonoBehaviour:
   fillImage: {fileID: 7314134729296721021}
   ghostFillImage: {fileID: 7867608787573509316}
   barSize: {x: 320, y: 40}
-  colorFull: {r: 0.18783373, g: 0.6320754, b: 0.23000853, a: 1}
+  colorFull: {r: 0.042452812, g: 0.7420289, b: 1, a: 1}
   ghostColor: {r: 1, g: 1, b: 1, a: 1}
   lerpSpeed: 8
   ghostDelay: 0.45
@@ -231,7 +231,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.18783373, g: 0.6320754, b: 0.23000853, a: 1}
+  m_Color: {r: 0.8694813, g: 0.023584902, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

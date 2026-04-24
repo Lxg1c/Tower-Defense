@@ -13,7 +13,7 @@ public class GhostVisuals : MonoBehaviour
     [SerializeField] private Renderer     targetRenderer;
 
     [Header("Materials")]
-    [SerializeField] private Material aliveMaterial;
+    private Material aliveMaterial;
     [SerializeField] private Material ghostMaterial;
 
     private void Awake()
@@ -21,9 +21,8 @@ public class GhostVisuals : MonoBehaviour
         if (playerHealth   == null) playerHealth   = GetComponent<PlayerHealth>();
         if (targetRenderer == null) targetRenderer = GetComponentInChildren<Renderer>();
 
-        // Cache the original material if not assigned manually
-        if (aliveMaterial == null && targetRenderer != null)
-            aliveMaterial = targetRenderer.sharedMaterial;
+        
+        aliveMaterial = targetRenderer.sharedMaterial;
     }
 
     private void OnEnable()

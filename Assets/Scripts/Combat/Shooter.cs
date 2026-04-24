@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(DetectionZone))]
@@ -12,6 +13,9 @@ public class Shooter : MonoBehaviour
 
     [Header("Projectile")]
     [SerializeField] private GameObject projectilePrefab;
+
+    [Header("Events")]
+    public UnityEvent onFired;
 
     public bool HasTarget { get; private set; }
     public Vector3 TargetDirection { get; private set; }
@@ -108,5 +112,7 @@ public class Shooter : MonoBehaviour
             // Fallback: instant hit if no projectile prefab assigned
             target.TakeDamage(damage);
         }
+
+        onFired?.Invoke();
     }
 }

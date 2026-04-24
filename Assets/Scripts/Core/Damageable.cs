@@ -23,6 +23,12 @@ public abstract class Damageable : MonoBehaviour
     /// </summary>
     public virtual bool DespawnBarOnDeath => true;
 
+    /// <summary>
+    /// Whether other systems (enemy target selectors, shooters) may pick this as a target.
+    /// Defaults to IsAlive. Override to hide ghost / invulnerable entities from enemy AI.
+    /// </summary>
+    public virtual bool IsTargetable => IsAlive;
+
     public UnityEvent<float> onHealthChanged;
     public UnityEvent        onDied;
 
@@ -34,12 +40,29 @@ public abstract class Damageable : MonoBehaviour
         CurrentHealth = maxHealth;
     }
 
+    protected virtual void OnEnable()
+    {
+        // Re-register every time we become active so pooled instances get their bar back.
+        TryRegister();
+    }
+
     protected virtual void Start()
+    {
+        // Fallback for the very first activation (HealthBarManager may not have Awoken yet when OnEnable ran).
+        TryRegister();
+    }
+
+    private void TryRegister()
     {
         if (HealthBarManager.Instance != null)
             HealthBarManager.Instance.Register(this);
-        else
-            Debug.LogWarning($"[Damageable] HealthBarManager not found for {name}.");
+    }
+
+    /// <summary>Restore CurrentHealth to MaxHealth. Used by pooled mobs on re-spawn.</summary>
+    public void ResetToMaxHealth()
+    {
+        CurrentHealth = maxHealth;
+        onHealthChanged?.Invoke(CurrentHealth);
     }
 
     public void TakeDamage(float damage)

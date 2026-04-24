@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 6391642649110260006}
   - component: {fileID: 6404307364566436209}
   - component: {fileID: 2087449315660999607}
-  m_Layer: 8
+  m_Layer: 9
   m_Name: Base
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -123,6 +123,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
+  healthBarPrefab: {fileID: 9125502953916134260, guid: 0b0c34c4881df3f43951b351a1f3d7c9, type: 3}
   onHealthChanged:
     m_PersistentCalls:
       m_Calls: []

@@ -8,20 +8,20 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float walkSpeed     = 3f;
     [SerializeField] private float rotationSpeed = 10f;
     [SerializeField] private Joystick  joystick;
-    [SerializeField] private Transform cam;
 
     [Header("Combat")]
     [SerializeField] private AutoShooter autoShooter;
 
     [Header("States")]
     [SerializeField] private PlayerHealth playerHealth;
-    [Tooltip("Speed multiplier applied during the Prep (between-waves) phase.")]
-    [SerializeField] private float prepSpeedMultiplier  = 1.5f;
     [Tooltip("Speed multiplier while in ghost state (0 = can't move, 1 = normal).")]
     [SerializeField] private float ghostSpeedMultiplier = 1f;
+    [Tooltip("Speed multiplier while between waves (Build phase). 1 = no bonus.")]
+    [SerializeField] private float buildPhaseSpeedMultiplier = 1.5f;
 
     private Rigidbody rb;
     private Vector2   moveInput;
+    private Transform cam;
 
     private void Awake()
     {
@@ -30,6 +30,9 @@ public class PlayerMovement : MonoBehaviour
 
         if (playerHealth == null)
             playerHealth = GetComponent<PlayerHealth>();
+
+        if (Camera.main != null)
+            cam = Camera.main.transform;
     }
 
     private void Update()
@@ -40,14 +43,12 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // ── Speed multipliers ────────────────────────────────────────────────
+        // ── Speed multiplier ─────────────────────────────────────────────────
         float speedMult = 1f;
-
         if (playerHealth != null && playerHealth.IsGhost)
             speedMult = ghostSpeedMultiplier;
-        else if (WaveManager.Instance != null &&
-                 WaveManager.Instance.CurrentPhase == WaveManager.Phase.Prep)
-            speedMult = prepSpeedMultiplier;
+        else if (WaveSpawner.Instance != null && WaveSpawner.Instance.IsBuildPhase)
+            speedMult = buildPhaseSpeedMultiplier;
 
         // ── Direction relative to camera ─────────────────────────────────────
         Transform reference = cam != null ? cam : transform;

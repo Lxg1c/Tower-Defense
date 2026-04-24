@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ls \"C:\\\\Users\\\\teran\\\\My project \\(4\\)\\\\Assets\\\\Scripts\")"
+      "Bash(ls \"C:\\\\Users\\\\teran\\\\My project \\(4\\)\\\\Assets\\\\Scripts\")",
+      "Bash(rm -rf Enemy)",
+      "Bash(rm -f Core/WaveManager.cs)",
+      "Bash(rm -f UI/PhaseDisplay.cs)",
+      "Bash(rm -f Core/WaveManager.cs.meta)",
+      "Bash(rm -f UI/PhaseDisplay.cs.meta)",
+      "Bash(rm -f Enemy.meta)",
+      "Bash(xargs grep *)"
     ]
   }
 }

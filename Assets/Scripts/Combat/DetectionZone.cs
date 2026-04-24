@@ -37,7 +37,7 @@ public class DetectionZone : MonoBehaviour
 
             // Search on the collider's object AND its parents
             var target = col.GetComponentInParent<Damageable>();
-            if (target != null && target.IsAlive && !targets.Contains(target))
+            if (target != null && target.IsTargetable && !targets.Contains(target))
                 targets.Add(target);
         }
     }
@@ -49,7 +49,7 @@ public class DetectionZone : MonoBehaviour
 
         for (int i = targets.Count - 1; i >= 0; i--)
         {
-            if (targets[i] == null || !targets[i].IsAlive)
+            if (targets[i] == null || !targets[i].IsTargetable)
             {
                 targets.RemoveAt(i);
                 continue;

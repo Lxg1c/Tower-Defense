@@ -168,7 +168,7 @@ MonoBehaviour:
   fillImage: {fileID: 7314134729296721021}
   ghostFillImage: {fileID: 6767331807316997875}
   barSize: {x: 200, y: 30}
-  colorFull: {r: 0.18, g: 0.8, b: 0.24, a: 1}
+  colorFull: {r: 0, g: 0, b: 0, a: 0.39215687}
   ghostColor: {r: 1, g: 1, b: 1, a: 1}
   lerpSpeed: 8
   ghostDelay: 0.45

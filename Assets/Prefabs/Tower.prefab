@@ -46,6 +46,7 @@ GameObject:
   - component: {fileID: 5157932333144632440}
   - component: {fileID: 3371472857908624574}
   - component: {fileID: 3036694978501695551}
+  - component: {fileID: -4581835724673024540}
   m_Layer: 9
   m_Name: Tower
   m_TagString: Untagged
@@ -174,7 +175,7 @@ MonoBehaviour:
   radius: 4
   targetLayers:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 128
   updateInterval: 0.2
 --- !u!114 &3036694978501695551
 MonoBehaviour:
@@ -193,5 +194,27 @@ MonoBehaviour:
   firePoint: {fileID: 5725130474374694617}
   obstacleMask:
     serializedVersion: 2
-    m_Bits: 128
+    m_Bits: 192
   projectilePrefab: {fileID: 2567900067495942972, guid: 75aa78a13b9bda74aa99df2e938bd1a1, type: 3}
+--- !u!114 &-4581835724673024540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2740233467108694838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1996a7b4ca885ea46aa75c385cda3ec7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 100
+  healthBarPrefab: {fileID: 0}
+  onHealthChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onDied:
+    m_PersistentCalls:
+      m_Calls: []
+  visualRoot: {fileID: 0}
+  combatComponents: []

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 [DisallowMultipleComponent]
 public class HealthBarManager : MonoBehaviour
@@ -20,8 +21,15 @@ public class HealthBarManager : MonoBehaviour
     // One pool queue per prefab type (keyed by prefab instance ID).
     private readonly Dictionary<int, Queue<HealthBar>> _pools  = new();
 
-    // Active bars: entity → (bar instance, prefab used to create it)
-    private readonly Dictionary<Damageable, (HealthBar bar, HealthBar prefab)> _active = new();
+    private class ActiveEntry
+    {
+        public HealthBar bar;
+        public HealthBar prefab;
+        public UnityAction<float> hpListener;
+        public UnityAction         diedListener;
+    }
+
+    private readonly Dictionary<Damageable, ActiveEntry> _active = new();
 
     private void Awake()
     {
@@ -33,8 +41,10 @@ public class HealthBarManager : MonoBehaviour
 
     private void LateUpdate()
     {
-        foreach (var (entity, entry) in _active)
+        foreach (var kv in _active)
         {
+            var entity = kv.Key;
+            var entry  = kv.Value;
             if (entity == null) continue;
             entry.bar.transform.position = entity.transform.position + barOffset;
             entry.bar.transform.forward  = _mainCam.transform.forward;
@@ -60,16 +70,25 @@ public class HealthBarManager : MonoBehaviour
         bar.gameObject.SetActive(true);
         bar.SetFill(entity.CurrentHealth / entity.MaxHealth);
 
-        _active[entity] = (bar, prefab);
+        var entry = new ActiveEntry { bar = bar, prefab = prefab };
+        entry.hpListener   = hp => OnHealthChanged(entity, hp);
+        entry.diedListener = () => Unregister(entity);
 
-        entity.onHealthChanged.AddListener(hp => OnHealthChanged(entity, hp));
+        entity.onHealthChanged.AddListener(entry.hpListener);
         if (entity.DespawnBarOnDeath)
-            entity.onDied.AddListener(() => Unregister(entity));
+            entity.onDied.AddListener(entry.diedListener);
+
+        _active[entity] = entry;
     }
 
     public void Unregister(Damageable entity)
     {
-        if (!_active.TryGetValue(entity, out var entry)) return;
+        if (entity == null || !_active.TryGetValue(entity, out var entry)) return;
+
+        // Detach listeners so the entity doesn't keep references and accumulate duplicates on re-spawn.
+        if (entry.hpListener   != null) entity.onHealthChanged.RemoveListener(entry.hpListener);
+        if (entry.diedListener != null) entity.onDied.RemoveListener(entry.diedListener);
+
         _active.Remove(entity);
         ReturnToPool(entry.bar, entry.prefab);
     }
@@ -109,15 +128,9 @@ public class HealthBarManager : MonoBehaviour
     {
         if (worldCanvas != null) return;
 
-        foreach (Canvas c in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
-        {
-            if (c.renderMode == RenderMode.WorldSpace)
-            {
-                worldCanvas = c;
-                return;
-            }
-        }
-
+        // Always create our own dedicated world-space canvas so we can't
+        // accidentally inherit a foreign canvas's scale (e.g. someone else's
+        // WorldSpace UI at 1:1 would make our bars appear 100× larger).
         GameObject go = new("HealthBar_SharedCanvas");
         worldCanvas = go.AddComponent<Canvas>();
         worldCanvas.renderMode  = RenderMode.WorldSpace;
