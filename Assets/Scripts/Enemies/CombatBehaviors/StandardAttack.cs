@@ -26,9 +26,16 @@ public class StandardAttack : MonoBehaviour, ICombatBehavior
     [Header("Damage modifiers (optional)")]
     [SerializeField] private DamageMultiplier[] multipliers;
 
+    private Animator _animator;
+    [SerializeField] private string attackTriggerName = "Attack";
     private float cooldown;
 
     public float AttackRange => attackRange;
+
+    void Awake()
+    {
+        _animator = GetComponentInChildren<Animator>();
+    }
 
     public void OnTargetChanged(MobCore mob, Damageable newTarget)
     {
@@ -43,6 +50,7 @@ public class StandardAttack : MonoBehaviour, ICombatBehavior
         if (cooldown > 0f) return;
         if (target == null || !target.IsAlive) return;
 
+        _animator.SetTrigger(attackTriggerName);
         float finalDamage = damage * GetMultiplierFor(target);
         target.TakeDamage(finalDamage);
 

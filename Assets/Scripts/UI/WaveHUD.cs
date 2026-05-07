@@ -15,7 +15,6 @@ using UnityEngine.UI;
 public class WaveHUD : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private WaveSpawner spawner;
     [SerializeField] private TMP_Text waveLabel;
     [SerializeField] private TMP_Text rewardLabel;
     [SerializeField] private Button   startWaveButton;
@@ -25,10 +24,11 @@ public class WaveHUD : MonoBehaviour
     [SerializeField] private string rewardFormat = "Reward: {0}";
 
     private bool modalOpen;
+    private WaveSpawner spawner;
 
     private void OnEnable()
     {
-        if (spawner == null) spawner = WaveSpawner.Instance;
+        spawner = WaveSpawner.Instance;
         if (spawner == null) { Invoke(nameof(LateBind), 0.1f); return; }
 
         Bind();

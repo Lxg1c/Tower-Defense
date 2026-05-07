@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6dd59c9ff38a59341b075d253ac0d33e, type: 3}
+  m_Name: TowerLoadout
+  m_EditorClassIdentifier: 
+  options:
+  - prefab: {fileID: 6094794923633026110, guid: 3876e576b68a05444a09548bab71ce94, type: 3}
+    displayName: Pushka
+    icon: {fileID: 21300000, guid: 5b72be1c9cc01ec45bf7a41ce2773870, type: 3}
+    cost: 3
+  - prefab: {fileID: 6451079054752217408, guid: db8aef6ded44e274db894257d231beea, type: 3}
+    displayName: Pulse
+    icon: {fileID: 21300000, guid: d8ca16ec85e3a9148bdc5f68ae293b6e, type: 3}
+    cost: 5

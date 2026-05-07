@@ -1,5 +1,3 @@
-using UnityEngine;
-
 /// <summary>
 /// Selects the current attack target for a mob.
 /// Implementations encapsulate priority rules (closest defense, walls-first, base-only, etc.).

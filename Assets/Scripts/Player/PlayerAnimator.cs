@@ -2,69 +2,123 @@ using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// Drives the player's Animator shoot states.
-///
-/// Animator int parameter "shootType":
-///   0 = idle
-///   1 = normal shot (hooked to Shooter.onFired)
-///   2 = ultimate shot (call TriggerUltimate())
-///
-/// After each shot we hold the value for <see cref="shootHoldTime"/> seconds,
-/// then reset to 0 so the animator returns to idle.
+/// Drives player-only animator states. Normal shooting and movement are states,
+/// ultimate is a one-shot trigger.
 /// </summary>
 [DisallowMultipleComponent]
 public class PlayerAnimator : MonoBehaviour
 {
-    [Header("References")]
-    [SerializeField] private Animator animator;
-    [SerializeField] private Shooter shooter;
-
     [Header("Animator")]
-    private string shootTypeParam = "ShootType";
-    [Tooltip("How long we keep shootType != 0 after a shot (seconds). Should roughly match the shoot animation length.")]
-    [SerializeField] private float shootHoldTime = 0.25f;
+    [SerializeField] private string movingParam = "isMoving";
+    [SerializeField] private string attackingParam = "IsAttacking";
+    [SerializeField] private string attackSpeedMultiplierParam = "ShootSpeedMultiplier";
+    [SerializeField] private string ultimateTrigger = "UltimateShoot";
+    [SerializeField] private string ultimateStateName = "robot_shoot_001";
+    [SerializeField] private string ultimateLayerName = "Base Layer";
+    [SerializeField] private float ultimateCrossFadeDuration = 0.05f;
+    [SerializeField] private string legacyShootTypeParam = "ShootType";
+    [SerializeField] private float legacyShootTypeResetDelay = 0.25f;
 
-    private int shootTypeHash;
-    private Coroutine resetRoutine;
+    private Animator  animator;
+    private Shooter   shooter;
+    private int       movingHash;
+    private int       attackingHash;
+    private int       attackSpeedMultiplierHash;
+    private int       ultimateHash;
+    private int       ultimateStateHash;
+    private int       legacyShootTypeHash;
+    private bool      isMoving;
+    private bool      hasAttackSpeedMultiplier;
+    private bool      hasUltimateTrigger;
+    private bool      hasLegacyShootType;
+    private Coroutine legacyResetRoutine;
 
     private void Awake()
     {
-        if (animator == null) animator = GetComponent<Animator>();
-        if (shooter  == null) shooter  = GetComponentInChildren<Shooter>();
-        shootTypeHash = Animator.StringToHash(shootTypeParam);
+        animator      = GetComponent<Animator>();
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>();
+
+        shooter       = GetComponentInChildren<Shooter>();
+        movingHash    = Animator.StringToHash(movingParam);
+        attackingHash = Animator.StringToHash(attackingParam);
+        attackSpeedMultiplierHash = Animator.StringToHash(attackSpeedMultiplierParam);
+        ultimateHash  = Animator.StringToHash(ultimateTrigger);
+        ultimateStateHash = Animator.StringToHash($"{ultimateLayerName}.{ultimateStateName}");
+        legacyShootTypeHash = Animator.StringToHash(legacyShootTypeParam);
+
+        CacheParameters();
     }
 
-    private void OnEnable()
+    private void Update()
     {
-        if (shooter != null)
-            shooter.onFired.AddListener(OnNormalFired);
+        if (animator == null)
+            return;
+
+        bool isAttacking = shooter != null
+            && shooter.enabled
+            && shooter.HasTarget
+            && !shooter.SuppressFire;
+
+        animator.SetBool(movingHash, isMoving);
+        animator.SetBool(attackingHash, isAttacking);
+
+        if (hasAttackSpeedMultiplier)
+            animator.SetFloat(attackSpeedMultiplierHash, isAttacking ? shooter.FireRate : 1f);
     }
 
-    private void OnDisable()
+    public void SetMoving(bool moving)
     {
-        if (shooter != null)
-            shooter.onFired.RemoveListener(OnNormalFired);
+        isMoving = moving;
     }
-
-    private void OnNormalFired() => PlayShoot(1);
 
     /// <summary>Call this from your ultimate ability trigger.</summary>
-    public void TriggerUltimate() => PlayShoot(2);
-
-    private void PlayShoot(int type)
+    public void TriggerUltimate()
     {
-        if (animator == null) return;
-        animator.SetInteger(shootTypeHash, type);
+        if (animator == null)
+            return;
 
-        if (resetRoutine != null) StopCoroutine(resetRoutine);
-        resetRoutine = StartCoroutine(ResetAfter(shootHoldTime));
+        if (hasUltimateTrigger)
+        {
+            animator.SetTrigger(ultimateHash);
+
+            if (!string.IsNullOrEmpty(ultimateStateName) && animator.HasState(0, ultimateStateHash))
+                animator.CrossFadeInFixedTime(ultimateStateHash, ultimateCrossFadeDuration);
+        }
+        else if (hasLegacyShootType)
+        {
+            animator.SetInteger(legacyShootTypeHash, 2);
+
+            if (legacyResetRoutine != null)
+                StopCoroutine(legacyResetRoutine);
+
+            legacyResetRoutine = StartCoroutine(ResetLegacyShootType());
+        }
     }
 
-    private IEnumerator ResetAfter(float t)
+    private IEnumerator ResetLegacyShootType()
     {
-        yield return new WaitForSeconds(t);
+        yield return new WaitForSeconds(legacyShootTypeResetDelay);
+
         if (animator != null)
-            animator.SetInteger(shootTypeHash, 0);
-        resetRoutine = null;
+            animator.SetInteger(legacyShootTypeHash, 0);
+
+        legacyResetRoutine = null;
+    }
+
+    private void CacheParameters()
+    {
+        if (animator == null)
+            return;
+
+        foreach (AnimatorControllerParameter parameter in animator.parameters)
+        {
+            if (parameter.type == AnimatorControllerParameterType.Float && parameter.name == attackSpeedMultiplierParam)
+                hasAttackSpeedMultiplier = true;
+            else if (parameter.type == AnimatorControllerParameterType.Trigger && parameter.name == ultimateTrigger)
+                hasUltimateTrigger = true;
+            else if (parameter.type == AnimatorControllerParameterType.Int && parameter.name == legacyShootTypeParam)
+                hasLegacyShootType = true;
+        }
     }
 }

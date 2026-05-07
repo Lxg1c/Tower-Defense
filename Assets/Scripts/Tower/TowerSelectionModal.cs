@@ -2,25 +2,22 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI;
 
 /// <summary>
-/// Scene-wide singleton modal. A zone calls Open() with a list of options and
-/// a callback. The modal instantiates each option's own <see cref="TowerOption.buttonPrefab"/>
-/// as a child of Content, finds its Button component (self or any child) and
-/// hooks the click. No visual template is owned by the modal — every option
-/// brings its own look.
-///
-/// Affordability: if the player can't afford an option, its Button.interactable
-/// is set to false. The prefab can show a disabled look however it wants.
+/// Scene-wide singleton modal. A zone calls <see cref="Open"/> with a list of options
+/// and a callback. The modal instantiates one shared <see cref="cardPrefab"/> per option
+/// under <see cref="content"/> and binds it via <see cref="TowerCard.Bind"/> — no per-tower UI
+/// prefabs needed. Layout (HorizontalLayoutGroup / GridLayoutGroup) lives on the Content object.
 /// </summary>
 public class TowerSelectionModal : MonoBehaviour
 {
     public static TowerSelectionModal Instance { get; private set; }
 
     [Header("Refs")]
-    [SerializeField] private GameObject modalRoot;
+    [SerializeField] private GameObject    modalRoot;
     [SerializeField] private RectTransform content;
+    [Tooltip("Single card prefab — must have a TowerCard component on root.")]
+    [SerializeField] private TowerCard     cardPrefab;
 
     [Header("Events")]
     public UnityEvent onOpened;
@@ -47,7 +44,11 @@ public class TowerSelectionModal : MonoBehaviour
 
     public void Open(IReadOnlyList<TowerOption> options, Action<TowerOption> onPick)
     {
-        if (modalRoot == null || content == null) return;
+        if (modalRoot == null || content == null || cardPrefab == null)
+        {
+            Debug.LogError("[TowerSelectionModal] Missing modalRoot / content / cardPrefab.", this);
+            return;
+        }
 
         this.onPick = onPick;
         ClearEntries();
@@ -56,24 +57,15 @@ public class TowerSelectionModal : MonoBehaviour
 
         foreach (var opt in options)
         {
-            if (opt == null || opt.prefab == null || opt.buttonPrefab == null) continue;
+            if (opt == null || opt.prefab == null) continue;
 
-            GameObject entry = Instantiate(opt.buttonPrefab, content);
-            entry.SetActive(true);
+            TowerCard card = Instantiate(cardPrefab, content);
+            card.gameObject.SetActive(true);
 
-            Button btn = entry.GetComponentInChildren<Button>(true);
-            if (btn != null)
-            {
-                btn.interactable = coins >= opt.cost;
-                var captured = opt;
-                btn.onClick.AddListener(() => HandlePick(captured));
-            }
-            else
-            {
-                Debug.LogWarning($"[TowerSelectionModal] '{opt.buttonPrefab.name}' has no Button component.", this);
-            }
+            var captured = opt;
+            card.Bind(opt, coins >= opt.cost, () => HandlePick(captured));
 
-            spawnedEntries.Add(entry);
+            spawnedEntries.Add(card.gameObject);
         }
 
         modalRoot.SetActive(true);

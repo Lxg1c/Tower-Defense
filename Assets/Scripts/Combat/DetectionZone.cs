@@ -13,7 +13,7 @@ public class DetectionZone : MonoBehaviour
 
     public IReadOnlyList<Damageable> Targets => targets;
     public bool HasTargets => targets.Count > 0;
-    public float Radius => radius;
+    public float Radius { get => radius; set => radius = Mathf.Max(0f, value); }
 
     private void Update()
     {

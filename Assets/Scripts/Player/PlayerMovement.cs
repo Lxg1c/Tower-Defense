@@ -9,27 +9,29 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float rotationSpeed = 10f;
     [SerializeField] private Joystick  joystick;
 
-    [Header("Combat")]
-    [SerializeField] private AutoShooter autoShooter;
-
     [Header("States")]
-    [SerializeField] private PlayerHealth playerHealth;
     [Tooltip("Speed multiplier while in ghost state (0 = can't move, 1 = normal).")]
     [SerializeField] private float ghostSpeedMultiplier = 1f;
     [Tooltip("Speed multiplier while between waves (Build phase). 1 = no bonus.")]
     [SerializeField] private float buildPhaseSpeedMultiplier = 1.5f;
 
-    private Rigidbody rb;
-    private Vector2   moveInput;
-    private Transform cam;
+    private Rigidbody     rb;
+    private Vector2       moveInput;
+    private Transform     cam;
+    private PlayerHealth  playerHealth;
+    private PlayerAnimator playerAnimator;
+    private Shooter       shooter;
+    private PlayerUltimate ultimate;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
 
-        if (playerHealth == null)
-            playerHealth = GetComponent<PlayerHealth>();
+        playerHealth = GetComponent<PlayerHealth>();
+        playerAnimator = GetComponent<PlayerAnimator>();
+        shooter      = GetComponentInChildren<Shooter>();
+        ultimate     = GetComponent<PlayerUltimate>();
 
         if (Camera.main != null)
             cam = Camera.main.transform;
@@ -56,11 +58,14 @@ public class PlayerMovement : MonoBehaviour
         Vector3 right   = reference.right;   right.y   = 0f; right.Normalize();
 
         Vector3 move = right * moveInput.x + forward * moveInput.y;
+        playerAnimator?.SetMoving(move.sqrMagnitude > 0.01f);
 
         // ── Rotation ─────────────────────────────────────────────────────────
-        if (autoShooter != null && autoShooter.HasTarget)
+        // Same path for normal attack and ultimate: Shooter tracks the nearest
+        // target (it stays enabled during ult charge — only firing is suppressed).
+        if (shooter != null && shooter.enabled && shooter.HasTarget)
         {
-            Quaternion targetRot = Quaternion.LookRotation(autoShooter.TargetDirection);
+            Quaternion targetRot = Quaternion.LookRotation(shooter.TargetDirection);
             transform.rotation = Quaternion.Slerp(
                 transform.rotation, targetRot, rotationSpeed * Time.fixedDeltaTime);
         }

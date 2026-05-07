@@ -1,5 +1,7 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(DetectionZone))]
@@ -8,8 +10,14 @@ public class Shooter : MonoBehaviour
     [Header("Shooting")]
     [SerializeField] private float fireRate = 2f;
     [SerializeField] private float damage = 10f;
-    [SerializeField] private Transform firePoint;
+    [SerializeField] private Transform[] firePoints;
+    [Tooltip("Delay between consecutive muzzle shots in the same volley.")]
+    [SerializeField] private float delayBetweenFirePoints = 0.08f;
     [SerializeField] private LayerMask obstacleMask;
+
+    [HideInInspector]
+    [FormerlySerializedAs("firePoint")]
+    [SerializeField] private Transform legacyFirePoint;
 
     [Header("Projectile")]
     [SerializeField] private GameObject projectilePrefab;
@@ -20,9 +28,15 @@ public class Shooter : MonoBehaviour
     public bool HasTarget { get; private set; }
     public Vector3 TargetDirection { get; private set; }
     public Damageable CurrentTarget { get; private set; }
+    /// <summary>If true, the shooter still tracks targets (rotation, HasTarget) but does not fire.</summary>
+    public bool SuppressFire { get; set; }
+
+    public float Damage   { get => damage;   set => damage   = value; }
+    public float FireRate { get => fireRate; set => fireRate = Mathf.Max(0.0001f, value); }
 
     private DetectionZone detectionZone;
     private float fireCooldown;
+    private Coroutine fireRoutine;
 
     private void Awake()
     {
@@ -31,6 +45,12 @@ public class Shooter : MonoBehaviour
 
     private void OnDisable()
     {
+        if (fireRoutine != null)
+        {
+            StopCoroutine(fireRoutine);
+            fireRoutine = null;
+        }
+
         // Clear state so other systems (PlayerMovement rotation, etc.) stop reacting.
         HasTarget       = false;
         CurrentTarget   = null;
@@ -56,18 +76,39 @@ public class Shooter : MonoBehaviour
 
         HasTarget = true;
 
-        if (firePoint != null)
-        {
-            Vector3 fireDir = CurrentTarget.transform.position - firePoint.position;
-            if (fireDir.sqrMagnitude > 0.001f)
-                firePoint.rotation = Quaternion.LookRotation(fireDir);
-        }
+        AimFirePoints(CurrentTarget);
 
-        if (fireCooldown <= 0f)
+        if (fireCooldown <= 0f && !SuppressFire && fireRoutine == null)
         {
-            Shoot(CurrentTarget);
+            fireRoutine = StartCoroutine(ShootVolley(CurrentTarget));
             fireCooldown = 1f / fireRate;
         }
+    }
+
+    private void AimFirePoints(Damageable target)
+    {
+        if (target == null)
+            return;
+
+        if (firePoints != null && firePoints.Length > 0)
+        {
+            for (int i = 0; i < firePoints.Length; i++)
+                AimFirePoint(firePoints[i], target);
+
+            return;
+        }
+
+        AimFirePoint(GetLegacyFirePoint(), target);
+    }
+
+    private void AimFirePoint(Transform point, Damageable target)
+    {
+        if (point == null)
+            return;
+
+        Vector3 fireDir = target.transform.position - point.position;
+        if (fireDir.sqrMagnitude > 0.001f)
+            point.rotation = Quaternion.LookRotation(fireDir);
     }
 
     private Damageable FindBestTarget()
@@ -85,7 +126,8 @@ public class Shooter : MonoBehaviour
 
     private bool HasLineOfSight(Damageable target)
     {
-        Vector3 origin = firePoint != null ? firePoint.position : transform.position;
+        Transform originPoint = GetPrimaryFirePoint();
+        Vector3 origin = originPoint != null ? originPoint.position : transform.position;
         Vector3 dir = target.transform.position - origin;
         float dist = dir.magnitude;
 
@@ -95,9 +137,45 @@ public class Shooter : MonoBehaviour
         return true;
     }
 
-    private void Shoot(Damageable target)
+    private IEnumerator ShootVolley(Damageable target)
     {
-        Vector3 origin = firePoint != null ? firePoint.position : transform.position;
+        if (target == null)
+        {
+            fireRoutine = null;
+            yield break;
+        }
+
+        onFired?.Invoke();
+
+        bool firedAny = false;
+
+        if (firePoints != null && firePoints.Length > 0)
+        {
+            for (int i = 0; i < firePoints.Length; i++)
+            {
+                if (firePoints[i] == null)
+                    continue;
+
+                ShootFrom(firePoints[i], target);
+                firedAny = true;
+
+                if (delayBetweenFirePoints > 0f && i < firePoints.Length - 1)
+                    yield return new WaitForSeconds(delayBetweenFirePoints);
+            }
+        }
+
+        if (!firedAny)
+            ShootFrom(GetLegacyFirePoint(), target);
+
+        fireRoutine = null;
+    }
+
+    private void ShootFrom(Transform point, Damageable target)
+    {
+        if (target == null)
+            return;
+
+        Vector3 origin = point != null ? point.position : transform.position;
         Vector3 dir = (target.transform.position - origin).normalized;
 
         if (projectilePrefab != null)
@@ -112,7 +190,24 @@ public class Shooter : MonoBehaviour
             // Fallback: instant hit if no projectile prefab assigned
             target.TakeDamage(damage);
         }
+    }
 
-        onFired?.Invoke();
+    private Transform GetPrimaryFirePoint()
+    {
+        if (firePoints != null)
+        {
+            for (int i = 0; i < firePoints.Length; i++)
+            {
+                if (firePoints[i] != null)
+                    return firePoints[i];
+            }
+        }
+
+        return GetLegacyFirePoint();
+    }
+
+    private Transform GetLegacyFirePoint()
+    {
+        return legacyFirePoint != null ? legacyFirePoint : transform;
     }
 }

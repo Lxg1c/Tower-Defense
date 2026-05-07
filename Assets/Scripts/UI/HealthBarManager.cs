@@ -46,9 +46,16 @@ public class HealthBarManager : MonoBehaviour
             var entity = kv.Key;
             var entry  = kv.Value;
             if (entity == null) continue;
-            entry.bar.transform.position = entity.transform.position + barOffset;
+            entry.bar.transform.position = ResolveBarPosition(entity);
             entry.bar.transform.forward  = _mainCam.transform.forward;
         }
+    }
+
+    private Vector3 ResolveBarPosition(Damageable entity)
+    {
+        // Per-entity anchor wins; otherwise use the global offset above the entity's pivot.
+        var anchor = entity.HealthBarAnchor;
+        return anchor != null ? anchor.position : entity.transform.position + barOffset;
     }
 
     public void Register(Damageable entity)
@@ -66,7 +73,7 @@ public class HealthBarManager : MonoBehaviour
 
         HealthBar bar = GetFromPool(prefab);
         bar.transform.SetParent(worldCanvas.transform, true);
-        bar.transform.position = entity.transform.position + barOffset;
+        bar.transform.position = ResolveBarPosition(entity);
         bar.gameObject.SetActive(true);
         bar.SetFill(entity.CurrentHealth / entity.MaxHealth);
 
