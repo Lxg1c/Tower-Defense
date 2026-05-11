@@ -105,6 +105,7 @@ public class WaveSpawner : MonoBehaviour
     {
         if (CurrentPhase != Phase.Build) return;
         if (nextWaveIndex >= WaveCount) return;
+        if (BaseUpgrade.Instance == null) return;
         // Don't allow starting a wave while the player is mid-selection.
         if (TowerSelectionModal.Instance != null && TowerSelectionModal.Instance.IsOpen) return;
 

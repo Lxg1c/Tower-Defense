@@ -59,6 +59,7 @@ public class WaveHUD : MonoBehaviour
         }
 
         MineIncome.onIncomeChanged.RemoveListener(UpdatePassiveIncomeLabel);
+        BaseUpgrade.OnTownHallChanged -= OnTownHallChanged;
 
         if (startWaveButton != null)
             startWaveButton.onClick.RemoveListener(OnStartClicked);
@@ -77,6 +78,7 @@ public class WaveHUD : MonoBehaviour
         spawner.onCombatPhaseStarted.AddListener(OnCombat);
         spawner.onAllWavesCompleted.AddListener(OnAllDone);
         MineIncome.onIncomeChanged.AddListener(UpdatePassiveIncomeLabel);
+        BaseUpgrade.OnTownHallChanged += OnTownHallChanged;
 
         if (startWaveButton != null)
             startWaveButton.onClick.AddListener(OnStartClicked);
@@ -138,6 +140,12 @@ public class WaveHUD : MonoBehaviour
             SetButtonVisible(true);
     }
 
+    private void OnTownHallChanged()
+    {
+        if (spawner != null && spawner.IsBuildPhase)
+            SetButtonVisible(!modalOpen);
+    }
+
     private void OnCombat(int idx, int total, int reward)
     {
         if (waveLabel != null)
@@ -161,7 +169,7 @@ public class WaveHUD : MonoBehaviour
     private void SetButtonVisible(bool on)
     {
         if (startWaveButton != null)
-            startWaveButton.gameObject.SetActive(on);
+            startWaveButton.gameObject.SetActive(on && BaseUpgrade.Instance != null);
     }
 
     private void ResolveStartWaveButtonLabel()
