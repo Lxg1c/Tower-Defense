@@ -11,7 +11,6 @@ using UnityEngine.AI;
 /// their own cooldowns.
 /// </summary>
 [DisallowMultipleComponent]
-[RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(MobHealth))]
 public class MobCore : MonoBehaviour
 {

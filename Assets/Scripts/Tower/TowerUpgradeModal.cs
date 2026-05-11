@@ -98,16 +98,20 @@ public class TowerUpgradeModal : MonoBehaviour
         {
             if (nextStats != null) 
             {
-                nextStats.text = target.BuildNextStatsText();
+                nextStats.text = target.IsNextLevelUnlocked
+                    ? target.BuildNextStatsText()
+                    : target.BuildLockedText();
             }
             
             if (costLabel != null) 
             {
-                costLabel.text = string.Format(costFormat, next.upgradeCost);
+                costLabel.text = target.IsNextLevelUnlocked
+                    ? string.Format(costFormat, next.upgradeCost)
+                    : "";
             }
 
             int coins = PlayerWallet.Instance != null ? PlayerWallet.Instance.Coins : int.MaxValue;
-            bool canAfford = coins >= next.upgradeCost;
+            bool canAfford = coins >= next.upgradeCost && target.IsNextLevelUnlocked;
             
             if (upgradeButton != null) 
             {

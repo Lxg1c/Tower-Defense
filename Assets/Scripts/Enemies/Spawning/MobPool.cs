@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// <summary>
 /// Per-prefab mob pool. Reuses instances to avoid allocations during heavy waves.
-/// The spawner is the only owner; mobs report death via MobHealth.OnDeathHandled
+/// The spawner is the only owner; mobs report death via MobCore.OnDeathHandled
 /// and the spawner returns them here.
 /// </summary>
 public class MobPool

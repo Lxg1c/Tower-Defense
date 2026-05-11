@@ -112,6 +112,31 @@ public class WaveSpawner : MonoBehaviour
         combatRoutine = StartCoroutine(RunCombat(nextWaveIndex));
     }
 
+    public Transform GetClosestSpawnPoint(Vector3 position)
+    {
+        if (spawnPoints == null || spawnPoints.Length == 0)
+            return null;
+
+        Transform closest = null;
+        float closestSqrDistance = float.MaxValue;
+
+        for (int i = 0; i < spawnPoints.Length; i++)
+        {
+            Transform point = spawnPoints[i];
+            if (point == null)
+                continue;
+
+            float sqrDistance = (point.position - position).sqrMagnitude;
+            if (sqrDistance < closestSqrDistance)
+            {
+                closestSqrDistance = sqrDistance;
+                closest = point;
+            }
+        }
+
+        return closest;
+    }
+
     // ── Phase transitions ──────────────────────────────────────────────────────
 
     private void EnterBuildPhase()
@@ -180,7 +205,9 @@ public class WaveSpawner : MonoBehaviour
         Transform point = spawnPoints[Random.Range(0, spawnPoints.Length)];
         Vector3 pos = point.position;
 
-        if (NavMesh.SamplePosition(pos, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+        // Snap to NavMesh only if the mob actually uses an Agent (ground mobs).
+        if (prefab.GetComponent<NavMeshAgent>() != null &&
+            NavMesh.SamplePosition(pos, out NavMeshHit hit, 2f, NavMesh.AllAreas))
             pos = hit.position;
 
         var pool = GetOrCreatePool(prefab);

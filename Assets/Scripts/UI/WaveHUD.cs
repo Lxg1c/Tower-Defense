@@ -17,14 +17,23 @@ public class WaveHUD : MonoBehaviour
     [Header("References")]
     [SerializeField] private TMP_Text waveLabel;
     [SerializeField] private TMP_Text rewardLabel;
+    [SerializeField] private TMP_Text enemiesLabel;
+    [SerializeField] private TMP_Text passiveIncomeLabel;
     [SerializeField] private Button   startWaveButton;
+    [SerializeField] private TMP_Text startWaveButtonLabel;
 
     [Header("Formatting")]
     [SerializeField] private string waveFormat   = "Wave {0} / {1}";
     [SerializeField] private string rewardFormat = "Reward: {0}";
+    [SerializeField] private string enemiesFormat = "Enemies: {0}";
+    [SerializeField] private string passiveIncomeFormat = "{0}/w";
+    [SerializeField] private string startWaveFormat = "Start {0}";
+    [Tooltip("Optional text/icon placeholder for old formats like Start {0} {1}. Leave empty for text-only buttons.")]
+    [SerializeField] private string startWaveCurrencyText = "";
 
     private bool modalOpen;
     private WaveSpawner spawner;
+    private int lastAliveMobCount = -1;
 
     private void OnEnable()
     {
@@ -48,6 +57,9 @@ public class WaveHUD : MonoBehaviour
             spawner.onCombatPhaseStarted.RemoveListener(OnCombat);
             spawner.onAllWavesCompleted.RemoveListener(OnAllDone);
         }
+
+        MineIncome.onIncomeChanged.RemoveListener(UpdatePassiveIncomeLabel);
+
         if (startWaveButton != null)
             startWaveButton.onClick.RemoveListener(OnStartClicked);
         if (TowerSelectionModal.Instance != null)
@@ -59,9 +71,12 @@ public class WaveHUD : MonoBehaviour
 
     private void Bind()
     {
+        ResolveStartWaveButtonLabel();
+
         spawner.onBuildPhaseStarted.AddListener(OnBuild);
         spawner.onCombatPhaseStarted.AddListener(OnCombat);
         spawner.onAllWavesCompleted.AddListener(OnAllDone);
+        MineIncome.onIncomeChanged.AddListener(UpdatePassiveIncomeLabel);
 
         if (startWaveButton != null)
             startWaveButton.onClick.AddListener(OnStartClicked);
@@ -87,6 +102,14 @@ public class WaveHUD : MonoBehaviour
                 OnAllDone();
                 break;
         }
+
+        UpdateEnemyCountLabel(force: true);
+        UpdatePassiveIncomeLabel();
+    }
+
+    private void Update()
+    {
+        UpdateEnemyCountLabel(force: false);
     }
 
     private void OnBuild(int nextIdx, int total, int reward)
@@ -95,6 +118,9 @@ public class WaveHUD : MonoBehaviour
             waveLabel.text = string.Format(waveFormat, nextIdx + 1, total);
         if (rewardLabel != null)
             rewardLabel.text = string.Format(rewardFormat, reward);
+        UpdateStartWaveButtonLabel(reward);
+        UpdateEnemyCountLabel(force: true);
+        UpdatePassiveIncomeLabel();
         SetButtonVisible(!modalOpen);
     }
 
@@ -118,6 +144,8 @@ public class WaveHUD : MonoBehaviour
             waveLabel.text = string.Format(waveFormat, idx + 1, total);
         if (rewardLabel != null)
             rewardLabel.text = string.Format(rewardFormat, reward);
+        UpdateEnemyCountLabel(force: true);
+        UpdatePassiveIncomeLabel();
         SetButtonVisible(false);
     }
 
@@ -125,6 +153,8 @@ public class WaveHUD : MonoBehaviour
     {
         if (waveLabel != null) waveLabel.text = "";
         if (rewardLabel != null) rewardLabel.text = "";
+        if (enemiesLabel != null) enemiesLabel.text = "";
+        UpdatePassiveIncomeLabel();
         SetButtonVisible(false);
     }
 
@@ -132,6 +162,56 @@ public class WaveHUD : MonoBehaviour
     {
         if (startWaveButton != null)
             startWaveButton.gameObject.SetActive(on);
+    }
+
+    private void ResolveStartWaveButtonLabel()
+    {
+        if (startWaveButtonLabel == null && startWaveButton != null)
+            startWaveButtonLabel = startWaveButton.GetComponentInChildren<TMP_Text>(true);
+    }
+
+    private void UpdateStartWaveButtonLabel(int reward)
+    {
+        ResolveStartWaveButtonLabel();
+
+        if (startWaveButtonLabel != null)
+            startWaveButtonLabel.text = FormatStartWaveButton(reward);
+    }
+
+    private string FormatStartWaveButton(int reward)
+    {
+        if (string.IsNullOrEmpty(startWaveFormat))
+            return reward.ToString();
+
+        try
+        {
+            return startWaveFormat.Contains("{1}")
+                ? string.Format(startWaveFormat, startWaveCurrencyText, reward)
+                : string.Format(startWaveFormat, reward);
+        }
+        catch (System.FormatException)
+        {
+            return $"Start {reward}";
+        }
+    }
+
+    private void UpdateEnemyCountLabel(bool force)
+    {
+        if (enemiesLabel == null)
+            return;
+
+        int alive = spawner != null && spawner.IsCombatPhase ? spawner.AliveMobCount : 0;
+        if (!force && alive == lastAliveMobCount)
+            return;
+
+        lastAliveMobCount = alive;
+        enemiesLabel.text = string.Format(enemiesFormat, alive);
+    }
+
+    private void UpdatePassiveIncomeLabel()
+    {
+        if (passiveIncomeLabel != null)
+            passiveIncomeLabel.text = string.Format(passiveIncomeFormat, MineIncome.TotalCoinsPerWave);
     }
 
     private void OnStartClicked()

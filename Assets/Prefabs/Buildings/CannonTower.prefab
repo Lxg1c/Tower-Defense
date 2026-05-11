@@ -210,21 +210,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   levels:
-  - upgradeCost: 0
-    damageMul: 1
-    rangeMul: 1
-    fireRateMul: 1
-    hpMul: 1
   - upgradeCost: 4
     damageMul: 1.2
     rangeMul: 1.2
     fireRateMul: 1.2
     hpMul: 1.2
+    incomeMul: 1
   - upgradeCost: 6
     damageMul: 1.4
     rangeMul: 1.4
     fireRateMul: 1.4
     hpMul: 1.4
+    incomeMul: 1
   currentLevel: 0
   onUpgraded:
     m_PersistentCalls:

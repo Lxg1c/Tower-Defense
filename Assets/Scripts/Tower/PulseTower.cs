@@ -17,6 +17,8 @@ public class PulseTower : MonoBehaviour
     [SerializeField] private float range          = 4f;
     [SerializeField] private float attackInterval = 1.5f;
     [SerializeField] private LayerMask targetMask = ~0;
+    [Tooltip("Tag of targets the pulse should NEVER affect (e.g. \"Flying\"). Leave empty to hit everything in the mask.")]
+    [SerializeField] private string ignoreTag = "Flying";
 
     [Header("Slow")]
     [Tooltip("Enemy speed multiplier immediately after a pulse. 0.4 = 60% slower.")]
@@ -47,7 +49,7 @@ public class PulseTower : MonoBehaviour
 
     private void Update()
     {
-        HasTarget = Physics.CheckSphere(transform.position, range, targetMask, QueryTriggerInteraction.Collide);
+        HasTarget = HasValidTargetInRange();
         if (!HasTarget) return;
         if (Time.time < nextAttackTime) return;
 
@@ -55,11 +57,26 @@ public class PulseTower : MonoBehaviour
         nextAttackTime = Time.time + attackInterval;
     }
 
+    /// <summary>True if there's at least one Damageable in range that is NOT tagged ignoreTag.</summary>
+    private bool HasValidTargetInRange()
+    {
+        int count = Physics.OverlapSphereNonAlloc(transform.position, range, buffer, targetMask, QueryTriggerInteraction.Collide);
+        for (int i = 0; i < count; i++)
+        {
+            if (IsIgnoredByTag(buffer[i].gameObject)) continue;
+            var d = buffer[i].GetComponentInParent<Damageable>();
+            if (d != null && d.IsTargetable) return true;
+        }
+        return false;
+    }
+
     private void Pulse()
     {
         int count = Physics.OverlapSphereNonAlloc(transform.position, range, buffer, targetMask, QueryTriggerInteraction.Collide);
         for (int i = 0; i < count; i++)
         {
+            if (IsIgnoredByTag(buffer[i].gameObject)) continue;
+
             var d = buffer[i].GetComponentInParent<Damageable>();
             if (d == null || !d.IsTargetable) continue;
 
@@ -68,6 +85,13 @@ public class PulseTower : MonoBehaviour
         }
 
         onAttack?.Invoke();
+    }
+
+    private bool IsIgnoredByTag(GameObject go)
+    {
+        if (string.IsNullOrEmpty(ignoreTag)) return false;
+        // CompareTag works on the collider's GO; flying mob's collider should carry the tag too.
+        return go.CompareTag(ignoreTag);
     }
 
     private void ApplySlow(Transform victim)
