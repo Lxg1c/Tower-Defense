@@ -229,13 +229,13 @@ public class PlayerUltimate : MonoBehaviour
     // orb actually connects. Otherwise fly straight along player's facing.
     if (normalShooter != null && normalShooter.HasTarget && normalShooter.CurrentTarget != null)
     {
-        Vector3 toTarget = normalShooter.CurrentTarget.transform.position - origin;
-        toTarget.y = 0f;
-        dir = toTarget.sqrMagnitude > 0.001f ? toTarget.normalized : transform.forward;
+        Vector3 aimPoint = GetAimPoint(normalShooter.CurrentTarget);
+        Vector3 toTarget = aimPoint - origin;
+        dir = toTarget.sqrMagnitude > 0.001f ? toTarget.normalized : GetFallbackLaunchDirection();
     }
     else
     {
-        dir = transform.forward;
+        dir = GetFallbackLaunchDirection();
     }
 
     if (activeOrb == null)
@@ -264,6 +264,22 @@ public class PlayerUltimate : MonoBehaviour
 
         activeOrb = null;
     }
+
+    private Vector3 GetAimPoint(Damageable target)
+    {
+        if (target == null)
+            return transform.position + GetFallbackLaunchDirection();
+
+        Collider col = target.GetComponentInChildren<Collider>();
+        return col != null ? col.bounds.center : target.transform.position;
+    }
+
+    private Vector3 GetFallbackLaunchDirection()
+    {
+        Transform origin = firePoint != null ? firePoint : transform;
+        return origin.forward.sqrMagnitude > 0.001f ? origin.forward.normalized : transform.forward;
+    }
+
     private void OnDisable()
     {
         Log("OnDisable");

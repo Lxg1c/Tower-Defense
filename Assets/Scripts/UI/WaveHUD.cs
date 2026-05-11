@@ -33,7 +33,6 @@ public class WaveHUD : MonoBehaviour
 
     private bool modalOpen;
     private WaveSpawner spawner;
-    private int lastAliveMobCount = -1;
 
     private void OnEnable()
     {
@@ -60,6 +59,7 @@ public class WaveHUD : MonoBehaviour
 
         MineIncome.onIncomeChanged.RemoveListener(UpdatePassiveIncomeLabel);
         BaseUpgrade.OnTownHallChanged -= OnTownHallChanged;
+        Base.OnBaseChanged -= OnBaseChanged;
 
         if (startWaveButton != null)
             startWaveButton.onClick.RemoveListener(OnStartClicked);
@@ -79,6 +79,7 @@ public class WaveHUD : MonoBehaviour
         spawner.onAllWavesCompleted.AddListener(OnAllDone);
         MineIncome.onIncomeChanged.AddListener(UpdatePassiveIncomeLabel);
         BaseUpgrade.OnTownHallChanged += OnTownHallChanged;
+        Base.OnBaseChanged += OnBaseChanged;
 
         if (startWaveButton != null)
             startWaveButton.onClick.AddListener(OnStartClicked);
@@ -105,13 +106,14 @@ public class WaveHUD : MonoBehaviour
                 break;
         }
 
-        UpdateEnemyCountLabel(force: true);
+        UpdateEnemyCountLabel(spawner.NextWave);
         UpdatePassiveIncomeLabel();
     }
 
     private void Update()
     {
-        UpdateEnemyCountLabel(force: false);
+        if (spawner != null && spawner.IsBuildPhase)
+            RefreshStartButtonVisibility();
     }
 
     private void OnBuild(int nextIdx, int total, int reward)
@@ -121,7 +123,7 @@ public class WaveHUD : MonoBehaviour
         if (rewardLabel != null)
             rewardLabel.text = string.Format(rewardFormat, reward);
         UpdateStartWaveButtonLabel(reward);
-        UpdateEnemyCountLabel(force: true);
+        UpdateEnemyCountLabel(spawner != null ? spawner.NextWave : null);
         UpdatePassiveIncomeLabel();
         SetButtonVisible(!modalOpen);
     }
@@ -129,21 +131,23 @@ public class WaveHUD : MonoBehaviour
     private void OnModalOpened()
     {
         modalOpen = true;
-        if (spawner != null && spawner.IsBuildPhase)
-            SetButtonVisible(false);
+        RefreshStartButtonVisibility();
     }
 
     private void OnModalClosed()
     {
         modalOpen = false;
-        if (spawner != null && spawner.IsBuildPhase)
-            SetButtonVisible(true);
+        RefreshStartButtonVisibility();
     }
 
     private void OnTownHallChanged()
     {
-        if (spawner != null && spawner.IsBuildPhase)
-            SetButtonVisible(!modalOpen);
+        RefreshStartButtonVisibility();
+    }
+
+    private void OnBaseChanged()
+    {
+        RefreshStartButtonVisibility();
     }
 
     private void OnCombat(int idx, int total, int reward)
@@ -152,7 +156,7 @@ public class WaveHUD : MonoBehaviour
             waveLabel.text = string.Format(waveFormat, idx + 1, total);
         if (rewardLabel != null)
             rewardLabel.text = string.Format(rewardFormat, reward);
-        UpdateEnemyCountLabel(force: true);
+        UpdateEnemyCountLabel(GetWave(idx));
         UpdatePassiveIncomeLabel();
         SetButtonVisible(false);
     }
@@ -169,7 +173,25 @@ public class WaveHUD : MonoBehaviour
     private void SetButtonVisible(bool on)
     {
         if (startWaveButton != null)
-            startWaveButton.gameObject.SetActive(on && BaseUpgrade.Instance != null);
+            startWaveButton.gameObject.SetActive(on && Base.Instance != null);
+    }
+
+    private void RefreshStartButtonVisibility()
+    {
+        bool canShow = spawner != null
+            && spawner.IsBuildPhase
+            && Base.Instance != null
+            && !IsAnyModalOpen();
+
+        SetButtonVisible(canShow);
+    }
+
+    private bool IsAnyModalOpen()
+    {
+        return modalOpen
+            || (TowerSelectionModal.Instance != null && TowerSelectionModal.Instance.IsOpen)
+            || (TowerUpgradeModal.Instance != null && TowerUpgradeModal.Instance.IsOpen)
+            || (BaseUpgradeModal.Instance != null && BaseUpgradeModal.Instance.IsOpen);
     }
 
     private void ResolveStartWaveButtonLabel()
@@ -203,23 +225,42 @@ public class WaveHUD : MonoBehaviour
         }
     }
 
-    private void UpdateEnemyCountLabel(bool force)
+    private void UpdateEnemyCountLabel(WaveSpawner.Wave wave)
     {
         if (enemiesLabel == null)
             return;
 
-        int alive = spawner != null && spawner.IsCombatPhase ? spawner.AliveMobCount : 0;
-        if (!force && alive == lastAliveMobCount)
-            return;
-
-        lastAliveMobCount = alive;
-        enemiesLabel.text = string.Format(enemiesFormat, alive);
+        enemiesLabel.text = string.Format(enemiesFormat, GetWaveMobCount(wave));
     }
 
     private void UpdatePassiveIncomeLabel()
     {
         if (passiveIncomeLabel != null)
             passiveIncomeLabel.text = string.Format(passiveIncomeFormat, MineIncome.TotalCoinsPerWave);
+    }
+
+    private WaveSpawner.Wave GetWave(int index)
+    {
+        if (spawner == null || index < 0 || index >= spawner.WaveCount)
+            return null;
+
+        return spawner.GetWave(index);
+    }
+
+    private static int GetWaveMobCount(WaveSpawner.Wave wave)
+    {
+        if (wave?.entries == null)
+            return 0;
+
+        int total = 0;
+        for (int i = 0; i < wave.entries.Length; i++)
+        {
+            WaveSpawner.MobEntry entry = wave.entries[i];
+            if (entry != null)
+                total += Mathf.Max(0, entry.count);
+        }
+
+        return total;
     }
 
     private void OnStartClicked()

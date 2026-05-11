@@ -1,37 +1,15 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 /// <summary>
 /// Shows a victory panel when WaveSpawner reports that all waves are complete.
 /// </summary>
 [DisallowMultipleComponent]
-public class VictoryScreen : MonoBehaviour
+public class VictoryScreen : MenuScreenBase
 {
-    [Header("UI")]
-    [SerializeField] private GameObject root;
-    [SerializeField] private Button restartButton;
-    [SerializeField] private Button mainMenuButton;
-
-    [Header("Scenes")]
-    [SerializeField] private string mainMenuSceneName = "MainMenu";
-
     [Header("Behaviour")]
     [SerializeField] private bool pauseGameOnShow = true;
 
     private WaveSpawner spawner;
-
-    private void Awake()
-    {
-        if (root != null)
-            root.SetActive(false);
-
-        if (restartButton != null)
-            restartButton.onClick.AddListener(Restart);
-
-        if (mainMenuButton != null)
-            mainMenuButton.onClick.AddListener(GoToMainMenu);
-    }
 
     private void OnEnable()
     {
@@ -46,31 +24,12 @@ public class VictoryScreen : MonoBehaviour
             spawner.onAllWavesCompleted.RemoveListener(Show);
     }
 
-    private void OnDestroy()
+    public override void Show()
     {
-        Time.timeScale = 1f;
-    }
-
-    public void Show()
-    {
-        if (root != null)
-            root.SetActive(true);
+        base.Show();
 
         if (pauseGameOnShow)
             Time.timeScale = 0f;
-    }
-
-    public void Restart()
-    {
-        Time.timeScale = 1f;
-        Scene scene = SceneManager.GetActiveScene();
-        SceneManager.LoadScene(scene.buildIndex);
-    }
-
-    public void GoToMainMenu()
-    {
-        Time.timeScale = 1f;
-        SceneManager.LoadScene(mainMenuSceneName);
     }
 
     private void BindSpawner()

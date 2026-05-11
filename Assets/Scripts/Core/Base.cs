@@ -2,11 +2,34 @@ using UnityEngine;
 
 public class Base : Damageable
 {
+    public static Base Instance { get; private set; }
+    public static event System.Action OnBaseChanged;
+
     private bool subscribed;
+
+    protected override void Awake()
+    {
+        base.Awake();
+
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning("[Base] Duplicate base instance detected.", this);
+            return;
+        }
+
+        Instance = this;
+        OnBaseChanged?.Invoke();
+    }
 
     protected override void OnEnable()
     {
         base.OnEnable();
+        if (Instance == null)
+        {
+            Instance = this;
+            OnBaseChanged?.Invoke();
+        }
+
         TrySubscribe();
     }
 
@@ -23,6 +46,12 @@ public class Base : Damageable
         if (subscribed && WaveSpawner.Instance != null)
             WaveSpawner.Instance.onWaveCompleted.RemoveListener(OnWaveCompleted);
         subscribed = false;
+
+        if (Instance == this)
+        {
+            Instance = null;
+            OnBaseChanged?.Invoke();
+        }
     }
 
     private void TrySubscribe()

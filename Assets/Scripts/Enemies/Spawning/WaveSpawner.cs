@@ -67,6 +67,11 @@ public class WaveSpawner : MonoBehaviour
     public Wave NextWave =>
         (waves != null && nextWaveIndex >= 0 && nextWaveIndex < waves.Length) ? waves[nextWaveIndex] : null;
 
+    public Wave GetWave(int index)
+    {
+        return waves != null && index >= 0 && index < waves.Length ? waves[index] : null;
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -105,7 +110,7 @@ public class WaveSpawner : MonoBehaviour
     {
         if (CurrentPhase != Phase.Build) return;
         if (nextWaveIndex >= WaveCount) return;
-        if (BaseUpgrade.Instance == null) return;
+        if (Base.Instance == null) return;
         // Don't allow starting a wave while the player is mid-selection.
         if (TowerSelectionModal.Instance != null && TowerSelectionModal.Instance.IsOpen) return;
 

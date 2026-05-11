@@ -79,11 +79,13 @@ public class TowerPlacementZone : MonoBehaviour
         }
 
         BaseUpgrade.OnTownHallChanged += OnTownHallChanged;
+        Base.OnBaseChanged += OnTownHallChanged;
     }
 
     private void OnDestroy()
     {
         BaseUpgrade.OnTownHallChanged -= OnTownHallChanged;
+        Base.OnBaseChanged -= OnTownHallChanged;
 
         if (WaveSpawner.Instance != null)
         {
@@ -226,14 +228,14 @@ public class TowerPlacementZone : MonoBehaviour
                 TowerSelectionModal.Instance.Close();
             if (TowerUpgradeModal.Instance != null && TowerUpgradeModal.Instance.IsOpen)
                 TowerUpgradeModal.Instance.Close();
-            if (BaseUpgradeModal.Instance != null && BaseUpgradeModal.Instance.IsOpen)
-                BaseUpgradeModal.Instance.Close();
         }
         modalOpenedByMe = false;
     }
 
     private void OpenBuiltObjectModal()
     {
+        ResolveBuiltObjectReferences();
+
         if (BuiltBase != null) OpenBaseUpgradeModal();
         else                   OpenUpgradeModal();
     }
@@ -258,28 +260,31 @@ public class TowerPlacementZone : MonoBehaviour
 
     private void OpenBaseUpgradeModal()
     {
+        ResolveBuiltObjectReferences();
+
         if (BuiltBase == null)
         {
+            Debug.LogWarning("[TowerPlacementZone] Town hall zone has no BaseUpgrade to open. Add BaseUpgrade to the town hall prefab.", this);
             CancelProgress();
             return;
         }
 
-        if (BaseUpgradeModal.Instance == null)
+        if (TowerUpgradeModal.Instance == null)
         {
-            Debug.LogWarning("[TowerPlacementZone] No BaseUpgradeModal in scene.", this);
+            Debug.LogWarning("[TowerPlacementZone] No TowerUpgradeModal in scene.", this);
             CancelProgress();
             return;
         }
 
         modalOpenedByMe = true;
-        BaseUpgradeModal.Instance.Open(BuiltBase, OnBaseUpgraded);
+        TowerUpgradeModal.Instance.Open(BuiltBase, OnBaseUpgraded);
     }
 
     private void OnBaseUpgraded(BaseUpgrade baseUpgrade)
     {
         modalOpenedByMe = false;
-        if (BaseUpgradeModal.Instance != null && BaseUpgradeModal.Instance.IsOpen)
-            BaseUpgradeModal.Instance.Close();
+        if (TowerUpgradeModal.Instance != null && TowerUpgradeModal.Instance.IsOpen)
+            TowerUpgradeModal.Instance.Close();
         MarkUsedAndHide();
     }
 
@@ -319,6 +324,10 @@ public class TowerPlacementZone : MonoBehaviour
         var go = Instantiate(opt.prefab, pos, rot);
         BuiltTower = go.GetComponent<TowerUpgrade>();
         BuiltBase = go.GetComponent<BaseUpgrade>();
+        if (BuiltTower == null)
+            BuiltTower = go.GetComponentInChildren<TowerUpgrade>();
+        if (BuiltBase == null)
+            BuiltBase = go.GetComponentInChildren<BaseUpgrade>();
 
         IsBuilt = true;
         MarkUsedAndHide();
@@ -334,7 +343,27 @@ public class TowerPlacementZone : MonoBehaviour
 
     private bool CanUseBuiltObject()
     {
-        return !IsBuilt || BuiltTower != null || BuiltBase != null;
+        ResolveBuiltObjectReferences();
+
+        if (!IsBuilt)
+            return true;
+
+        if (BuiltBase != null)
+            return BuiltBase.HasNextLevel;
+
+        if (BuiltTower != null)
+            return BuiltTower.CanUpgrade;
+
+        return false;
+    }
+
+    private void ResolveBuiltObjectReferences()
+    {
+        if (!IsBuilt)
+            return;
+
+        if (BuiltBase == null && allowedType == BuildSlotType.TownHall)
+            BuiltBase = BaseUpgrade.Instance;
     }
 
     private IReadOnlyList<TowerOption> GetFilteredOptions()
@@ -358,7 +387,10 @@ public class TowerPlacementZone : MonoBehaviour
 
     private static int GetTownHallLevel()
     {
-        return BaseUpgrade.Instance != null ? BaseUpgrade.Instance.TownHallLevel : 0;
+        if (BaseUpgrade.Instance != null)
+            return BaseUpgrade.Instance.TownHallLevel;
+
+        return Base.Instance != null ? 1 : 0;
     }
 
     private void UpdateZoneIcon()

@@ -1,46 +1,49 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 /// <summary>
-/// Shown when the Base dies. Freezes time, displays a panel with a Restart button.
-///
-/// Wiring:
-///   - Place this on a GameObject under your main Canvas with a panel child (root).
-///   - Assign <see cref="root"/> to that panel (kept inactive at start).
-///   - Assign <see cref="restartButton"/>.
-///   - Hook Base.onDied → GameOverScreen.Show in the inspector.
+/// Shown when the Base dies. Freezes time and displays restart / menu actions.
 /// </summary>
 [DisallowMultipleComponent]
-public class GameOverScreen : MonoBehaviour
+public class GameOverScreen : MenuScreenBase
 {
-    [Header("UI")]
-    [SerializeField] private GameObject root;
-    [SerializeField] private Button restartButton;
+    private Base subscribedBase;
 
-    private void Awake()
+    private void OnEnable()
     {
-        if (root != null) root.SetActive(false);
-        if (restartButton != null) restartButton.onClick.AddListener(Restart);
+        Base.OnBaseChanged += BindBase;
+        BindBase();
     }
 
-    private void OnDestroy()
+    private void OnDisable()
     {
-        // Defensive: if scene is unloading mid-pause, restore time scale.
-        Time.timeScale = 1f;
+        Base.OnBaseChanged -= BindBase;
+        UnbindBase();
     }
 
-    /// <summary>Hook this to Base.onDied (UnityEvent).</summary>
-    public void Show()
+    public override void Show()
     {
-        if (root != null) root.SetActive(true);
+        base.Show();
         Time.timeScale = 0f;
     }
 
-    public void Restart()
+    private void BindBase()
     {
-        Time.timeScale = 1f;
-        Scene s = SceneManager.GetActiveScene();
-        SceneManager.LoadScene(s.buildIndex);
+        Base current = Base.Instance;
+        if (subscribedBase == current)
+            return;
+
+        UnbindBase();
+
+        subscribedBase = current;
+        if (subscribedBase != null)
+            subscribedBase.onDied.AddListener(Show);
+    }
+
+    private void UnbindBase()
+    {
+        if (subscribedBase != null)
+            subscribedBase.onDied.RemoveListener(Show);
+
+        subscribedBase = null;
     }
 }

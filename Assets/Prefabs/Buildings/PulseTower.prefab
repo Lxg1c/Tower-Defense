@@ -113,8 +113,9 @@ MonoBehaviour:
   targetMask:
     serializedVersion: 2
     m_Bits: 128
-  knockbackForce: 8
-  knockbackUp: 0
+  ignoreTag: Flying
+  slowMultiplier: 0.4
+  slowDuration: 2
   onAttack:
     m_PersistentCalls:
       m_Calls: []
@@ -165,21 +166,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   levels:
-  - upgradeCost: 0
-    damageMul: 1
-    rangeMul: 1
-    fireRateMul: 1
-    hpMul: 1
-  - upgradeCost: 5
+  - upgradeCost: 4
     damageMul: 1.2
     rangeMul: 1.2
     fireRateMul: 1.2
     hpMul: 1.2
-  - upgradeCost: 7
+    incomeMul: 1.2
+  - upgradeCost: 6
     damageMul: 1.4
     rangeMul: 1.4
     fireRateMul: 1.4
     hpMul: 1.4
+    incomeMul: 1
+  - upgradeCost: 8
+    damageMul: 1.6
+    rangeMul: 1.6
+    fireRateMul: 1.6
+    hpMul: 1.6
+    incomeMul: 1
   currentLevel: 0
   onUpgraded:
     m_PersistentCalls:

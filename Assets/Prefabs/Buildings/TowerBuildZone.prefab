@@ -226,7 +226,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: b29fe1a515c1c8147b6322ef5a822e48, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 1e08f2c4dd66c1d418521aaa684950ab, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -368,8 +368,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   loadout: {fileID: 11400000, guid: bb90f16cf9711994e82a9f0eb2fc4685, type: 2}
-  allowedType: 0
-  requiredTownHallLevel: 0
+  allowedType: 1
+  requiredTownHallLevel: 1
   enterDelay: 1.5
   spawnPoint: {fileID: 363105169532766648}
   zoneRadius: 1

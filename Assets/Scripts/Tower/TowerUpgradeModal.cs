@@ -29,6 +29,8 @@ public class TowerUpgradeModal : MonoBehaviour
 
     private TowerUpgrade target;
     private Action<TowerUpgrade> onUpgraded;
+    private BaseUpgrade baseTarget;
+    private Action<BaseUpgrade> onBaseUpgraded;
 
     public bool IsOpen => modalRoot != null && modalRoot.activeSelf;
 
@@ -62,8 +64,24 @@ public class TowerUpgradeModal : MonoBehaviour
     {
         if (tower == null || modalRoot == null) return;
 
+        baseTarget = null;
+        onBaseUpgraded = null;
         this.target     = tower;
         this.onUpgraded = onUpgraded;
+
+        Refresh();
+        modalRoot.SetActive(true);
+        onOpened?.Invoke();
+    }
+
+    public void Open(BaseUpgrade baseUpgrade, Action<BaseUpgrade> onUpgraded = null)
+    {
+        if (baseUpgrade == null || modalRoot == null) return;
+
+        target = null;
+        this.onUpgraded = null;
+        baseTarget = baseUpgrade;
+        onBaseUpgraded = onUpgraded;
 
         Refresh();
         modalRoot.SetActive(true);
@@ -74,6 +92,8 @@ public class TowerUpgradeModal : MonoBehaviour
     {
         target = null;
         onUpgraded = null;
+        baseTarget = null;
+        onBaseUpgraded = null;
         
         if (modalRoot != null) 
         {
@@ -85,7 +105,13 @@ public class TowerUpgradeModal : MonoBehaviour
 
     private void Refresh()
     {
-        if (target == null) return;
+        if (target == null && baseTarget == null) return;
+
+        if (baseTarget != null)
+        {
+            RefreshBaseUpgrade();
+            return;
+        }
 
         if (currentStats != null) 
         {
@@ -139,12 +165,56 @@ public class TowerUpgradeModal : MonoBehaviour
 
     private void OnUpgradeClicked()
     {
+        if (baseTarget != null)
+        {
+            if (baseTarget.TryUpgrade())
+            {
+                Refresh();
+                onBaseUpgraded?.Invoke(baseTarget);
+            }
+
+            return;
+        }
+
         if (target == null) return;
         
         if (target.TryUpgrade())
         {
             Refresh();
             onUpgraded?.Invoke(target);
+        }
+    }
+
+    private void RefreshBaseUpgrade()
+    {
+        if (baseTarget == null) return;
+
+        if (currentStats != null)
+            currentStats.text = baseTarget.BuildCurrentStatsText();
+
+        BaseUpgradeLevel next = baseTarget.NextLevelData;
+        if (next != null)
+        {
+            if (nextStats != null)
+                nextStats.text = baseTarget.BuildNextStatsText();
+
+            if (costLabel != null)
+                costLabel.text = string.Format(costFormat, next.upgradeCost);
+
+            int coins = PlayerWallet.Instance != null ? PlayerWallet.Instance.Coins : int.MaxValue;
+            if (upgradeButton != null)
+                upgradeButton.interactable = coins >= next.upgradeCost;
+        }
+        else
+        {
+            if (nextStats != null)
+                nextStats.text = maxedText;
+
+            if (costLabel != null)
+                costLabel.text = "";
+
+            if (upgradeButton != null)
+                upgradeButton.interactable = false;
         }
     }
 }

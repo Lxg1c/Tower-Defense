@@ -100,7 +100,6 @@ public class BaseUpgrade : MonoBehaviour
         var sb = new System.Text.StringBuilder();
         sb.AppendLine($"Base Level: {currentLevel}");
         sb.AppendLine($"HP: {baseHealth.MaxHealth:0.##}");
-        sb.AppendLine($"Build Upgrade Limit: {MaxBuildUpgradeLevel}");
         return sb.ToString().TrimEnd();
     }
 
@@ -113,7 +112,6 @@ public class BaseUpgrade : MonoBehaviour
         var sb = new System.Text.StringBuilder();
         sb.AppendLine($"Base Level: {currentLevel + 1}");
         sb.AppendLine($"HP: {baseMaxHealth * Mathf.Max(0f, next.hpMul):0.##}");
-        sb.AppendLine($"Build Upgrade Limit: {next.unlockedBuildUpgradeLevel}");
         return sb.ToString().TrimEnd();
     }
 

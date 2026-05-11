@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7231913285969337583}
   - component: {fileID: 2907059204251492067}
   - component: {fileID: 3024698343206782186}
+  - component: {fileID: 6160282743842059184}
   m_Layer: 10
   m_Name: Mine
   m_TagString: Untagged
@@ -148,4 +149,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ce866d430d9bd9448a8258c51706688, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  coinsPerWave: 5
+  coinsPerWave: 1
+--- !u!114 &6160282743842059184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3853328537901789351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8883187d218b5904f932be5b77811560, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  levels:
+  - upgradeCost: 75
+    damageMul: 1
+    rangeMul: 1
+    fireRateMul: 1
+    hpMul: 1.5
+    incomeMul: 2
+  - upgradeCost: 150
+    damageMul: 1
+    rangeMul: 1
+    fireRateMul: 1
+    hpMul: 2.25
+    incomeMul: 3
+  currentLevel: 0
+  onUpgraded:
+    m_PersistentCalls:
+      m_Calls: []
