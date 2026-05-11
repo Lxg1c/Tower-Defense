@@ -16,8 +16,10 @@ public class Base : Damageable
         TrySubscribe();   // fallback if WaveSpawner wasn't ready in OnEnable
     }
 
-    private void OnDisable()
+    protected override void OnDisable()
     {
+        base.OnDisable();
+
         if (subscribed && WaveSpawner.Instance != null)
             WaveSpawner.Instance.onWaveCompleted.RemoveListener(OnWaveCompleted);
         subscribed = false;

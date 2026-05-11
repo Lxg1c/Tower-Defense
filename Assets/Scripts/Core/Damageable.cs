@@ -50,6 +50,12 @@ public abstract class Damageable : MonoBehaviour
         TryRegister();
     }
 
+    protected virtual void OnDisable()
+    {
+        if (HealthBarManager.Instance != null)
+            HealthBarManager.Instance.Unregister(this);
+    }
+
     protected virtual void Start()
     {
         // Запасной вариант для самого первого включения (HealthBarManager мог ещё не проснуться, когда сработал OnEnable).

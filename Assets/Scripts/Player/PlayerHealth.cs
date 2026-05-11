@@ -65,8 +65,9 @@ public class PlayerHealth : Damageable
         onHealthChanged.AddListener(OnHealthChangedTracker);
     }
 
-    private void OnDisable()
+    protected override void OnDisable()
     {
+        base.OnDisable();
         onHealthChanged.RemoveListener(OnHealthChangedTracker);
     }
 

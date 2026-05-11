@@ -52,7 +52,11 @@ public class TowerHealth : Damageable
         SubscribeToSpawner();
     }
 
-    private void OnDisable() { UnsubscribeFromSpawner(); }
+    protected override void OnDisable()
+    {
+        base.OnDisable();
+        UnsubscribeFromSpawner();
+    }
 
     private void SubscribeToSpawner()
     {
