@@ -4,7 +4,8 @@ public enum BuildSlotType
 {
     TownHall,
     Defense,
-    Mine
+    Mine,
+    Barracks
 }
 
 /// <summary>

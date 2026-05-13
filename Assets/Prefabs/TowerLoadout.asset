@@ -33,3 +33,8 @@ MonoBehaviour:
     displayName: Ratusha
     icon: {fileID: 21300000, guid: 8c2575728c8f0914281f70f7754c9164, type: 3}
     cost: 5
+  - slotType: 3
+    prefab: {fileID: 5542236243726697480, guid: b46d796a8fe7976489f8f3ce481ad8dd, type: 3}
+    displayName: Barracks
+    icon: {fileID: 21300000, guid: 8c2575728c8f0914281f70f7754c9164, type: 3}
+    cost: 5

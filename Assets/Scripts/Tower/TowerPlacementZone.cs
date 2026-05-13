@@ -46,6 +46,7 @@ public class TowerPlacementZone : MonoBehaviour
     [SerializeField] private Sprite townHallIcon;
     [SerializeField] private Sprite defenseIcon;
     [SerializeField] private Sprite mineIcon;
+    [SerializeField] private Sprite barracksIcon;
 
     public bool IsBuilt { get; private set; }
     public TowerUpgrade BuiltTower { get; private set; }
@@ -403,6 +404,7 @@ public class TowerPlacementZone : MonoBehaviour
             BuildSlotType.TownHall => townHallIcon,
             BuildSlotType.Defense => defenseIcon,
             BuildSlotType.Mine => mineIcon,
+            BuildSlotType.Barracks => barracksIcon,
             _ => null
         };
 

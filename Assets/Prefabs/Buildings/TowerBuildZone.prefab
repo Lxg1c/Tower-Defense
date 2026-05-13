@@ -382,6 +382,7 @@ MonoBehaviour:
   townHallIcon: {fileID: 21300000, guid: b29fe1a515c1c8147b6322ef5a822e48, type: 3}
   defenseIcon: {fileID: 21300000, guid: 1e08f2c4dd66c1d418521aaa684950ab, type: 3}
   mineIcon: {fileID: 21300000, guid: c856353be6cc3e0468eeed603b0ad7d0, type: 3}
+  barracksIcon: {fileID: 21300000, guid: a150b894937ccf441ae22d5a1b95b1c7, type: 3}
   onTowerBuilt:
     m_PersistentCalls:
       m_Calls: []

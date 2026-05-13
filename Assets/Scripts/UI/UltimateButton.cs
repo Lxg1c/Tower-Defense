@@ -14,14 +14,27 @@ public class UltimateButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     [SerializeField] private bool logInput = true;
     [SerializeField] private bool releaseOnPointerExit = true;
 
-    [Header("Optional fill (0..1)")]
+    [Header("Optional radial fill (0..1)")]
     [Tooltip("Single Image used both for charge and cooldown. " +
              "Charging → fills 0→1. Cooldown → drains 1→0. Empty otherwise.")]
     [SerializeField] private Image fill;
+    [SerializeField] private bool configureAsRadial360 = true;
+    [SerializeField] private Image.Origin360 radialOrigin = Image.Origin360.Top;
+    [SerializeField] private bool radialClockwise = true;
     [SerializeField] private Button button;
 
     private bool isPressed;
     private int activePointerId;
+
+    private void Awake()
+    {
+        ConfigureFillImage();
+    }
+
+    private void OnValidate()
+    {
+        ConfigureFillImage();
+    }
 
     public void OnPointerDown(PointerEventData eventData)
     {
@@ -95,6 +108,18 @@ public class UltimateButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     private bool IsActivePointer(PointerEventData eventData)
     {
         return isPressed && eventData.pointerId == activePointerId;
+    }
+
+    private void ConfigureFillImage()
+    {
+        if (!configureAsRadial360 || fill == null)
+            return;
+
+        fill.type = Image.Type.Filled;
+        fill.fillMethod = Image.FillMethod.Radial360;
+        fill.fillOrigin = (int)radialOrigin;
+        fill.fillClockwise = radialClockwise;
+        fill.raycastTarget = false;
     }
 
     private void LogIgnored(string phase, PointerEventData eventData)
