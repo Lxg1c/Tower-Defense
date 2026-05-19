@@ -84,6 +84,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8281352, guid: 3cf0c022f1cd37f4b850f075c5567203, type: 3}
+      propertyPath: m_Resource
+      value: 
+      objectReference: {fileID: 8300000, guid: 92d3259b6a9732e4ba3fb95331b2c95d, type: 3}
     - target: {fileID: 19929558, guid: 3cf0c022f1cd37f4b850f075c5567203, type: 3}
       propertyPath: m_UseCustomVertexStreams
       value: 1

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,17 +23,21 @@ public class WaveHUD : MonoBehaviour
     [SerializeField] private Button   startWaveButton;
     [SerializeField] private TMP_Text startWaveButtonLabel;
 
+    [Header("Wave Direction Preview")]
+    [SerializeField] private RectTransform directionPreviewRoot;
+    [SerializeField] private WaveDirectionIndicator directionIndicatorPrefab;
+
     [Header("Formatting")]
     [SerializeField] private string waveFormat   = "Wave {0} / {1}";
     [SerializeField] private string rewardFormat = "Reward: {0}";
     [SerializeField] private string enemiesFormat = "Enemies: {0}";
     [SerializeField] private string passiveIncomeFormat = "{0}/w";
     [SerializeField] private string startWaveFormat = "Start {0}";
-    [Tooltip("Optional text/icon placeholder for old formats like Start {0} {1}. Leave empty for text-only buttons.")]
-    [SerializeField] private string startWaveCurrencyText = "";
 
     private bool modalOpen;
     private WaveSpawner spawner;
+    private readonly List<WaveSpawner.WavePreviewEntry> previewEntries = new();
+    private readonly List<WaveDirectionIndicator> directionIndicators = new();
 
     private void OnEnable()
     {
@@ -68,6 +73,8 @@ public class WaveHUD : MonoBehaviour
             TowerSelectionModal.Instance.onOpened.RemoveListener(OnModalOpened);
             TowerSelectionModal.Instance.onClosed.RemoveListener(OnModalClosed);
         }
+
+        ClearDirectionPreview();
     }
 
     private void Bind()
@@ -108,6 +115,7 @@ public class WaveHUD : MonoBehaviour
 
         UpdateEnemyCountLabel(spawner.NextWave);
         UpdatePassiveIncomeLabel();
+        RefreshDirectionPreview();
     }
 
     private void Update()
@@ -125,6 +133,7 @@ public class WaveHUD : MonoBehaviour
         UpdateStartWaveButtonLabel(reward);
         UpdateEnemyCountLabel(spawner != null ? spawner.NextWave : null);
         UpdatePassiveIncomeLabel();
+        RefreshDirectionPreview();
         SetButtonVisible(!modalOpen);
     }
 
@@ -148,6 +157,7 @@ public class WaveHUD : MonoBehaviour
     private void OnBaseChanged()
     {
         RefreshStartButtonVisibility();
+        RefreshDirectionPreview();
     }
 
     private void OnCombat(int idx, int total, int reward)
@@ -158,6 +168,7 @@ public class WaveHUD : MonoBehaviour
             rewardLabel.text = string.Format(rewardFormat, reward);
         UpdateEnemyCountLabel(GetWave(idx));
         UpdatePassiveIncomeLabel();
+        ClearDirectionPreview();
         SetButtonVisible(false);
     }
 
@@ -167,6 +178,7 @@ public class WaveHUD : MonoBehaviour
         if (rewardLabel != null) rewardLabel.text = "";
         if (enemiesLabel != null) enemiesLabel.text = "";
         UpdatePassiveIncomeLabel();
+        ClearDirectionPreview();
         SetButtonVisible(false);
     }
 
@@ -215,9 +227,7 @@ public class WaveHUD : MonoBehaviour
 
         try
         {
-            return startWaveFormat.Contains("{1}")
-                ? string.Format(startWaveFormat, startWaveCurrencyText, reward)
-                : string.Format(startWaveFormat, reward);
+            return string.Format(startWaveFormat, reward);
         }
         catch (System.FormatException)
         {
@@ -249,18 +259,68 @@ public class WaveHUD : MonoBehaviour
 
     private static int GetWaveMobCount(WaveSpawner.Wave wave)
     {
-        if (wave?.entries == null)
+        if (wave == null)
             return 0;
 
         int total = 0;
-        for (int i = 0; i < wave.entries.Length; i++)
-        {
-            WaveSpawner.MobEntry entry = wave.entries[i];
-            if (entry != null)
-                total += Mathf.Max(0, entry.count);
-        }
+
+        if (wave.spawnGroups != null && wave.spawnGroups.Length > 0)
+            for (int i = 0; i < wave.spawnGroups.Length; i++)
+                total += GetEntriesMobCount(wave.spawnGroups[i]?.entries);
+        else
+            total += GetEntriesMobCount(wave.entries);
 
         return total;
+    }
+
+    private static int GetEntriesMobCount(WaveSpawner.MobEntry[] entries)
+    {
+        if (entries == null)
+            return 0;
+
+        int total = 0;
+        for (int i = 0; i < entries.Length; i++)
+            if (entries[i] != null)
+                total += Mathf.Max(0, entries[i].count);
+
+        return total;
+    }
+
+    private void RefreshDirectionPreview()
+    {
+        ClearDirectionPreview();
+
+        if (spawner == null
+            || !spawner.IsBuildPhase
+            || directionPreviewRoot == null
+            || directionIndicatorPrefab == null)
+            return;
+
+        spawner.GetWavePreviewEntries(spawner.NextWaveIndex, previewEntries);
+        if (previewEntries.Count == 0)
+            return;
+
+        for (int i = 0; i < previewEntries.Count; i++)
+        {
+            if (previewEntries[i].spawnPoint == null)
+                continue;
+
+            WaveDirectionIndicator indicator = Instantiate(directionIndicatorPrefab, directionPreviewRoot);
+            indicator.Bind(previewEntries[i]);
+            directionIndicators.Add(indicator);
+        }
+    }
+
+    private void ClearDirectionPreview()
+    {
+        for (int i = 0; i < directionIndicators.Count; i++)
+        {
+            if (directionIndicators[i] != null)
+                Destroy(directionIndicators[i].gameObject);
+        }
+
+        directionIndicators.Clear();
+        previewEntries.Clear();
     }
 
     private void OnStartClicked()

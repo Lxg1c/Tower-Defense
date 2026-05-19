@@ -17,6 +17,7 @@ public class PlayerHomeTeleportButton : MonoBehaviour
     private Vector3 homePosition;
     private Quaternion homeRotation;
     private bool homeCaptured;
+    private WaveSpawner spawner;
 
     private void Awake()
     {
@@ -31,16 +32,24 @@ public class PlayerHomeTeleportButton : MonoBehaviour
     {
         if (!CaptureHome())
             StartCoroutine(CaptureHomeWhenPlayerAppears());
+
+        BindSpawner();
+        RefreshVisibility();
     }
 
     private void OnDestroy()
     {
         if (button != null)
             button.onClick.RemoveListener(TeleportToHome);
+
+        UnbindSpawner();
     }
 
     public void TeleportToHome()
     {
+        if (spawner != null && !spawner.IsBuildPhase)
+            return;
+
         if (!homeCaptured && !CaptureHome())
             return;
 
@@ -71,6 +80,55 @@ public class PlayerHomeTeleportButton : MonoBehaviour
         }
 
         Physics.SyncTransforms();
+    }
+
+    private void BindSpawner()
+    {
+        if (spawner != null)
+            return;
+
+        spawner = WaveSpawner.Instance;
+        if (spawner == null)
+        {
+            Invoke(nameof(BindSpawner), 0.1f);
+            return;
+        }
+
+        spawner.onBuildPhaseStarted.AddListener(OnBuildPhaseStarted);
+        spawner.onCombatPhaseStarted.AddListener(OnCombatPhaseStarted);
+        spawner.onAllWavesCompleted.AddListener(OnAllWavesCompleted);
+    }
+
+    private void UnbindSpawner()
+    {
+        if (spawner == null)
+            return;
+
+        spawner.onBuildPhaseStarted.RemoveListener(OnBuildPhaseStarted);
+        spawner.onCombatPhaseStarted.RemoveListener(OnCombatPhaseStarted);
+        spawner.onAllWavesCompleted.RemoveListener(OnAllWavesCompleted);
+        spawner = null;
+    }
+
+    private void OnBuildPhaseStarted(int nextWaveIndex, int totalWaves, int reward)
+    {
+        RefreshVisibility();
+    }
+
+    private void OnCombatPhaseStarted(int waveIndex, int totalWaves, int reward)
+    {
+        RefreshVisibility();
+    }
+
+    private void OnAllWavesCompleted()
+    {
+        RefreshVisibility();
+    }
+
+    private void RefreshVisibility()
+    {
+        bool visible = spawner == null || spawner.IsBuildPhase;
+        gameObject.SetActive(visible);
     }
 
     private IEnumerator CaptureHomeWhenPlayerAppears()

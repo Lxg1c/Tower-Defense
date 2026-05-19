@@ -226,7 +226,19 @@ MonoBehaviour:
   projectilePrefab: {fileID: 2491343143989108405, guid: d2fd2cf53f87d3749987c517c35bfdc7, type: 3}
   onFired:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
+        m_MethodName: Play
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &6605454148083719915
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -294,7 +306,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   firePoint: {fileID: 6908353990229652119}
-  logInput: 1
+  logInput: 0
   chargeOrbPrefab: {fileID: 9156768072905796618, guid: c5440a2ea2b4d7e4bbca56ba94b24b9e, type: 3}
   maxChargeTime: 2
   minScale: 0.5
@@ -305,6 +317,9 @@ MonoBehaviour:
   hitMask:
     serializedVersion: 2
     m_Bits: 128
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 64
   explosionPrefab: {fileID: 5740835249752665754, guid: d9547b9d51ee91546836af47fad2d816, type: 3}
   explosionLifetime: 1.5
   minDamage: 30

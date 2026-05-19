@@ -323,6 +323,8 @@ public class TowerPlacementZone : MonoBehaviour
         Quaternion rot = spawnPoint != null ? spawnPoint.rotation : transform.rotation;
 
         var go = Instantiate(opt.prefab, pos, rot);
+        PlayBuildingSpawnAnimation(go, pos);
+
         BuiltTower = go.GetComponent<TowerUpgrade>();
         BuiltBase = go.GetComponent<BaseUpgrade>();
         if (BuiltTower == null)
@@ -333,6 +335,18 @@ public class TowerPlacementZone : MonoBehaviour
         IsBuilt = true;
         MarkUsedAndHide();
         onTowerBuilt?.Invoke();
+    }
+
+    private void PlayBuildingSpawnAnimation(GameObject builtObject, Vector3 finalPosition)
+    {
+        if (builtObject == null)
+            return;
+
+        BuildingSpawnAnimation animation = builtObject.GetComponentInChildren<BuildingSpawnAnimation>();
+        if (animation == null)
+            animation = builtObject.AddComponent<BuildingSpawnAnimation>();
+
+        animation.Play(animation.transform.position);
     }
 
     private void MarkUsedAndHide()

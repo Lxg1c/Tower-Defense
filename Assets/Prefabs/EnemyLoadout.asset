@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 933177ed6addd7247976e8a482d6f028, type: 3}
+  m_Name: EnemyLoadout
+  m_EditorClassIdentifier: 
+  options:
+  - {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
+  - {fileID: 11400000, guid: f95b8e55cd011eb48aa6e5173af7e84e, type: 2}
+  - {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
+  - {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}

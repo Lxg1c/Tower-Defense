@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 /// <summary>
 /// INavigationModifier for flying mobs. Moves the transform directly toward the
@@ -18,10 +19,18 @@ public class FlyingNav : MonoBehaviour, INavigationModifier
     [SerializeField] private float hoverHeight   = 5f;
 
     private MobCore mob;
+    private NavMeshAgent agent;
 
     private void Awake()
     {
         mob = GetComponent<MobCore>();
+        agent = GetComponent<NavMeshAgent>();
+        DisableNavMeshAgent();
+    }
+
+    private void OnEnable()
+    {
+        DisableNavMeshAgent();
     }
 
     public void UpdateDestination(MobCore _mob, Damageable _target)
@@ -51,5 +60,13 @@ public class FlyingNav : MonoBehaviour, INavigationModifier
                 transform.rotation = Quaternion.Slerp(transform.rotation, look, rotationSpeed * Time.deltaTime);
             }
         }
+    }
+
+    private void DisableNavMeshAgent()
+    {
+        if (agent == null)
+            return;
+
+        agent.enabled = false;
     }
 }

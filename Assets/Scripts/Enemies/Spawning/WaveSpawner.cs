@@ -23,16 +23,43 @@ public class WaveSpawner : MonoBehaviour
     [System.Serializable]
     public class MobEntry
     {
+        public EnemyOption enemy;
+        [Tooltip("Legacy prefab fallback. Used when Enemy is empty.")]
         public MobCore prefab;
         [Min(1)] public int count = 5;
         [Min(0f)] public float spawnInterval = 0.5f;
+        [Tooltip("Legacy icon fallback. Used when Enemy has no icon.")]
+        public Sprite previewIcon;
+
+        public MobCore Prefab => enemy != null && enemy.prefab != null ? enemy.prefab : prefab;
+        public Sprite PreviewIcon => enemy != null && enemy.icon != null ? enemy.icon : previewIcon;
+    }
+
+    [System.Serializable]
+    public class SpawnGroup
+    {
+        [Tooltip("Index in WaveSpawner Spawn Points. Spawn points themselves are configured only once on the spawner.")]
+        [Min(0)] public int spawnPointIndex;
+        public MobEntry[] entries;
     }
 
     [System.Serializable]
     public class Wave
     {
+        [Tooltip("Legacy entries. Used when Spawn Groups are empty.")]
         public MobEntry[] entries;
+        [Tooltip("Use this to choose exact spawn points and enemy counts for this wave.")]
+        public SpawnGroup[] spawnGroups;
         [Min(0)] public int coinReward = 50;
+    }
+
+    public struct WavePreviewEntry
+    {
+        public Transform spawnPoint;
+        public MobCore prefab;
+        public Sprite icon;
+        public int count;
+        public int stackIndex;
     }
 
     [Header("Spawning")]
@@ -90,10 +117,12 @@ public class WaveSpawner : MonoBehaviour
             Vector3 pos = spawnPoints[0].position;
             foreach (var wave in waves)
             {
-                if (wave?.entries == null) continue;
-                foreach (var e in wave.entries)
-                    if (e?.prefab != null)
-                        GetOrCreatePool(e.prefab).Prewarm(prewarmPerPrefab, pos);
+                if (wave == null) continue;
+                PrewarmEntries(wave.entries, pos);
+
+                if (wave.spawnGroups == null) continue;
+                foreach (var group in wave.spawnGroups)
+                    PrewarmEntries(group?.entries, pos);
             }
         }
 
@@ -143,6 +172,32 @@ public class WaveSpawner : MonoBehaviour
         return closest;
     }
 
+    public void GetWavePreviewEntries(int waveIndex, List<WavePreviewEntry> results)
+    {
+        results.Clear();
+
+        Wave wave = GetWave(waveIndex);
+        if (wave == null)
+            return;
+
+        if (wave.spawnGroups != null && wave.spawnGroups.Length > 0)
+        {
+            for (int i = 0; i < wave.spawnGroups.Length; i++)
+            {
+                SpawnGroup group = wave.spawnGroups[i];
+                if (group == null)
+                    continue;
+
+                AddPreviewEntries(GetSpawnPoint(group.spawnPointIndex), group.entries, results);
+            }
+
+            return;
+        }
+
+        Transform point = GetDefaultSpawnPoint();
+        AddPreviewEntries(point, wave.entries, results);
+    }
+
     // ── Phase transitions ──────────────────────────────────────────────────────
 
     private void EnterBuildPhase()
@@ -185,34 +240,61 @@ public class WaveSpawner : MonoBehaviour
 
     private IEnumerator SpawnWave(Wave wave)
     {
-        if (wave?.entries == null) yield break;
+        if (wave == null) yield break;
+
+        if (wave.spawnGroups != null && wave.spawnGroups.Length > 0)
+        {
+            foreach (var group in wave.spawnGroups)
+            {
+                if (group?.entries == null) continue;
+                Transform point = GetSpawnPoint(group.spawnPointIndex);
+
+                foreach (var entry in group.entries)
+                {
+                    MobCore prefab = entry?.Prefab;
+                    if (prefab == null || entry.count <= 0) continue;
+
+                    for (int i = 0; i < entry.count; i++)
+                    {
+                        SpawnOne(prefab, point);
+                        if (entry.spawnInterval > 0f)
+                            yield return new WaitForSeconds(entry.spawnInterval);
+                    }
+                }
+            }
+
+            yield break;
+        }
+
+        if (wave.entries == null) yield break;
 
         foreach (var entry in wave.entries)
         {
-            if (entry?.prefab == null || entry.count <= 0) continue;
+            MobCore prefab = entry?.Prefab;
+            if (prefab == null || entry.count <= 0) continue;
 
             for (int i = 0; i < entry.count; i++)
             {
-                SpawnOne(entry.prefab);
+                SpawnOne(prefab, GetRandomSpawnPoint());
                 if (entry.spawnInterval > 0f)
                     yield return new WaitForSeconds(entry.spawnInterval);
             }
         }
     }
 
-    private void SpawnOne(MobCore prefab)
+    private void SpawnOne(MobCore prefab, Transform point)
     {
-        if (spawnPoints == null || spawnPoints.Length == 0)
+        if (point == null)
         {
             Debug.LogWarning("[WaveSpawner] No spawn points configured.");
             return;
         }
 
-        Transform point = spawnPoints[Random.Range(0, spawnPoints.Length)];
         Vector3 pos = point.position;
 
         // Snap to NavMesh only if the mob actually uses an Agent (ground mobs).
-        if (prefab.GetComponent<NavMeshAgent>() != null &&
+        if (prefab.GetComponent<FlyingNav>() == null &&
+            prefab.GetComponent<NavMeshAgent>() != null &&
             NavMesh.SamplePosition(pos, out NavMeshHit hit, 2f, NavMesh.AllAreas))
             pos = hit.position;
 
@@ -227,6 +309,81 @@ public class WaveSpawner : MonoBehaviour
         health.OnDeathHandled -= HandleMobDeath;
         health.OnDeathHandled += HandleMobDeath;
         aliveMobs.Add(health);
+    }
+
+    private Transform GetDefaultSpawnPoint()
+    {
+        if (spawnPoints == null || spawnPoints.Length == 0)
+            return null;
+
+        for (int i = 0; i < spawnPoints.Length; i++)
+            if (spawnPoints[i] != null)
+                return spawnPoints[i];
+
+        return null;
+    }
+
+    private Transform GetSpawnPoint(int index)
+    {
+        if (spawnPoints == null || spawnPoints.Length == 0)
+            return null;
+
+        if (index >= 0 && index < spawnPoints.Length && spawnPoints[index] != null)
+            return spawnPoints[index];
+
+        return GetDefaultSpawnPoint();
+    }
+
+    private Transform GetRandomSpawnPoint()
+    {
+        if (spawnPoints == null || spawnPoints.Length == 0)
+            return null;
+
+        for (int attempt = 0; attempt < spawnPoints.Length; attempt++)
+        {
+            Transform point = spawnPoints[Random.Range(0, spawnPoints.Length)];
+            if (point != null)
+                return point;
+        }
+
+        return GetDefaultSpawnPoint();
+    }
+
+    private static void AddPreviewEntries(Transform point, MobEntry[] entries, List<WavePreviewEntry> results)
+    {
+        if (entries == null)
+            return;
+
+        int stackIndex = 0;
+        for (int i = 0; i < entries.Length; i++)
+        {
+            MobEntry entry = entries[i];
+            if (entry == null || entry.Prefab == null || entry.count <= 0)
+                continue;
+
+            results.Add(new WavePreviewEntry
+            {
+                spawnPoint = point,
+                prefab = entry.Prefab,
+                icon = entry.PreviewIcon,
+                count = entry.count,
+                stackIndex = stackIndex
+            });
+            stackIndex++;
+        }
+    }
+
+    private void PrewarmEntries(MobEntry[] entries, Vector3 position)
+    {
+        if (entries == null)
+            return;
+
+        foreach (var e in entries)
+        {
+            MobCore prefab = e?.Prefab;
+            if (prefab != null)
+                GetOrCreatePool(prefab).Prewarm(prewarmPerPrefab, position);
+        }
     }
 
     private void HandleMobDeath(MobHealth mob)

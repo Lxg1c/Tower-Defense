@@ -16,25 +16,25 @@ MonoBehaviour:
   - slotType: 1
     prefab: {fileID: 6094794923633026110, guid: 3876e576b68a05444a09548bab71ce94, type: 3}
     displayName: Pushka
-    icon: {fileID: 21300000, guid: 5b72be1c9cc01ec45bf7a41ce2773870, type: 3}
+    icon: {fileID: 21300000, guid: d33b27cc177863f4a8ec5bbd1475ce94, type: 3}
     cost: 3
   - slotType: 1
     prefab: {fileID: 6451079054752217408, guid: db8aef6ded44e274db894257d231beea, type: 3}
     displayName: Pulse
-    icon: {fileID: 21300000, guid: d8ca16ec85e3a9148bdc5f68ae293b6e, type: 3}
+    icon: {fileID: 21300000, guid: e0f57fe74b0804f4d91f4d0b2563866a, type: 3}
     cost: 5
   - slotType: 2
     prefab: {fileID: 3853328537901789351, guid: db1f61b98ded52e408d589a12214a5aa, type: 3}
     displayName: Mine
-    icon: {fileID: 21300000, guid: d1ddc0b8fb851ff44901adfd8c1003f5, type: 3}
+    icon: {fileID: 21300000, guid: 06c486023832caf4c997ecd9f7415a0a, type: 3}
     cost: 2
   - slotType: 0
     prefab: {fileID: 4665958093832129346, guid: 4b31fc0de6a6e5846ad29bbbf3bfcb36, type: 3}
     displayName: Ratusha
-    icon: {fileID: 21300000, guid: 8c2575728c8f0914281f70f7754c9164, type: 3}
+    icon: {fileID: 21300000, guid: d736a22b8db39514cb89cb2b9126bbde, type: 3}
     cost: 5
   - slotType: 3
     prefab: {fileID: 5542236243726697480, guid: b46d796a8fe7976489f8f3ce481ad8dd, type: 3}
     displayName: Barracks
-    icon: {fileID: 21300000, guid: 8c2575728c8f0914281f70f7754c9164, type: 3}
+    icon: {fileID: 21300000, guid: 161832706616f9740a47081830ad2df5, type: 3}
     cost: 5

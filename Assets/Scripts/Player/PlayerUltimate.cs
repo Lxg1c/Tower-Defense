@@ -22,6 +22,7 @@ public class PlayerUltimate : MonoBehaviour
     private Shooter        normalShooter;
     private DetectionZone  detection;
     private Damageable     ownerDamageable;
+    private PlayerHealth   playerHealth;
 
     [Header("Charge orb")]
     [SerializeField] private GameObject chargeOrbPrefab;
@@ -40,6 +41,8 @@ public class PlayerUltimate : MonoBehaviour
     [SerializeField] private float hitRadius = 1f;
     [Tooltip("Layers the orb damages (enemies, base, towers).")]
     [SerializeField] private LayerMask hitMask = ~0;
+    [Tooltip("Layers that block the orb and explosion damage.")]
+    [SerializeField] private LayerMask obstacleMask;
     [Tooltip("VFX spawned at the point of the orb's first direct contact with a target.")]
     [SerializeField] private GameObject explosionPrefab;
     [Tooltip("Lifetime of the explosion VFX (seconds).")]
@@ -58,10 +61,17 @@ public class PlayerUltimate : MonoBehaviour
     [Tooltip("Minimum cooldown floor even for the shortest tap.")]
     [SerializeField] private float minCooldown = 0.5f;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource chargeAudioSource;
+    [SerializeField] private AudioSource fireAudioSource;
+    [SerializeField] private bool loopChargeAudio = true;
+    [SerializeField, Range(0f, 1f)] private float minChargeForFireAudio = 0.05f;
+
     public bool IsCharging { get; private set; }
     public bool IsOnCooldown => Time.time < nextReadyTime;
     public bool CanReceiveInput => isActiveAndEnabled
         && (ownerDamageable == null || ownerDamageable.IsAlive)
+        && (playerHealth == null || !playerHealth.IsGhost)
         && !IsOnCooldown;
     /// <summary>0..1 charge fill once the orb is up. Useful for UI overlays.</summary>
     public float ChargeProgress { get; private set; }
@@ -94,6 +104,7 @@ public class PlayerUltimate : MonoBehaviour
         normalShooter   = GetComponentInChildren<Shooter>();
         detection       = GetComponentInChildren<DetectionZone>();
         ownerDamageable = GetComponent<Damageable>();
+        playerHealth    = GetComponent<PlayerHealth>();
     }
 
     private void OnEnable()
@@ -110,7 +121,7 @@ public class PlayerUltimate : MonoBehaviour
 
     public void BeginCharge()
     {
-        Log($"BeginCharge requested. enabled={isActiveAndEnabled}, IsCharging={IsCharging}, IsOnCooldown={IsOnCooldown}, alive={ownerDamageable == null || ownerDamageable.IsAlive}");
+        Log($"BeginCharge requested. enabled={isActiveAndEnabled}, IsCharging={IsCharging}, IsOnCooldown={IsOnCooldown}, alive={ownerDamageable == null || ownerDamageable.IsAlive}, ghost={playerHealth != null && playerHealth.IsGhost}");
 
         if (!isActiveAndEnabled)
         {
@@ -131,9 +142,16 @@ public class PlayerUltimate : MonoBehaviour
             return;
         }
 
+        if (playerHealth != null && playerHealth.IsGhost)
+        {
+            Log("BeginCharge ignored: owner is ghost.");
+            return;
+        }
+
         IsCharging = true;
         released = false;
         ChargeProgress = 0f;
+        PlayChargeAudio();
         SetNormalShooterEnabled(false);
         routine = StartCoroutine(Run());
         Log("BeginCharge accepted: charge routine started.");
@@ -208,6 +226,7 @@ public class PlayerUltimate : MonoBehaviour
         IsCharging = false;
         ChargeProgress = 0f;
         routine = null;
+        StopChargeAudio();
         SetNormalShooterEnabled(true);
     }
 
@@ -241,8 +260,12 @@ public class PlayerUltimate : MonoBehaviour
     if (activeOrb == null)
     {
         Log("Launch aborted: activeOrb is NULL.");
+        StopChargeAudio();
         return;
     }
+
+    StopChargeAudio();
+    PlayFireAudio(chargeNorm);
 
     // Detach from firePoint and convert into a projectile.
     activeOrb.transform.SetParent(null, true);
@@ -258,11 +281,42 @@ public class PlayerUltimate : MonoBehaviour
         lifetime: projectileLifetime,
         explosionRadius: hitRadius,
         hitMask: hitMask,
+        obstacleMask: obstacleMask,
         owner: ownerDamageable,
         explosionPrefab: explosionPrefab,
         explosionLifetime: explosionLifetime);
 
         activeOrb = null;
+    }
+
+    private void PlayChargeAudio()
+    {
+        if (chargeAudioSource == null)
+            return;
+
+        chargeAudioSource.loop = loopChargeAudio;
+        chargeAudioSource.Stop();
+        chargeAudioSource.Play();
+    }
+
+    private void StopChargeAudio()
+    {
+        if (chargeAudioSource == null)
+            return;
+
+        chargeAudioSource.Stop();
+    }
+
+    private void PlayFireAudio(float chargeNorm)
+    {
+        if (fireAudioSource == null || fireAudioSource.clip == null)
+            return;
+
+        if (chargeNorm < minChargeForFireAudio)
+            return;
+
+        fireAudioSource.Stop();
+        fireAudioSource.PlayOneShot(fireAudioSource.clip);
     }
 
     private Vector3 GetAimPoint(Damageable target)

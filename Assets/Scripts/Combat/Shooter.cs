@@ -145,8 +145,6 @@ public class Shooter : MonoBehaviour
             yield break;
         }
 
-        onFired?.Invoke();
-
         bool firedAny = false;
 
         if (firePoints != null && firePoints.Length > 0)
@@ -190,6 +188,8 @@ public class Shooter : MonoBehaviour
             // Fallback: instant hit if no projectile prefab assigned
             target.TakeDamage(damage);
         }
+
+        onFired?.Invoke();
     }
 
     private Transform GetPrimaryFirePoint()

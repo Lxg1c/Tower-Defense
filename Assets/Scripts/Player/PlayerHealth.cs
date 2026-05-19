@@ -5,6 +5,8 @@ using UnityEngine.Events;
 public class PlayerHealth : Damageable
 {
     [Header("Respawn")]
+    [Tooltip("Delay after death before health starts refilling and the player can return.")]
+    [SerializeField] private float respawnCooldown = 2f;
     [SerializeField] private float respawnTime = 5f;
 
     [Header("Ghost Collision")]
@@ -26,6 +28,8 @@ public class PlayerHealth : Damageable
     private float    lastDamageTime = -999f;
     private Shooter  shooter;
     private Animator animator;
+    private int      isDeadHash;
+    private bool     hasIsDeadParam;
 
     /// <summary>True while the player is dead and regenerating.</summary>
     public bool  IsGhost         { get; private set; }
@@ -50,12 +54,26 @@ public class PlayerHealth : Damageable
         base.Awake();
         shooter  = GetComponentInChildren<Shooter>();
         animator = GetComponentInChildren<Animator>();
+        isDeadHash = Animator.StringToHash(isDeadParam);
+        hasIsDeadParam = HasAnimatorBool(isDeadParam);
     }
 
     private void SetIsDeadParam(bool dead)
     {
-        if (animator == null || string.IsNullOrEmpty(isDeadParam)) return;
-        animator.SetBool(isDeadParam, dead);
+        if (animator == null || !hasIsDeadParam) return;
+        animator.SetBool(isDeadHash, dead);
+    }
+
+    private bool HasAnimatorBool(string parameterName)
+    {
+        if (animator == null || string.IsNullOrEmpty(parameterName))
+            return false;
+
+        foreach (AnimatorControllerParameter parameter in animator.parameters)
+            if (parameter.type == AnimatorControllerParameterType.Bool && parameter.name == parameterName)
+                return true;
+
+        return false;
     }
 
     protected override void OnEnable()
@@ -112,13 +130,25 @@ public class PlayerHealth : Damageable
 
     private IEnumerator RespawnRoutine()
     {
-        float elapsed       = 0f;
-        float healPerSecond = MaxHealth / respawnTime;
+        if (respawnCooldown > 0f)
+        {
+            float cooldownElapsed = 0f;
+            while (cooldownElapsed < respawnCooldown)
+            {
+                cooldownElapsed += Time.deltaTime;
+                RespawnProgress = 0f;
+                yield return null;
+            }
+        }
 
-        while (elapsed < respawnTime)
+        float elapsed       = 0f;
+        float safeRespawnTime = Mathf.Max(0.01f, respawnTime);
+        float healPerSecond = MaxHealth / safeRespawnTime;
+
+        while (elapsed < safeRespawnTime)
         {
             elapsed         += Time.deltaTime;
-            RespawnProgress  = elapsed / respawnTime;
+            RespawnProgress  = Mathf.Clamp01(elapsed / safeRespawnTime);
             RestoreHealth(healPerSecond * Time.deltaTime);
             yield return null;
         }

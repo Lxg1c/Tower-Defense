@@ -188,8 +188,8 @@ RectTransform:
   m_GameObject: {fileID: 7671176719185071014}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 6864947432553663468}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -370,7 +370,7 @@ MonoBehaviour:
   loadout: {fileID: 11400000, guid: bb90f16cf9711994e82a9f0eb2fc4685, type: 2}
   allowedType: 1
   requiredTownHallLevel: 1
-  enterDelay: 1.5
+  enterDelay: 0.5
   spawnPoint: {fileID: 363105169532766648}
   zoneRadius: 1
   idleColor: {r: 1, g: 1, b: 1, a: 0.4}

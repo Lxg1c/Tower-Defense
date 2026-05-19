@@ -28,6 +28,9 @@ public class UltimateButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
     private void Awake()
     {
+        if (button == null)
+            button = GetComponent<Button>();
+
         ConfigureFillImage();
     }
 
@@ -91,6 +94,9 @@ public class UltimateButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
         if (button != null)
             button.interactable = ultimate.CanReceiveInput || ultimate.IsCharging;
+
+        if (!ultimate.CanReceiveInput && !ultimate.IsCharging)
+            isPressed = false;
     }
 
     private void LogPointer(string phase, PointerEventData eventData)

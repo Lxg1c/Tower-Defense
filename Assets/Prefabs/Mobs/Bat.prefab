@@ -63,12 +63,13 @@ Transform:
   m_GameObject: {fileID: 4932791436634078493}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_LocalPosition: {x: 0, y: 1.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 8855640603452889233}
   - {fileID: 2635500410294942620}
+  - {fileID: 7050744546745135871}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!135 &2907718042110459375
@@ -91,7 +92,7 @@ SphereCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 1.25, z: 0}
 --- !u!54 &7636231578351825652
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -133,7 +134,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   healthBarPrefab: {fileID: 9125502953916134260, guid: 59a700be103929a429096864c84d1441, type: 3}
-  healthBarAnchor: {fileID: 0}
+  healthBarAnchor: {fileID: 7050744546745135871}
   onHealthChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -141,6 +142,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   coinReward: 0
+  deathExplosionPrefab: {fileID: 7055069102849094303, guid: 77547fd0918d63c4fb50774a3a4f727a, type: 3}
+  deathExplosionLifetime: 2
+  deathExplosionSoundCooldown: 0.08
+  muteSkippedDeathExplosionSounds: 1
 --- !u!114 &1506540277879003994
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -211,6 +216,37 @@ MonoBehaviour:
     m_Bits: 1536
   maxCandidates: 32
   logSelections: 0
+--- !u!1 &8242256678433994188
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7050744546745135871}
+  m_Layer: 7
+  m_Name: HealthBarAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7050744546745135871
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8242256678433994188}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.675, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7982125411714824366}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &5472937650977690797
 PrefabInstance:
   m_ObjectHideFlags: 0

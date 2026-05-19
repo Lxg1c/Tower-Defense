@@ -572,10 +572,11 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -4.2712154, y: -0.00000023841858, z: 6.367751}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 5579134695713617646}
+  - {fileID: 8530073311528646060}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!136 &5220147112653238367
@@ -615,7 +616,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 30
   attackRate: 1
-  attackRange: 4
+  attackRange: 7.5
   multipliers:
   - targetComponentName: ' TowerHealth'
     multiplier: 1.3
@@ -654,9 +655,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6acd8d04ce665a4fb5998337a01ae3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 150
+  maxHealth: 300
   healthBarPrefab: {fileID: 9125502953916134260, guid: 59a700be103929a429096864c84d1441, type: 3}
-  healthBarAnchor: {fileID: 0}
+  healthBarAnchor: {fileID: 8530073311528646060}
   onHealthChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -664,6 +665,11 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   coinReward: 0
+  deathExplosionPrefab: {fileID: 7055069102849094303, guid: 77547fd0918d63c4fb50774a3a4f727a, type: 3}
+  deathExplosionScale: {x: 2, y: 2, z: 2}
+  deathExplosionLifetime: 2
+  deathExplosionSoundCooldown: 0.08
+  muteSkippedDeathExplosionSounds: 1
 --- !u!114 &6218495979346494038
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -742,6 +748,37 @@ Transform:
   m_Children:
   - {fileID: 1811519380299788361}
   m_Father: {fileID: 1592311473036426919}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7614837470579061555
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8530073311528646060}
+  m_Layer: 7
+  m_Name: HealthBarAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8530073311528646060
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7614837470579061555}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 2.028, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2201525991894345457}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8177262281361034925
 GameObject:

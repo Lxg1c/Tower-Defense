@@ -7,6 +7,8 @@ public class Projectile : MonoBehaviour
     [SerializeField] private float rotateSpeed = 200f;
     [SerializeField] private float lifeTime = 5f;
     [SerializeField] private float hitDistance = 0.5f;
+    [Tooltip("If homing requires a sharper turn than this angle, the projectile is destroyed.")]
+    [SerializeField] private float maxHomingTurnAngle = 30f;
     [Tooltip("Extra distance after the initial target point where a projectile without a live target is destroyed.")]
     [SerializeField] private float missOvershootDistance = 1f;
 
@@ -61,6 +63,13 @@ public class Projectile : MonoBehaviour
         if (dir.sqrMagnitude <= hitDistance * hitDistance)
         {
             Hit();
+            return;
+        }
+
+        float turnAngle = Vector3.Angle(transform.forward, dir);
+        if (turnAngle > maxHomingTurnAngle)
+        {
+            Destroy(gameObject);
             return;
         }
 

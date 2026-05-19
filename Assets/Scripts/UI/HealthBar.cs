@@ -117,6 +117,18 @@ public class HealthBar : MonoBehaviour
         }
     }
 
+    public void SetFillInstant(float normalised)
+    {
+        _targetFill = Mathf.Clamp01(normalised);
+        _currentFill = _targetFill;
+        _ghostFill = _targetFill;
+        _ghostTimer = 0f;
+
+        ApplyFill(_currentFill);
+        if (ghostFillImage != null)
+            ghostFillImage.fillAmount = _ghostFill;
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private void ApplyFill(float value)

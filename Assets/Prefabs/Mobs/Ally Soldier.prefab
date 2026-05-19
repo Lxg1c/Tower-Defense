@@ -160,7 +160,7 @@ MonoBehaviour:
     m_Bits: 128
   awarenessRadius: 18
   maxTargets: 24
-  damage: 30
+  damage: 10
   attackRate: 1
   attackRange: 4
   destinationRefreshInterval: 0.2

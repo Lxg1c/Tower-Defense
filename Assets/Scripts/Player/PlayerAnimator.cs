@@ -28,6 +28,8 @@ public class PlayerAnimator : MonoBehaviour
     private int       ultimateStateHash;
     private int       legacyShootTypeHash;
     private bool      isMoving;
+    private bool      hasMovingParam;
+    private bool      hasAttackingParam;
     private bool      hasAttackSpeedMultiplier;
     private bool      hasUltimateTrigger;
     private bool      hasLegacyShootType;
@@ -60,8 +62,10 @@ public class PlayerAnimator : MonoBehaviour
             && shooter.HasTarget
             && !shooter.SuppressFire;
 
-        animator.SetBool(movingHash, isMoving);
-        animator.SetBool(attackingHash, isAttacking);
+        if (hasMovingParam)
+            animator.SetBool(movingHash, isMoving);
+        if (hasAttackingParam)
+            animator.SetBool(attackingHash, isAttacking);
 
         if (hasAttackSpeedMultiplier)
             animator.SetFloat(attackSpeedMultiplierHash, isAttacking ? shooter.FireRate : 1f);
@@ -113,7 +117,11 @@ public class PlayerAnimator : MonoBehaviour
 
         foreach (AnimatorControllerParameter parameter in animator.parameters)
         {
-            if (parameter.type == AnimatorControllerParameterType.Float && parameter.name == attackSpeedMultiplierParam)
+            if (parameter.type == AnimatorControllerParameterType.Bool && parameter.name == movingParam)
+                hasMovingParam = true;
+            else if (parameter.type == AnimatorControllerParameterType.Bool && parameter.name == attackingParam)
+                hasAttackingParam = true;
+            else if (parameter.type == AnimatorControllerParameterType.Float && parameter.name == attackSpeedMultiplierParam)
                 hasAttackSpeedMultiplier = true;
             else if (parameter.type == AnimatorControllerParameterType.Trigger && parameter.name == ultimateTrigger)
                 hasUltimateTrigger = true;

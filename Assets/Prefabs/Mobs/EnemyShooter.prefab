@@ -192,6 +192,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   coinReward: 0
+  deathExplosionPrefab: {fileID: 7055069102849094303, guid: 77547fd0918d63c4fb50774a3a4f727a, type: 3}
+  deathExplosionLifetime: 2
 --- !u!114 &1478087958002418405
 MonoBehaviour:
   m_ObjectHideFlags: 0

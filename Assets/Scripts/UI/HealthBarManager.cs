@@ -15,6 +15,7 @@ public class HealthBarManager : MonoBehaviour
 
     [Header("Layout")]
     [SerializeField] private Vector3 barOffset = new Vector3(0f, 1.8f, 0f);
+    [SerializeField] private bool hideWhenFull = true;
 
     private Camera _mainCam;
 
@@ -45,7 +46,7 @@ public class HealthBarManager : MonoBehaviour
         {
             var entity = kv.Key;
             var entry  = kv.Value;
-            if (entity == null) continue;
+            if (entity == null || entry.bar == null || !entry.bar.gameObject.activeSelf) continue;
             entry.bar.transform.position = ResolveBarPosition(entity);
             entry.bar.transform.forward  = _mainCam.transform.forward;
         }
@@ -75,7 +76,7 @@ public class HealthBarManager : MonoBehaviour
         bar.transform.SetParent(worldCanvas.transform, true);
         bar.transform.position = ResolveBarPosition(entity);
         bar.gameObject.SetActive(true);
-        bar.SetFill(entity.CurrentHealth / entity.MaxHealth);
+        SetBarFillAndVisibility(bar, entity.CurrentHealth / entity.MaxHealth);
 
         var entry = new ActiveEntry { bar = bar, prefab = prefab };
         entry.hpListener   = hp => OnHealthChanged(entity, hp);
@@ -103,7 +104,40 @@ public class HealthBarManager : MonoBehaviour
     private void OnHealthChanged(Damageable entity, float current)
     {
         if (_active.TryGetValue(entity, out var entry))
-            entry.bar.SetFill(current / entity.MaxHealth);
+            SetBarFillAndVisibility(entry.bar, current / entity.MaxHealth);
+    }
+
+    private void SetBarFillAndVisibility(HealthBar bar, float normalized)
+    {
+        if (bar == null)
+            return;
+
+        float fill = Mathf.Clamp01(normalized);
+
+        if (hideWhenFull)
+        {
+            bool isFull = fill >= 0.999f;
+            if (isFull)
+            {
+                bar.SetFillInstant(1f);
+                bar.gameObject.SetActive(false);
+            }
+            else
+            {
+                if (!bar.gameObject.activeSelf)
+                    bar.gameObject.SetActive(true);
+                bar.SetFill(fill);
+            }
+        }
+        else if (!bar.gameObject.activeSelf)
+        {
+            bar.gameObject.SetActive(true);
+            bar.SetFill(fill);
+        }
+        else
+        {
+            bar.SetFill(fill);
+        }
     }
 
     // ── Pool helpers ──────────────────────────────────────────────────────────
