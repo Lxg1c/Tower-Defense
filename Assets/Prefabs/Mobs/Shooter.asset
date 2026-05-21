@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefab: {fileID: 7184411534643617216, guid: 383942372b1e12744874781e3ddba288, type: 3}
   displayName: Shooter
-  icon: {fileID: 21300000, guid: 8c2575728c8f0914281f70f7754c9164, type: 3}
+  icon: {fileID: 21300000, guid: cda0ff194c608dd4091459ceb1cc59db, type: 3}

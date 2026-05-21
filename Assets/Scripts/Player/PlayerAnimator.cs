@@ -2,8 +2,8 @@ using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// Drives player-only animator states. Normal shooting and movement are states,
-/// ultimate is a one-shot trigger.
+/// Drives player-only animator states. Normal shooting is a state, ultimate is
+/// a one-shot trigger. Movement bool is reserved for ghost/dead movement.
 /// </summary>
 [DisallowMultipleComponent]
 public class PlayerAnimator : MonoBehaviour
@@ -21,6 +21,7 @@ public class PlayerAnimator : MonoBehaviour
 
     private Animator  animator;
     private Shooter   shooter;
+    private PlayerHealth playerHealth;
     private int       movingHash;
     private int       attackingHash;
     private int       attackSpeedMultiplierHash;
@@ -42,6 +43,7 @@ public class PlayerAnimator : MonoBehaviour
             animator = GetComponentInChildren<Animator>();
 
         shooter       = GetComponentInChildren<Shooter>();
+        playerHealth  = GetComponent<PlayerHealth>();
         movingHash    = Animator.StringToHash(movingParam);
         attackingHash = Animator.StringToHash(attackingParam);
         attackSpeedMultiplierHash = Animator.StringToHash(attackSpeedMultiplierParam);
@@ -63,7 +65,7 @@ public class PlayerAnimator : MonoBehaviour
             && !shooter.SuppressFire;
 
         if (hasMovingParam)
-            animator.SetBool(movingHash, isMoving);
+            animator.SetBool(movingHash, isMoving && playerHealth != null && playerHealth.IsGhost);
         if (hasAttackingParam)
             animator.SetBool(attackingHash, isAttacking);
 

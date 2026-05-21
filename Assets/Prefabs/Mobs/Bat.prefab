@@ -143,6 +143,7 @@ MonoBehaviour:
       m_Calls: []
   coinReward: 0
   deathExplosionPrefab: {fileID: 7055069102849094303, guid: 77547fd0918d63c4fb50774a3a4f727a, type: 3}
+  deathExplosionScale: {x: 1, y: 1, z: 1}
   deathExplosionLifetime: 2
   deathExplosionSoundCooldown: 0.08
   muteSkippedDeathExplosionSounds: 1
@@ -178,6 +179,12 @@ MonoBehaviour:
   speed: 4
   rotationSpeed: 8
   hoverHeight: 5
+  separationRadius: 1.25
+  separationWeight: 1.5
+  separationMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  maxSeparationCandidates: 12
 --- !u!114 &1414560376758818262
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -190,15 +197,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdaf58ad3660d6b4e8b5427dea31023a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 5
-  fireRate: 1
+  damage: 10
+  fireRate: 1.5
   attackRange: 8
   projectilePrefab: {fileID: 4170860961368634674, guid: f8aeacb6bfec51b429574649f8f42dca, type: 3}
   firePoint: {fileID: 2635500410294942620}
   obstacleMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   multipliers: []
+  attackTriggerName: Attack
 --- !u!114 &7326225349076123776
 MonoBehaviour:
   m_ObjectHideFlags: 0

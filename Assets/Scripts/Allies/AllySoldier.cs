@@ -23,11 +23,26 @@ public class AllySoldier : Damageable
     [SerializeField] private float attackRate = 1f;
     [SerializeField] private float attackRange = 1.4f;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource hitAudioSource;
+    [SerializeField] private AudioClip hitAudioClip;
+    [SerializeField, Range(0f, 1f)] private float hitAudioVolume = 1f;
+
+    [Header("Death VFX")]
+    [SerializeField] private GameObject deathExplosionPrefab;
+    [SerializeField] private Vector3 deathExplosionScale = Vector3.one;
+    [SerializeField] private float deathExplosionLifetime = 2f;
+
     [Header("Movement")]
     [SerializeField] private float destinationRefreshInterval = 0.2f;
     [SerializeField] private float playerAttackRadius = 10f;
     [SerializeField] private float playerFollowStoppingDistance = 2f;
+
+    [Header("Animation")]
     [SerializeField] private string attackTriggerName = "Attack";
+    [SerializeField] private string moveStartTriggerName = "MoveStart";
+    [SerializeField] private string movingBoolName = "IsMoving";
+    [SerializeField] private float movingVelocityThreshold = 0.05f;
 
     public event Action<AllySoldier> Died;
 
@@ -43,6 +58,13 @@ public class AllySoldier : Damageable
     private Damageable currentTarget;
     private float attackCooldown;
     private float refreshTimer;
+    private int attackTriggerHash;
+    private int moveStartTriggerHash;
+    private int movingBoolHash;
+    private bool hasAttackTrigger;
+    private bool hasMoveStartTrigger;
+    private bool hasMovingBool;
+    private bool wasMoving;
 
     public override bool IsTargetable => base.IsTargetable && isActiveAndEnabled;
 
@@ -51,8 +73,11 @@ public class AllySoldier : Damageable
         base.Awake();
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponentInChildren<Animator>();
+        if (hitAudioSource == null)
+            hitAudioSource = GetComponent<AudioSource>();
         ownColliders = GetComponentsInChildren<Collider>();
         targetBuffer = new Collider[Mathf.Max(4, maxTargets)];
+        CacheAnimatorParameters();
     }
 
     protected override void OnEnable()
@@ -62,6 +87,8 @@ public class AllySoldier : Damageable
         attackCooldown = 0f;
         refreshTimer = 0f;
         currentTarget = null;
+        wasMoving = false;
+        SetMovingAnimation(false);
 
         if (agent != null)
         {
@@ -76,6 +103,8 @@ public class AllySoldier : Damageable
 
     protected override void OnDisable()
     {
+        SetMovingAnimation(false);
+        wasMoving = false;
         SetPlayerCollisionIgnore(false);
         base.OnDisable();
     }
@@ -122,6 +151,8 @@ public class AllySoldier : Damageable
 
         if ((mode == Mode.Attack || mode == Mode.FollowPlayer) && currentTarget != null && currentTarget.IsTargetable)
             TryAttackCurrentTarget();
+
+        UpdateMovementAnimation();
     }
 
     private void RefreshDestination()
@@ -155,11 +186,23 @@ public class AllySoldier : Damageable
         if (attackCooldown > 0f)
             return;
 
-        if (animator != null && !string.IsNullOrEmpty(attackTriggerName))
-            animator.SetTrigger(attackTriggerName);
+        TriggerAttackAnimation();
 
         currentTarget.TakeDamage(damage);
+        PlayHitAudio();
         attackCooldown = 1f / Mathf.Max(0.01f, attackRate);
+    }
+
+    private void PlayHitAudio()
+    {
+        if (hitAudioSource == null)
+            return;
+
+        AudioClip clip = hitAudioClip != null ? hitAudioClip : hitAudioSource.clip;
+        if (clip == null)
+            return;
+
+        hitAudioSource.PlayOneShot(clip, hitAudioVolume);
     }
 
     private Damageable FindNearestEnemy()
@@ -295,6 +338,63 @@ public class AllySoldier : Damageable
         agent.SetDestination(destination);
     }
 
+    private void UpdateMovementAnimation()
+    {
+        if (agent == null || animator == null)
+            return;
+
+        bool isMoving = agent.enabled
+            && agent.isOnNavMesh
+            && !agent.isStopped
+            && agent.velocity.sqrMagnitude > movingVelocityThreshold * movingVelocityThreshold;
+
+        if (isMoving && !wasMoving)
+            TriggerMoveStartAnimation();
+
+        if (isMoving != wasMoving)
+            SetMovingAnimation(isMoving);
+
+        wasMoving = isMoving;
+    }
+
+    private void TriggerAttackAnimation()
+    {
+        if (animator != null && hasAttackTrigger)
+            animator.SetTrigger(attackTriggerHash);
+    }
+
+    private void TriggerMoveStartAnimation()
+    {
+        if (animator != null && hasMoveStartTrigger)
+            animator.SetTrigger(moveStartTriggerHash);
+    }
+
+    private void SetMovingAnimation(bool moving)
+    {
+        if (animator != null && hasMovingBool)
+            animator.SetBool(movingBoolHash, moving);
+    }
+
+    private void CacheAnimatorParameters()
+    {
+        if (animator == null)
+            return;
+
+        attackTriggerHash = Animator.StringToHash(attackTriggerName);
+        moveStartTriggerHash = Animator.StringToHash(moveStartTriggerName);
+        movingBoolHash = Animator.StringToHash(movingBoolName);
+
+        foreach (AnimatorControllerParameter parameter in animator.parameters)
+        {
+            if (parameter.type == AnimatorControllerParameterType.Trigger && parameter.name == attackTriggerName)
+                hasAttackTrigger = true;
+            else if (parameter.type == AnimatorControllerParameterType.Trigger && parameter.name == moveStartTriggerName)
+                hasMoveStartTrigger = true;
+            else if (parameter.type == AnimatorControllerParameterType.Bool && parameter.name == movingBoolName)
+                hasMovingBool = true;
+        }
+    }
+
     private void Face(Vector3 worldPosition)
     {
         Vector3 direction = worldPosition - transform.position;
@@ -307,7 +407,29 @@ public class AllySoldier : Damageable
 
     protected override void OnDeath()
     {
+        SetMovingAnimation(false);
+        wasMoving = false;
+        SpawnDeathExplosion();
         Died?.Invoke(this);
         gameObject.SetActive(false);
+    }
+
+    private void SpawnDeathExplosion()
+    {
+        if (deathExplosionPrefab == null)
+            return;
+
+        Vector3 position = GetDeathExplosionPosition();
+        GameObject vfx = Instantiate(deathExplosionPrefab, position, Quaternion.identity);
+        vfx.transform.localScale = Vector3.Scale(vfx.transform.localScale, deathExplosionScale);
+
+        if (deathExplosionLifetime > 0f)
+            Destroy(vfx, deathExplosionLifetime);
+    }
+
+    private Vector3 GetDeathExplosionPosition()
+    {
+        Collider col = GetComponentInChildren<Collider>();
+        return col != null ? col.bounds.center : transform.position;
     }
 }

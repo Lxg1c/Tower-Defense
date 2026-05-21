@@ -38,9 +38,22 @@ public class RangedAttack : MonoBehaviour, ICombatBehavior
     [Header("Damage modifiers (optional)")]
     [SerializeField] private DamageMultiplier[] multipliers;
 
+    [Header("Animation")]
+    [SerializeField] private string attackTriggerName = "Attack";
+
+    private Animator animator;
+    private int attackTriggerHash;
+    private bool hasAttackTrigger;
     private float cooldown;
 
     public float AttackRange => attackRange;
+
+    private void Awake()
+    {
+        animator = GetComponentInChildren<Animator>();
+        attackTriggerHash = Animator.StringToHash(attackTriggerName);
+        hasAttackTrigger = HasAnimatorTrigger(attackTriggerName);
+    }
 
     public void OnTargetChanged(MobCore mob, Damageable newTarget)
     {
@@ -82,7 +95,26 @@ public class RangedAttack : MonoBehaviour, ICombatBehavior
         if (proj != null)
             proj.Init(target, damage * GetMultiplierFor(target));
 
+        TriggerAttackAnimation();
         cooldown = 1f / Mathf.Max(0.01f, fireRate);
+    }
+
+    private void TriggerAttackAnimation()
+    {
+        if (animator != null && hasAttackTrigger)
+            animator.SetTrigger(attackTriggerHash);
+    }
+
+    private bool HasAnimatorTrigger(string parameterName)
+    {
+        if (animator == null || string.IsNullOrEmpty(parameterName))
+            return false;
+
+        foreach (AnimatorControllerParameter parameter in animator.parameters)
+            if (parameter.type == AnimatorControllerParameterType.Trigger && parameter.name == parameterName)
+                return true;
+
+        return false;
     }
 
     private float GetMultiplierFor(Damageable target)

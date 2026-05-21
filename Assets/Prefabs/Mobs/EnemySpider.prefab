@@ -101,9 +101,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0985ff250727c0346b85cc1ebb38fc75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 10
+  damage: 5
   attackRate: 1
-  attackRange: 7
+  attackRange: 5
   multipliers: []
   attackTriggerName: Attack
 --- !u!114 &6808108943145072710
@@ -150,7 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   threatMask:
     serializedVersion: 2
-    m_Bits: 776
+    m_Bits: 4872
   maxCandidates: 32
   logSelections: 0
 --- !u!135 &6676510510867403037

@@ -17,6 +17,15 @@ public class PlayerHealth : Damageable
     [Header("Death animation")]
     [Tooltip("Animator bool parameter set to true on death and false on respawn. Leave empty to skip.")]
     [SerializeField] private string isDeadParam = "IsDead";
+    [Tooltip("Animator trigger fired once when the player dies.")]
+    [SerializeField] private string deathTriggerParam = "Death";
+    [Tooltip("Animator trigger fired once when the player returns from ghost state.")]
+    [SerializeField] private string reviveTriggerParam = "Revive";
+
+    [Header("Death VFX")]
+    [SerializeField] private GameObject deathExplosionPrefab;
+    [SerializeField] private Vector3 deathExplosionScale = Vector3.one;
+    [SerializeField] private float deathExplosionLifetime = 2f;
 
     [Header("Out-of-combat Regeneration")]
     [Tooltip("Seconds without taking damage before regen kicks in.")]
@@ -29,7 +38,11 @@ public class PlayerHealth : Damageable
     private Shooter  shooter;
     private Animator animator;
     private int      isDeadHash;
+    private int      deathTriggerHash;
+    private int      reviveTriggerHash;
     private bool     hasIsDeadParam;
+    private bool     hasDeathTrigger;
+    private bool     hasReviveTrigger;
 
     /// <summary>True while the player is dead and regenerating.</summary>
     public bool  IsGhost         { get; private set; }
@@ -55,7 +68,9 @@ public class PlayerHealth : Damageable
         shooter  = GetComponentInChildren<Shooter>();
         animator = GetComponentInChildren<Animator>();
         isDeadHash = Animator.StringToHash(isDeadParam);
-        hasIsDeadParam = HasAnimatorBool(isDeadParam);
+        deathTriggerHash = Animator.StringToHash(deathTriggerParam);
+        reviveTriggerHash = Animator.StringToHash(reviveTriggerParam);
+        CacheAnimatorParameters();
     }
 
     private void SetIsDeadParam(bool dead)
@@ -64,16 +79,32 @@ public class PlayerHealth : Damageable
         animator.SetBool(isDeadHash, dead);
     }
 
-    private bool HasAnimatorBool(string parameterName)
+    private void TriggerDeathAnimation()
     {
-        if (animator == null || string.IsNullOrEmpty(parameterName))
-            return false;
+        if (animator == null || !hasDeathTrigger) return;
+        animator.SetTrigger(deathTriggerHash);
+    }
+
+    private void TriggerReviveAnimation()
+    {
+        if (animator == null || !hasReviveTrigger) return;
+        animator.SetTrigger(reviveTriggerHash);
+    }
+
+    private void CacheAnimatorParameters()
+    {
+        if (animator == null)
+            return;
 
         foreach (AnimatorControllerParameter parameter in animator.parameters)
-            if (parameter.type == AnimatorControllerParameterType.Bool && parameter.name == parameterName)
-                return true;
-
-        return false;
+        {
+            if (parameter.type == AnimatorControllerParameterType.Bool && parameter.name == isDeadParam)
+                hasIsDeadParam = true;
+            else if (parameter.type == AnimatorControllerParameterType.Trigger && parameter.name == deathTriggerParam)
+                hasDeathTrigger = true;
+            else if (parameter.type == AnimatorControllerParameterType.Trigger && parameter.name == reviveTriggerParam)
+                hasReviveTrigger = true;
+        }
     }
 
     protected override void OnEnable()
@@ -111,8 +142,29 @@ public class PlayerHealth : Damageable
         SetGhostCollisionIgnore(true);
         if (shooter != null) shooter.enabled = false;
         SetIsDeadParam(true);
+        TriggerDeathAnimation();
+        SpawnDeathExplosion();
         onGhostEntered?.Invoke();
         StartCoroutine(RespawnRoutine());
+    }
+
+    private void SpawnDeathExplosion()
+    {
+        if (deathExplosionPrefab == null)
+            return;
+
+        Vector3 position = GetDeathExplosionPosition();
+        GameObject vfx = Instantiate(deathExplosionPrefab, position, Quaternion.identity);
+        vfx.transform.localScale = Vector3.Scale(vfx.transform.localScale, deathExplosionScale);
+
+        if (deathExplosionLifetime > 0f)
+            Destroy(vfx, deathExplosionLifetime);
+    }
+
+    private Vector3 GetDeathExplosionPosition()
+    {
+        Collider col = GetComponentInChildren<Collider>();
+        return col != null ? col.bounds.center : transform.position;
     }
 
     private void SetGhostCollisionIgnore(bool ignore)
@@ -159,6 +211,7 @@ public class PlayerHealth : Damageable
         RespawnProgress = 1f;
         SetGhostCollisionIgnore(false);
         if (shooter != null) shooter.enabled = true;
+        TriggerReviveAnimation();
         SetIsDeadParam(false);
         onRespawned?.Invoke();
     }
