@@ -42,11 +42,6 @@ public class TowerHealth : Damageable
     private ParticleSystem[]   destroyedParticles;
     private Coroutine          destroyedParticlesRoutine;
 
-    /// <summary>
-    /// Tower keeps its model visible (death animation plays) but the health bar is
-    /// removed on death and brought back on revive.
-    /// </summary>
-    public override bool DespawnBarOnDeath => true;
 
     protected override void Awake()
     {
@@ -95,9 +90,7 @@ public class TowerHealth : Damageable
         SetIsDeadParam(true);
         SpawnDeathExplosion();
         StartDestroyedParticles();
-        // Health bar is removed automatically by HealthBarManager because
-        // DespawnBarOnDeath returns true. The visual model stays so the
-        // death animation can play in place.
+        // The visual model stays so the death animation can play in place.
     }
 
     private void OnWaveCompleted(int waveIndex, int reward)
@@ -121,9 +114,6 @@ public class TowerHealth : Damageable
         if (hideDestroyedParticlesOnRevive)
             SetDestroyedParticles(false);
         StopDestroyedParticlesRoutine();
-        // Re-create the health bar that was removed on death.
-        if (HealthBarManager.Instance != null)
-            HealthBarManager.Instance.Register(this);
         onRespawned?.Invoke();
     }
 
@@ -257,11 +247,11 @@ public class TowerHealth : Damageable
             // Cache every MonoBehaviour on the same GameObject except this TowerHealth.
             var all = GetComponents<MonoBehaviour>();
             int count = 0;
-            for (int i = 0; i < all.Length; i++) if (all[i] != this) count++;
+            for (int i = 0; i < all.Length; i++) if (all[i] != this && !(all[i] is HealthBarBinding)) count++;
             autoCombat = new MonoBehaviour[count];
             int j = 0;
             for (int i = 0; i < all.Length; i++)
-                if (all[i] != this) autoCombat[j++] = all[i];
+                if (all[i] != this && !(all[i] is HealthBarBinding)) autoCombat[j++] = all[i];
         }
         return autoCombat;
     }

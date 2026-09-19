@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 428864309310682266}
   - component: {fileID: 6702763205681912560}
   - component: {fileID: 7671267319009896938}
+  - component: {fileID: 2101274974682063437}
   m_Layer: 12
   m_Name: Ally Soldier
   m_TagString: Untagged
@@ -72,8 +73,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  healthBarPrefab: {fileID: 9125502953916134260, guid: 65b7ab6e1bce270469dc15f7f459e841, type: 3}
-  healthBarAnchor: {fileID: 1382569708230873742}
   onHealthChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -198,6 +197,22 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &2101274974682063437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 281495221090297757}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7fd46b87b4097a469b826c40f11545e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 6702763205681912560}
+  prefab: {fileID: 9125502953916134260, guid: 65b7ab6e1bce270469dc15f7f459e841, type: 3}
+  anchor: {fileID: 1382569708230873742}
+  hideOnDeath: 1
 --- !u!1 &9171877603907572674
 GameObject:
   m_ObjectHideFlags: 0

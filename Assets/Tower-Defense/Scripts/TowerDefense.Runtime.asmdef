@@ -1,0 +1,10 @@
+{
+    "name": "TowerDefense.Runtime",
+    "references": [
+        "Unity.InputSystem",
+        "Unity.TextMeshPro",
+        "Unity.ugui",
+        "DOTween.Modules",
+        "Joystick.Runtime"
+    ]
+}

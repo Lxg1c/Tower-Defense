@@ -59,9 +59,6 @@ public class PlayerHealth : Damageable
     // Enemy AI should not pick the ghost as a target.
     public override bool IsTargetable => base.IsTargetable && !IsGhost;
 
-    // Player respawns — keep the health bar so it acts as a respawn timer.
-    public override bool DespawnBarOnDeath => false;
-
     protected override void Awake()
     {
         base.Awake();

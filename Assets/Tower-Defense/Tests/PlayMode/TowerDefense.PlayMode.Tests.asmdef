@@ -1,0 +1,6 @@
+{
+    "name": "TowerDefense.PlayMode.Tests",
+    "references": ["TowerDefense.Runtime", "Unity.ugui"],
+    "optionalUnityReferences": ["TestAssemblies"],
+    "autoReferenced": false
+}

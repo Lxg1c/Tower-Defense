@@ -48,6 +48,7 @@ GameObject:
   - component: {fileID: 1373628855760275358}
   - component: {fileID: -5673866584553305597}
   - component: {fileID: 1927350357018261777}
+  - component: {fileID: 8555510445442910239}
   m_Layer: 8
   m_Name: CannonTower
   m_TagString: Untagged
@@ -88,8 +89,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  healthBarPrefab: {fileID: 9125502953916134260, guid: 0b0c34c4881df3f43951b351a1f3d7c9, type: 3}
-  healthBarAnchor: {fileID: 4558638939275949576}
   onHealthChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -144,7 +143,6 @@ MonoBehaviour:
   obstacleMask:
     serializedVersion: 2
     m_Bits: 64
-  legacyFirePoint: {fileID: 1733305390384160997}
   projectilePrefab: {fileID: 2491343143989108405, guid: d2fd2cf53f87d3749987c517c35bfdc7, type: 3}
   onFired:
     m_PersistentCalls:
@@ -255,6 +253,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shootTrigger: Shoot
   fireRateMultiplierParam: ShootSpeedMultiplier
+--- !u!114 &8555510445442910239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6094794923633026110}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7fd46b87b4097a469b826c40f11545e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 2620234207921569856}
+  prefab: {fileID: 9125502953916134260, guid: 0b0c34c4881df3f43951b351a1f3d7c9, type: 3}
+  anchor: {fileID: 4558638939275949576}
+  hideOnDeath: 1
 --- !u!1 &6315325936176075858
 GameObject:
   m_ObjectHideFlags: 0
@@ -568,6 +582,9 @@ MonoBehaviour:
   - {x: 0.5, y: 0.5, z: 0.5}
   - {x: 0.75, y: 0.75, z: 0.75}
   - {x: 1, y: 1, z: 1}
+  shadowTransform: {fileID: 0}
+  shadowScaleSteps: []
+  keepShadowWorldPosition: 1
 --- !u!4 &4267159938607744146 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7473211377255463651, guid: ac5ad97835cca5a4caa6f62b394558a3, type: 3}

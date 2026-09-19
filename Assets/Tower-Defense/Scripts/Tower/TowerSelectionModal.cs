@@ -44,6 +44,11 @@ public class TowerSelectionModal : MonoBehaviour
 
     public void Open(IReadOnlyList<TowerOption> options, Action<TowerOption> onPick)
     {
+        if (PlayerWallet.Instance == null)
+        {
+            Debug.LogError("[TowerSelectionModal] A PlayerWallet is required to show build options.", this);
+            return;
+        }
         if (modalRoot == null || content == null || cardPrefab == null)
         {
             Debug.LogError("[TowerSelectionModal] Missing modalRoot / content / cardPrefab.", this);
@@ -53,7 +58,7 @@ public class TowerSelectionModal : MonoBehaviour
         this.onPick = onPick;
         ClearEntries();
 
-        int coins = PlayerWallet.Instance != null ? PlayerWallet.Instance.Coins : int.MaxValue;
+        int coins = PlayerWallet.Instance.Coins;
 
         foreach (var opt in options)
         {

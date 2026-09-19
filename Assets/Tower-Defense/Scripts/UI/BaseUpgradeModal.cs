@@ -52,6 +52,11 @@ public class BaseUpgradeModal : MonoBehaviour
 
     public void Open(BaseUpgrade baseUpgrade = null, Action<BaseUpgrade> onUpgraded = null)
     {
+        if (PlayerWallet.Instance == null)
+        {
+            Debug.LogError("[BaseUpgradeModal] A PlayerWallet is required to show upgrades.", this);
+            return;
+        }
         target = baseUpgrade != null ? baseUpgrade : BaseUpgrade.Instance;
         if (target == null || modalRoot == null)
             return;
@@ -79,20 +84,20 @@ public class BaseUpgradeModal : MonoBehaviour
             return;
 
         if (currentStats != null)
-            currentStats.text = target.BuildCurrentStatsText();
+            currentStats.text = UpgradeStatsFormatter.Current(target);
 
         BaseUpgradeLevel next = target.NextLevelData;
         if (next != null)
         {
             if (nextStats != null)
-                nextStats.text = target.BuildNextStatsText();
+                nextStats.text = UpgradeStatsFormatter.Next(target);
 
             if (costLabel != null)
                 costLabel.text = string.Format(costFormat, next.upgradeCost);
 
-            int coins = PlayerWallet.Instance != null ? PlayerWallet.Instance.Coins : int.MaxValue;
             if (upgradeButton != null)
-                upgradeButton.interactable = coins >= next.upgradeCost;
+                upgradeButton.interactable = PlayerWallet.Instance != null
+                    && PlayerWallet.Instance.Coins >= next.upgradeCost;
         }
         else
         {

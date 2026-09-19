@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 6833581619428060063}
   - component: {fileID: 8728594604824303527}
   - component: {fileID: 6676510510867403037}
+  - component: {fileID: 1063047161222713188}
   m_Layer: 7
   m_Name: EnemySpider
   m_TagString: Untagged
@@ -75,8 +76,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 75
-  healthBarPrefab: {fileID: 9125502953916134260, guid: 59a700be103929a429096864c84d1441, type: 3}
-  healthBarAnchor: {fileID: 0}
   onHealthChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -133,9 +132,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   awarenessRadius: 30
   refreshInterval: 0.5
-  targetSelectorRef: {fileID: 0}
-  combatBehaviorRef: {fileID: 0}
-  navigationModifierRef: {fileID: 0}
+  targetSelectorRef: {fileID: 8728594604824303527}
+  combatBehaviorRef: {fileID: 3757345882780779894}
+  navigationModifierRef: {fileID: 6808108943145072710}
 --- !u!114 &8728594604824303527
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -174,6 +173,22 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.2267966
   m_Center: {x: 0, y: 0, z: 0.25}
+--- !u!114 &1063047161222713188
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2701848317097672493}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7fd46b87b4097a469b826c40f11545e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1833244000324061286}
+  prefab: {fileID: 9125502953916134260, guid: 59a700be103929a429096864c84d1441, type: 3}
+  anchor: {fileID: 0}
+  hideOnDeath: 1
 --- !u!1001 &4295578404005779300
 PrefabInstance:
   m_ObjectHideFlags: 0

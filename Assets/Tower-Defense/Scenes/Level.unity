@@ -1662,6 +1662,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc480e46d74e77b40a5542aceda76f4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  wallet: {fileID: 2004643461}
   spawnPoints:
   - {fileID: 608968287}
   - {fileID: 1105561194}
@@ -1741,6 +1742,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   onAllWavesCompleted:
+    m_PersistentCalls:
+      m_Calls: []
+  onDefeated:
     m_PersistentCalls:
       m_Calls: []
 --- !u!1 &382309149
@@ -2593,6 +2597,7 @@ MonoBehaviour:
   defaultHealthBarPrefab: {fileID: 9125502953916134260, guid: 0b0c34c4881df3f43951b351a1f3d7c9, type: 3}
   barOffset: {x: 0, y: 2, z: 0}
   hideWhenFull: 1
+  worldCamera: {fileID: 330585545}
 --- !u!1 &721952513
 GameObject:
   m_ObjectHideFlags: 0
@@ -6051,6 +6056,7 @@ MonoBehaviour:
   restartButton: {fileID: 1498722397}
   mainMenuButton: {fileID: 1659607613}
   mainMenuSceneName: MainMenu
+  spawner: {fileID: 376337481}
   pauseGameOnShow: 1
 --- !u!114 &1447943129
 MonoBehaviour:
@@ -6068,6 +6074,7 @@ MonoBehaviour:
   restartButton: {fileID: 1912812690}
   mainMenuButton: {fileID: 1827196459}
   mainMenuSceneName: MainMenu
+  spawner: {fileID: 376337481}
 --- !u!114 &1447943130
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8696,6 +8703,7 @@ GameObject:
   - component: {fileID: 2004643458}
   - component: {fileID: 2004643457}
   - component: {fileID: 2004643469}
+  - component: {fileID: 2004643470}
   m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
@@ -9026,7 +9034,6 @@ MonoBehaviour:
   obstacleMask:
     serializedVersion: 2
     m_Bits: 64
-  legacyFirePoint: {fileID: 0}
   projectilePrefab: {fileID: 2491343143989108405, guid: d2fd2cf53f87d3749987c517c35bfdc7, type: 3}
   onFired:
     m_PersistentCalls:
@@ -9073,8 +9080,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 200
-  healthBarPrefab: {fileID: 9125502953916134260, guid: 65b7ab6e1bce270469dc15f7f459e841, type: 3}
-  healthBarAnchor: {fileID: 1132963157}
   onHealthChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -9286,6 +9291,22 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &2004643470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2004643455}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7fd46b87b4097a469b826c40f11545e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 2004643465}
+  prefab: {fileID: 9125502953916134260, guid: 65b7ab6e1bce270469dc15f7f459e841, type: 3}
+  anchor: {fileID: 1132963157}
+  hideOnDeath: 0
 --- !u!1 &2011956423
 GameObject:
   m_ObjectHideFlags: 0

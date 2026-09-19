@@ -47,6 +47,7 @@ GameObject:
   - component: {fileID: 8038591862564398305}
   - component: {fileID: 1414560376758818262}
   - component: {fileID: 7326225349076123776}
+  - component: {fileID: 2454981537838555509}
   m_Layer: 7
   m_Name: Bat
   m_TagString: Flying
@@ -133,8 +134,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  healthBarPrefab: {fileID: 9125502953916134260, guid: 59a700be103929a429096864c84d1441, type: 3}
-  healthBarAnchor: {fileID: 7050744546745135871}
   onHealthChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -161,9 +160,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   awarenessRadius: 30
   refreshInterval: 0.5
-  targetSelectorRef: {fileID: 0}
-  combatBehaviorRef: {fileID: 0}
-  navigationModifierRef: {fileID: 0}
+  targetSelectorRef: {fileID: 7326225349076123776}
+  combatBehaviorRef: {fileID: 1414560376758818262}
+  navigationModifierRef: {fileID: 8038591862564398305}
 --- !u!114 &8038591862564398305
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -224,6 +223,22 @@ MonoBehaviour:
     m_Bits: 1536
   maxCandidates: 32
   logSelections: 0
+--- !u!114 &2454981537838555509
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4932791436634078493}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7fd46b87b4097a469b826c40f11545e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 931941338788285160}
+  prefab: {fileID: 9125502953916134260, guid: 59a700be103929a429096864c84d1441, type: 3}
+  anchor: {fileID: 7050744546745135871}
+  hideOnDeath: 1
 --- !u!1 &8242256678433994188
 GameObject:
   m_ObjectHideFlags: 0

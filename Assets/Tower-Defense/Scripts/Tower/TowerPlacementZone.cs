@@ -6,6 +6,8 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Tower placement zone.
+/// Owns proximity, progress and modal presentation. BuildingSlot owns the
+/// building, purchase validation and the one-action-per-build-phase rule.
 ///   - Player walks in → progress bar fills over enterDelay.
 ///   - Fills → opens the scene-wide TowerSelectionModal with this zone's options.
 ///   - Player leaves zone → modal closes, progress resets.
@@ -48,11 +50,11 @@ public class TowerPlacementZone : MonoBehaviour
     [SerializeField] private Sprite mineIcon;
     [SerializeField] private Sprite barracksIcon;
 
-    public bool IsBuilt { get; private set; }
-    public TowerUpgrade BuiltTower { get; private set; }
-    public BaseUpgrade BuiltBase { get; private set; }
+    public bool IsBuilt => Slot.IsBuilt;
+    public TowerUpgrade BuiltTower => Slot.BuiltTower;
+    public BaseUpgrade BuiltBase => Slot.BuiltBase;
     /// <summary>True after the player has used this zone (built or upgraded) in the current build phase.</summary>
-    public bool UsedThisPhase { get; private set; }
+    public bool UsedThisPhase => Slot.UsedThisPhase;
 
     public UnityEvent onTowerBuilt;
 
@@ -62,7 +64,9 @@ public class TowerPlacementZone : MonoBehaviour
     private float enterTimer;
     private bool modalOpenedByMe;
     private Color currentColor;
-    private readonly List<TowerOption> filteredOptions = new();
+    private BuildingSlot slot;
+    private BuildingSlot Slot => slot ??= new BuildingSlot(loadout, allowedType, requiredTownHallLevel);
+    private bool IsBuildPhase => WaveSpawner.Instance == null || WaveSpawner.Instance.IsBuildPhase;
 
     private void Start()
     {
@@ -95,6 +99,13 @@ public class TowerPlacementZone : MonoBehaviour
         }
     }
 
+    private void OnDisable()
+    {
+        CloseModal();
+        CancelProgress();
+        wasPlayerInZone = false;
+    }
+
     private void OnValidate()
     {
         UpdateZoneIcon();
@@ -102,12 +113,12 @@ public class TowerPlacementZone : MonoBehaviour
 
     private void OnBuildPhase(int nextIdx, int total, int reward)
     {
-        UsedThisPhase = false;
-        SetVisualActive(IsUnlocked() && CanUseBuiltObject());
+        Slot.BeginBuildPhase();
+        SyncWithPhase();
     }
     private void OnCombatPhase(int idx, int total, int reward)
     {
-        CancelProgress();
+        CloseModal();
         SetVisualActive(false);
     }
 
@@ -118,13 +129,12 @@ public class TowerPlacementZone : MonoBehaviour
 
     private void SyncWithPhase()
     {
-        bool buildPhase = WaveSpawner.Instance == null || WaveSpawner.Instance.IsBuildPhase;
-        SetVisualActive(buildPhase && IsUnlocked() && CanUseBuiltObject());
+        SetVisualActive(Slot.CanInteract(IsBuildPhase, GetTownHallLevel()));
     }
 
     public bool IsUnlocked()
     {
-        return GetTownHallLevel() >= requiredTownHallLevel;
+        return Slot.IsUnlocked(GetTownHallLevel());
     }
 
     private void SetVisualActive(bool on)
@@ -135,11 +145,7 @@ public class TowerPlacementZone : MonoBehaviour
 
     private void Update()
     {
-        // Hidden during combat OR while still locked — skip all interaction.
-        if (WaveSpawner.Instance != null && !WaveSpawner.Instance.IsBuildPhase) return;
-        if (!IsUnlocked()) return;
-        // One action per build phase — once used, zone goes idle and visual is hidden.
-        if (UsedThisPhase) return;
+        if (!Slot.CanInteract(IsBuildPhase, GetTownHallLevel())) return;
 
         DetectPlayer();
 
@@ -209,7 +215,7 @@ public class TowerPlacementZone : MonoBehaviour
             return;
         }
 
-        IReadOnlyList<TowerOption> options = GetFilteredOptions();
+        IReadOnlyList<TowerOption> options = Slot.GetOptions();
         if (options.Count == 0)
         {
             Debug.LogWarning($"[TowerPlacementZone] No build options for slot type {allowedType}.", this);
@@ -235,8 +241,6 @@ public class TowerPlacementZone : MonoBehaviour
 
     private void OpenBuiltObjectModal()
     {
-        ResolveBuiltObjectReferences();
-
         if (BuiltBase != null) OpenBaseUpgradeModal();
         else                   OpenUpgradeModal();
     }
@@ -256,13 +260,11 @@ public class TowerPlacementZone : MonoBehaviour
             return;
         }
         modalOpenedByMe = true;
-        TowerUpgradeModal.Instance.Open(BuiltTower, OnTowerUpgraded);
+        TowerUpgradeModal.Instance.Open(BuiltTower, OnTowerUpgraded, TryUpgradeBuilding);
     }
 
     private void OpenBaseUpgradeModal()
     {
-        ResolveBuiltObjectReferences();
-
         if (BuiltBase == null)
         {
             Debug.LogWarning("[TowerPlacementZone] Town hall zone has no BaseUpgrade to open. Add BaseUpgrade to the town hall prefab.", this);
@@ -278,7 +280,12 @@ public class TowerPlacementZone : MonoBehaviour
         }
 
         modalOpenedByMe = true;
-        TowerUpgradeModal.Instance.Open(BuiltBase, OnBaseUpgraded);
+        TowerUpgradeModal.Instance.Open(BuiltBase, OnBaseUpgraded, TryUpgradeBuilding);
+    }
+
+    private bool TryUpgradeBuilding()
+    {
+        return isActiveAndEnabled && Slot.TryUpgrade(IsBuildPhase, GetTownHallLevel());
     }
 
     private void OnBaseUpgraded(BaseUpgrade baseUpgrade)
@@ -286,7 +293,7 @@ public class TowerPlacementZone : MonoBehaviour
         modalOpenedByMe = false;
         if (TowerUpgradeModal.Instance != null && TowerUpgradeModal.Instance.IsOpen)
             TowerUpgradeModal.Instance.Close();
-        MarkUsedAndHide();
+        SyncWithPhase();
     }
 
     private void OnTowerUpgraded(TowerUpgrade tower)
@@ -295,7 +302,7 @@ public class TowerPlacementZone : MonoBehaviour
         modalOpenedByMe = false;
         if (TowerUpgradeModal.Instance != null && TowerUpgradeModal.Instance.IsOpen)
             TowerUpgradeModal.Instance.Close();
-        MarkUsedAndHide();
+        SyncWithPhase();
     }
 
     private void CancelProgress()
@@ -309,35 +316,19 @@ public class TowerPlacementZone : MonoBehaviour
     {
         modalOpenedByMe = false;
 
-        if (opt == null || opt.prefab == null) return;
-        if (opt.slotType != allowedType)
-        {
-            Debug.LogWarning($"[TowerPlacementZone] Rejected {opt.displayName}: option type {opt.slotType} does not match zone type {allowedType}.", this);
-            return;
-        }
-
-        if (wallet == null || !wallet.TrySpend(opt.cost))
-            return;
-
         Vector3 pos = spawnPoint != null ? spawnPoint.position : transform.position;
         Quaternion rot = spawnPoint != null ? spawnPoint.rotation : transform.rotation;
 
-        var go = Instantiate(opt.prefab, pos, rot);
-        PlayBuildingSpawnAnimation(go, pos);
+        if (!isActiveAndEnabled || !Slot.TryBuild(opt, wallet, IsBuildPhase,
+                GetTownHallLevel(), pos, rot, out GameObject building))
+            return;
 
-        BuiltTower = go.GetComponent<TowerUpgrade>();
-        BuiltBase = go.GetComponent<BaseUpgrade>();
-        if (BuiltTower == null)
-            BuiltTower = go.GetComponentInChildren<TowerUpgrade>();
-        if (BuiltBase == null)
-            BuiltBase = go.GetComponentInChildren<BaseUpgrade>();
-
-        IsBuilt = true;
-        MarkUsedAndHide();
+        PlayBuildingSpawnAnimation(building);
+        SyncWithPhase();
         onTowerBuilt?.Invoke();
     }
 
-    private void PlayBuildingSpawnAnimation(GameObject builtObject, Vector3 finalPosition)
+    private void PlayBuildingSpawnAnimation(GameObject builtObject)
     {
         if (builtObject == null)
             return;
@@ -347,57 +338,6 @@ public class TowerPlacementZone : MonoBehaviour
             animation = builtObject.AddComponent<BuildingSpawnAnimation>();
 
         animation.Play(animation.transform.position);
-    }
-
-    private void MarkUsedAndHide()
-    {
-        UsedThisPhase = true;
-        CancelProgress();
-        SetVisualActive(false);
-    }
-
-    private bool CanUseBuiltObject()
-    {
-        ResolveBuiltObjectReferences();
-
-        if (!IsBuilt)
-            return true;
-
-        if (BuiltBase != null)
-            return BuiltBase.HasNextLevel;
-
-        if (BuiltTower != null)
-            return BuiltTower.CanUpgrade;
-
-        return false;
-    }
-
-    private void ResolveBuiltObjectReferences()
-    {
-        if (!IsBuilt)
-            return;
-
-        if (BuiltBase == null && allowedType == BuildSlotType.TownHall)
-            BuiltBase = BaseUpgrade.Instance;
-    }
-
-    private IReadOnlyList<TowerOption> GetFilteredOptions()
-    {
-        filteredOptions.Clear();
-
-        if (loadout == null || loadout.options == null)
-            return filteredOptions;
-
-        foreach (TowerOption option in loadout.options)
-        {
-            if (option == null || option.prefab == null)
-                continue;
-
-            if (option.slotType == allowedType)
-                filteredOptions.Add(option);
-        }
-
-        return filteredOptions;
     }
 
     private static int GetTownHallLevel()

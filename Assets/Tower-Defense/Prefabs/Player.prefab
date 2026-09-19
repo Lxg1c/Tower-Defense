@@ -80,6 +80,7 @@ GameObject:
   - component: {fileID: 748110371140670029}
   - component: {fileID: 4451486607748158569}
   - component: {fileID: 2110692544236287025}
+  - component: {fileID: 6327217339226770337}
   m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
@@ -164,18 +165,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  healthBarPrefab: {fileID: 9125502953916134260, guid: 65b7ab6e1bce270469dc15f7f459e841, type: 3}
-  healthBarAnchor: {fileID: 0}
   onHealthChanged:
     m_PersistentCalls:
       m_Calls: []
   onDied:
     m_PersistentCalls:
       m_Calls: []
+  respawnCooldown: 2
   respawnTime: 5
   ignoreLayersWhileGhost:
   - Enemy
   isDeadParam: IsDead
+  deathTriggerParam: Death
+  reviveTriggerParam: Revive
+  deathExplosionPrefab: {fileID: 0}
+  deathExplosionScale: {x: 1, y: 1, z: 1}
+  deathExplosionLifetime: 2
   regenDelay: 4
   regenPerSecond: 10
   onGhostEntered:
@@ -222,7 +227,6 @@ MonoBehaviour:
   obstacleMask:
     serializedVersion: 2
     m_Bits: 64
-  legacyFirePoint: {fileID: 0}
   projectilePrefab: {fileID: 2491343143989108405, guid: d2fd2cf53f87d3749987c517c35bfdc7, type: 3}
   onFired:
     m_PersistentCalls:
@@ -326,6 +330,26 @@ MonoBehaviour:
   maxDamage: 150
   maxCooldown: 5
   minCooldown: 0.5
+  chargeAudioSource: {fileID: 0}
+  fireAudioSource: {fileID: 0}
+  loopChargeAudio: 1
+  minChargeForFireAudio: 0.05
+--- !u!114 &6327217339226770337
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8238938828016473868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7fd46b87b4097a469b826c40f11545e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1352034482218691407}
+  prefab: {fileID: 9125502953916134260, guid: 65b7ab6e1bce270469dc15f7f459e841, type: 3}
+  anchor: {fileID: 0}
+  hideOnDeath: 0
 --- !u!1 &8246063992435225512
 GameObject:
   m_ObjectHideFlags: 0

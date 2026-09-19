@@ -38,8 +38,10 @@ public class TowerUpgrade : MonoBehaviour
     public int CurrentLevel => currentLevel;
     public bool HasNextLevel => levels != null && currentLevel < levels.Length;
     public int NextUpgradeLevel => currentLevel + 1;
+    public int MaxUnlockedLevel => BaseUpgrade.Instance != null
+        ? BaseUpgrade.Instance.MaxBuildUpgradeLevel : 0;
     public bool IsNextLevelUnlocked => BaseUpgrade.Instance != null
-        && NextUpgradeLevel <= BaseUpgrade.Instance.MaxBuildUpgradeLevel;
+        && NextUpgradeLevel <= MaxUnlockedLevel;
     public bool CanUpgrade => HasNextLevel && IsNextLevelUnlocked;
 
     public TowerUpgradeLevel CurrentLevelData =>
@@ -122,81 +124,41 @@ public class TowerUpgrade : MonoBehaviour
         return true;
     }
 
-    public string BuildCurrentStatsText()
+    public BuildingStats GetCurrentStats()
     {
-        var sb = new System.Text.StringBuilder();
-
-        if (shooter != null)
-        {
-            sb.AppendLine($"Damage: {shooter.Damage:0.##}");
-            sb.AppendLine($"Fire Rate: {shooter.FireRate:0.##}/s");
-        }
-
-        if (pulse != null)
-        {
-            sb.AppendLine($"Damage: {pulse.Damage:0.##}");
-            sb.AppendLine($"Range: {pulse.Range:0.##}");
-            sb.AppendLine($"Interval: {pulse.AttackInterval:0.##}s");
-        }
-
-        if (detection != null && shooter != null)
-            sb.AppendLine($"Range: {detection.Radius:0.##}");
-
-        if (hp != null)
-            sb.AppendLine($"HP: {hp.MaxHealth:0.##}");
-
-        if (mineIncome != null)
-            sb.AppendLine($"Income: {mineIncome.CoinsPerWave}");
-
-        return sb.ToString().TrimEnd();
+        return new BuildingStats(
+            shooterDamage: shooter != null ? shooter.Damage : (float?)null,
+            shooterFireRate: shooter != null ? shooter.FireRate : (float?)null,
+            shooterRange: detection != null && shooter != null ? detection.Radius : (float?)null,
+            pulseDamage: pulse != null ? pulse.Damage : (float?)null,
+            pulseRange: pulse != null ? pulse.Range : (float?)null,
+            pulseInterval: pulse != null ? pulse.AttackInterval : (float?)null,
+            maxHealth: hp != null ? hp.MaxHealth : (float?)null,
+            income: mineIncome != null ? mineIncome.CoinsPerWave : (int?)null);
     }
 
-    public string BuildNextStatsText()
+    public BuildingStats? GetNextStats()
     {
         TowerUpgradeLevel next = NextLevelData;
-        if (next == null)
-            return "";
-
-        var sb = new System.Text.StringBuilder();
-
-        float dMul = SafeMul(next.damageMul);
-        float rMul = SafeMul(next.rangeMul);
-        float fMul = SafeMul(next.fireRateMul);
-        float hMul = SafeMul(next.hpMul);
-        float iMul = SafeMul(next.incomeMul);
-
-        if (shooter != null)
-        {
-            sb.AppendLine($"Damage: {baseShooterDamage * dMul:0.##}");
-            sb.AppendLine($"Fire Rate: {baseShooterFireRate * fMul:0.##}/s");
-        }
-
-        if (pulse != null)
-        {
-            sb.AppendLine($"Damage: {basePulseDamage * dMul:0.##}");
-            sb.AppendLine($"Range: {basePulseRange * rMul:0.##}");
-            sb.AppendLine($"Interval: {basePulseAttackInterval / Mathf.Max(0.0001f, fMul):0.##}s");
-        }
-
-        if (detection != null && shooter != null)
-            sb.AppendLine($"Range: {baseDetectionRadius * rMul:0.##}");
-
-        if (hp != null)
-            sb.AppendLine($"HP: {baseMaxHealth * hMul:0.##}");
-
-        if (mineIncome != null)
-            sb.AppendLine($"Income: {Mathf.RoundToInt(baseMineIncome * iMul)}");
-
-        return sb.ToString().TrimEnd();
+        return next != null ? CalculateStats(next) : (BuildingStats?)null;
     }
 
-    public string BuildLockedText()
+    private BuildingStats CalculateStats(TowerUpgradeLevel level)
     {
-        if (!HasNextLevel)
-            return "";
-
-        int baseLimit = BaseUpgrade.Instance != null ? BaseUpgrade.Instance.MaxBuildUpgradeLevel : 0;
-        return $"Requires Base upgrade limit {NextUpgradeLevel}. Current limit: {baseLimit}.";
+        float dMul = SafeMul(level.damageMul);
+        float rMul = SafeMul(level.rangeMul);
+        float fMul = SafeMul(level.fireRateMul);
+        float hMul = SafeMul(level.hpMul);
+        float iMul = SafeMul(level.incomeMul);
+        return new BuildingStats(
+            shooterDamage: shooter != null ? baseShooterDamage * dMul : (float?)null,
+            shooterFireRate: shooter != null ? baseShooterFireRate * fMul : (float?)null,
+            shooterRange: detection != null && shooter != null ? baseDetectionRadius * rMul : (float?)null,
+            pulseDamage: pulse != null ? basePulseDamage * dMul : (float?)null,
+            pulseRange: pulse != null ? basePulseRange * rMul : (float?)null,
+            pulseInterval: pulse != null ? basePulseAttackInterval / Mathf.Max(0.0001f, fMul) : (float?)null,
+            maxHealth: hp != null ? baseMaxHealth * hMul : (float?)null,
+            income: mineIncome != null ? Mathf.RoundToInt(baseMineIncome * iMul) : (int?)null);
     }
 
     private void ApplyCurrentLevel(bool topUpHp)
@@ -205,33 +167,29 @@ public class TowerUpgrade : MonoBehaviour
         if (level == null)
             return;
 
-        float dMul = SafeMul(level.damageMul);
-        float rMul = SafeMul(level.rangeMul);
-        float fMul = SafeMul(level.fireRateMul);
-        float hMul = SafeMul(level.hpMul);
-        float iMul = SafeMul(level.incomeMul);
+        BuildingStats stats = CalculateStats(level);
 
         if (shooter != null)
         {
-            shooter.Damage = baseShooterDamage * dMul;
-            shooter.FireRate = baseShooterFireRate * fMul;
+            shooter.Damage = stats.ShooterDamage.Value;
+            shooter.FireRate = stats.ShooterFireRate.Value;
         }
 
         if (detection != null)
-            detection.Radius = baseDetectionRadius * rMul;
+            detection.Radius = baseDetectionRadius * SafeMul(level.rangeMul);
 
         if (pulse != null)
         {
-            pulse.Damage = basePulseDamage * dMul;
-            pulse.Range = basePulseRange * rMul;
-            pulse.AttackInterval = basePulseAttackInterval / Mathf.Max(0.0001f, fMul);
+            pulse.Damage = stats.PulseDamage.Value;
+            pulse.Range = stats.PulseRange.Value;
+            pulse.AttackInterval = stats.PulseInterval.Value;
         }
 
         if (hp != null)
-            hp.SetMaxHealth(baseMaxHealth * hMul, topUpToFull: topUpHp);
+            hp.SetMaxHealth(stats.MaxHealth.Value, topUpToFull: topUpHp);
 
         if (mineIncome != null)
-            mineIncome.CoinsPerWave = Mathf.RoundToInt(baseMineIncome * iMul);
+            mineIncome.CoinsPerWave = stats.Income.Value;
     }
 
     private float SafeMul(float value)

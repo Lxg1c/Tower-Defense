@@ -555,6 +555,7 @@ GameObject:
   - component: {fileID: 6218495979346494038}
   - component: {fileID: 5083168300223825316}
   - component: {fileID: 1651032895966786322}
+  - component: {fileID: 7272675184392489686}
   m_Layer: 7
   m_Name: EnemyDestoyer
   m_TagString: Untagged
@@ -656,8 +657,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 300
-  healthBarPrefab: {fileID: 9125502953916134260, guid: 59a700be103929a429096864c84d1441, type: 3}
-  healthBarAnchor: {fileID: 8530073311528646060}
   onHealthChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -684,9 +683,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   awarenessRadius: 30
   refreshInterval: 0.5
-  targetSelectorRef: {fileID: 0}
-  combatBehaviorRef: {fileID: 0}
-  navigationModifierRef: {fileID: 0}
+  targetSelectorRef: {fileID: 1651032895966786322}
+  combatBehaviorRef: {fileID: 4693654978574926318}
+  navigationModifierRef: {fileID: 5083168300223825316}
 --- !u!114 &5083168300223825316
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -717,6 +716,22 @@ MonoBehaviour:
     m_Bits: 768
   maxCandidates: 32
   logSelections: 0
+--- !u!114 &7272675184392489686
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5469245615240328859}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7fd46b87b4097a469b826c40f11545e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 4094364369057517814}
+  prefab: {fileID: 9125502953916134260, guid: 59a700be103929a429096864c84d1441, type: 3}
+  anchor: {fileID: 8530073311528646060}
+  hideOnDeath: 1
 --- !u!1 &7504932465545332107
 GameObject:
   m_ObjectHideFlags: 0

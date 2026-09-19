@@ -1,0 +1,5 @@
+{
+    "name": "Joystick.Editor",
+    "references": ["Joystick.Runtime", "Unity.ugui"],
+    "includePlatforms": ["Editor"]
+}

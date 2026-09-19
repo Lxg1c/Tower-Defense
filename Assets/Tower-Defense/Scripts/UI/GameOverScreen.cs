@@ -1,49 +1,29 @@
 using UnityEngine;
 
-/// <summary>
-/// Shown when the Base dies. Freezes time and displays restart / menu actions.
-/// </summary>
 [DisallowMultipleComponent]
 public class GameOverScreen : MenuScreenBase
 {
-    private Base subscribedBase;
+    [SerializeField] private WaveSpawner spawner;
 
     private void OnEnable()
     {
-        Base.OnBaseChanged += BindBase;
-        BindBase();
+        if (spawner == null)
+        {
+            Debug.LogError("[GameOverScreen] Assign the session spawner.", this);
+            return;
+        }
+        spawner.onDefeated.AddListener(Show);
+        if (spawner.CurrentPhase == WaveSpawner.Phase.Defeated) Show();
     }
 
     private void OnDisable()
     {
-        Base.OnBaseChanged -= BindBase;
-        UnbindBase();
+        if (spawner != null) spawner.onDefeated.RemoveListener(Show);
     }
 
     public override void Show()
     {
         base.Show();
         Time.timeScale = 0f;
-    }
-
-    private void BindBase()
-    {
-        Base current = Base.Instance;
-        if (subscribedBase == current)
-            return;
-
-        UnbindBase();
-
-        subscribedBase = current;
-        if (subscribedBase != null)
-            subscribedBase.onDied.AddListener(Show);
-    }
-
-    private void UnbindBase()
-    {
-        if (subscribedBase != null)
-            subscribedBase.onDied.RemoveListener(Show);
-
-        subscribedBase = null;
     }
 }

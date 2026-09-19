@@ -1,0 +1,4 @@
+{
+    "name": "Joystick.Runtime",
+    "references": ["Unity.ugui"]
+}

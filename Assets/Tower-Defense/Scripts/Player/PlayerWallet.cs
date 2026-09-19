@@ -10,7 +10,7 @@ public class PlayerWallet : MonoBehaviour
 
     public int Coins { get; private set; }
 
-    public UnityEvent<int> onCoinsChanged;
+    public UnityEvent<int> onCoinsChanged = new();
 
     private void Awake()
     {
@@ -32,6 +32,8 @@ public class PlayerWallet : MonoBehaviour
 
     public bool TrySpend(int amount)
     {
+        if (amount < 0)
+            throw new System.ArgumentOutOfRangeException(nameof(amount), "Spending cannot add coins.");
         if (amount > Coins)
             return false;
 
@@ -42,6 +44,8 @@ public class PlayerWallet : MonoBehaviour
 
     public void AddCoins(int amount)
     {
+        if (amount < 0)
+            throw new System.ArgumentOutOfRangeException(nameof(amount), "Rewards must be non-negative.");
         Coins += amount;
         onCoinsChanged?.Invoke(Coins);
     }

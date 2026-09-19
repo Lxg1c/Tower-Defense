@@ -1,7 +1,6 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(DetectionZone))]
@@ -15,15 +14,11 @@ public class Shooter : MonoBehaviour
     [SerializeField] private float delayBetweenFirePoints = 0.08f;
     [SerializeField] private LayerMask obstacleMask;
 
-    [HideInInspector]
-    [FormerlySerializedAs("firePoint")]
-    [SerializeField] private Transform legacyFirePoint;
-
     [Header("Projectile")]
     [SerializeField] private GameObject projectilePrefab;
 
     [Header("Events")]
-    public UnityEvent onFired;
+    public UnityEvent onFired = new();
 
     public bool HasTarget { get; private set; }
     public Vector3 TargetDirection { get; private set; }
@@ -41,6 +36,29 @@ public class Shooter : MonoBehaviour
     private void Awake()
     {
         detectionZone = GetComponent<DetectionZone>();
+        if (!ValidateConfiguration(out string error))
+        {
+            Debug.LogError($"[Shooter] {error}", this);
+            enabled = false;
+        }
+    }
+
+    public bool ValidateConfiguration(out string error)
+    {
+        if (firePoints == null || firePoints.Length == 0)
+            error = "Assign at least one fire point.";
+        else if (System.Array.Exists(firePoints, point => point == null))
+            error = "Every fire point must be assigned.";
+        else if (projectilePrefab == null || projectilePrefab.GetComponent<Projectile>() == null)
+            error = "Assign a projectile prefab with a Projectile component.";
+        else if (fireRate <= 0f || damage < 0f || delayBetweenFirePoints < 0f)
+            error = "Fire rate must be positive; damage and volley delay must be non-negative.";
+        else
+        {
+            error = null;
+            return true;
+        }
+        return false;
     }
 
     private void OnDisable()
@@ -90,15 +108,8 @@ public class Shooter : MonoBehaviour
         if (target == null)
             return;
 
-        if (firePoints != null && firePoints.Length > 0)
-        {
-            for (int i = 0; i < firePoints.Length; i++)
-                AimFirePoint(firePoints[i], target);
-
-            return;
-        }
-
-        AimFirePoint(GetLegacyFirePoint(), target);
+        for (int i = 0; i < firePoints.Length; i++)
+            AimFirePoint(firePoints[i], target);
     }
 
     private void AimFirePoint(Transform point, Damageable target)
@@ -126,8 +137,7 @@ public class Shooter : MonoBehaviour
 
     private bool HasLineOfSight(Damageable target)
     {
-        Transform originPoint = GetPrimaryFirePoint();
-        Vector3 origin = originPoint != null ? originPoint.position : transform.position;
+        Vector3 origin = firePoints[0].position;
         Vector3 dir = target.transform.position - origin;
         float dist = dir.magnitude;
 
@@ -145,25 +155,14 @@ public class Shooter : MonoBehaviour
             yield break;
         }
 
-        bool firedAny = false;
-
-        if (firePoints != null && firePoints.Length > 0)
+        for (int i = 0; i < firePoints.Length; i++)
         {
-            for (int i = 0; i < firePoints.Length; i++)
-            {
-                if (firePoints[i] == null)
-                    continue;
-
-                ShootFrom(firePoints[i], target);
-                firedAny = true;
-
-                if (delayBetweenFirePoints > 0f && i < firePoints.Length - 1)
-                    yield return new WaitForSeconds(delayBetweenFirePoints);
-            }
+            if (target == null || !target.IsTargetable || SuppressFire)
+                break;
+            ShootFrom(firePoints[i], target);
+            if (delayBetweenFirePoints > 0f && i < firePoints.Length - 1)
+                yield return new WaitForSeconds(delayBetweenFirePoints);
         }
-
-        if (!firedAny)
-            ShootFrom(GetLegacyFirePoint(), target);
 
         fireRoutine = null;
     }
@@ -173,41 +172,13 @@ public class Shooter : MonoBehaviour
         if (target == null)
             return;
 
-        Vector3 origin = point != null ? point.position : transform.position;
+        Vector3 origin = point.position;
         Vector3 dir = (target.transform.position - origin).normalized;
 
-        if (projectilePrefab != null)
-        {
-            GameObject go = Instantiate(projectilePrefab, origin, Quaternion.LookRotation(dir));
-            Projectile proj = go.GetComponent<Projectile>();
-            if (proj != null)
-                proj.Init(target, damage);
-        }
-        else
-        {
-            // Fallback: instant hit if no projectile prefab assigned
-            target.TakeDamage(damage);
-        }
+        GameObject go = Instantiate(projectilePrefab, origin, Quaternion.LookRotation(dir));
+        go.GetComponent<Projectile>().Init(target, damage);
 
         onFired?.Invoke();
     }
 
-    private Transform GetPrimaryFirePoint()
-    {
-        if (firePoints != null)
-        {
-            for (int i = 0; i < firePoints.Length; i++)
-            {
-                if (firePoints[i] != null)
-                    return firePoints[i];
-            }
-        }
-
-        return GetLegacyFirePoint();
-    }
-
-    private Transform GetLegacyFirePoint()
-    {
-        return legacyFirePoint != null ? legacyFirePoint : transform;
-    }
 }

@@ -95,24 +95,18 @@ public class BaseUpgrade : MonoBehaviour
         return true;
     }
 
-    public string BuildCurrentStatsText()
+    public BuildingStats GetCurrentStats()
     {
-        var sb = new System.Text.StringBuilder();
-        sb.AppendLine($"Base Level: {currentLevel}");
-        sb.AppendLine($"HP: {baseHealth.MaxHealth:0.##}");
-        return sb.ToString().TrimEnd();
+        return new BuildingStats(maxHealth: baseHealth.MaxHealth);
     }
 
-    public string BuildNextStatsText()
+    public BuildingStats? GetNextStats()
     {
         BaseUpgradeLevel next = NextLevelData;
         if (next == null)
-            return "";
+            return null;
 
-        var sb = new System.Text.StringBuilder();
-        sb.AppendLine($"Base Level: {currentLevel + 1}");
-        sb.AppendLine($"HP: {baseMaxHealth * Mathf.Max(0f, next.hpMul):0.##}");
-        return sb.ToString().TrimEnd();
+        return new BuildingStats(maxHealth: baseMaxHealth * Mathf.Max(0f, next.hpMul));
     }
 
     private void ApplyCurrentLevel(bool topUpHp)

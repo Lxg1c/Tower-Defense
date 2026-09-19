@@ -18,7 +18,7 @@ public class WaveSpawner : MonoBehaviour
 {
     public static WaveSpawner Instance { get; private set; }
 
-    public enum Phase { Build, Combat, AllCompleted }
+    public enum Phase { Build, Combat, AllCompleted, Defeated }
 
     [System.Serializable]
     public class MobEntry
@@ -62,6 +62,9 @@ public class WaveSpawner : MonoBehaviour
         public int stackIndex;
     }
 
+    [Header("Session dependencies")]
+    [SerializeField] private PlayerWallet wallet;
+
     [Header("Spawning")]
     [SerializeField] private Transform[] spawnPoints;
     [SerializeField] private Wave[] waves;
@@ -70,21 +73,25 @@ public class WaveSpawner : MonoBehaviour
 
     [Header("Events (phase-level)")]
     /// <summary>Fired when we enter Build phase. Args: nextWaveIndex (0-based), totalWaves, nextReward.</summary>
-    public UnityEvent<int, int, int> onBuildPhaseStarted;
+    public UnityEvent<int, int, int> onBuildPhaseStarted = new();
     /// <summary>Fired when the Start Wave button is pressed and combat begins. Args: waveIndex, totalWaves, reward.</summary>
-    public UnityEvent<int, int, int> onCombatPhaseStarted;
+    public UnityEvent<int, int, int> onCombatPhaseStarted = new();
     /// <summary>Fired right after a wave is cleared. Args: waveIndex, reward (already added to wallet).</summary>
-    public UnityEvent<int, int> onWaveCompleted;
+    public UnityEvent<int, int> onWaveCompleted = new();
     /// <summary>Fired when all waves are cleared.</summary>
-    public UnityEvent onAllWavesCompleted;
+    public UnityEvent onAllWavesCompleted = new();
+    public UnityEvent onDefeated = new();
 
     // Runtime
     private readonly Dictionary<int, MobPool> pools = new();
     private readonly List<MobHealth> aliveMobs = new();
-    private int nextWaveIndex = 0;
+    private GameSession session;
+    private Base subscribedBase;
+    private int nextWaveIndex => session?.NextWaveIndex ?? 0;
     private Coroutine combatRoutine;
+    private bool completingWave;
 
-    public Phase CurrentPhase { get; private set; } = Phase.Build;
+    public Phase CurrentPhase => session == null ? Phase.Build : (Phase)session.CurrentPhase;
     public int   WaveCount    => waves != null ? waves.Length : 0;
     public int   NextWaveIndex => nextWaveIndex;
     public bool  IsBuildPhase  => CurrentPhase == Phase.Build;
@@ -105,6 +112,38 @@ public class WaveSpawner : MonoBehaviour
         Instance = this;
     }
 
+    private void OnEnable()
+    {
+        Base.OnBaseChanged += BindBase;
+        BindBase();
+    }
+
+    private void OnDisable()
+    {
+        Base.OnBaseChanged -= BindBase;
+        if (subscribedBase != null) subscribedBase.onDied.RemoveListener(Defeat);
+        subscribedBase = null;
+    }
+
+    private void BindBase()
+    {
+        if (subscribedBase != null) subscribedBase.onDied.RemoveListener(Defeat);
+        subscribedBase = Base.Instance;
+        if (subscribedBase != null)
+        {
+            subscribedBase.onDied.AddListener(Defeat);
+            if (!subscribedBase.IsAlive) Defeat();
+        }
+    }
+
+    private void Defeat()
+    {
+        if (session == null || !session.TryDefeat()) return;
+        StopAllCoroutines();
+        combatRoutine = null;
+        onDefeated.Invoke();
+    }
+
     private void OnDestroy()
     {
         if (Instance == this) Instance = null;
@@ -112,6 +151,16 @@ public class WaveSpawner : MonoBehaviour
 
     private void Start()
     {
+        if (wallet == null)
+        {
+            Debug.LogError("[WaveSpawner] Assign the session wallet.", this);
+            enabled = false;
+            return;
+        }
+        var rewards = new int[WaveCount];
+        for (int i = 0; i < rewards.Length; i++) rewards[i] = waves[i].coinReward;
+        session = new GameSession(rewards, wallet.AddCoins);
+        if (subscribedBase != null && !subscribedBase.IsAlive) Defeat();
         if (prewarmPerPrefab > 0 && spawnPoints != null && spawnPoints.Length > 0 && waves != null)
         {
             Vector3 pos = spawnPoints[0].position;
@@ -126,7 +175,7 @@ public class WaveSpawner : MonoBehaviour
             }
         }
 
-        EnterBuildPhase();
+        NotifyPhase();
     }
 
     // ── Public API ─────────────────────────────────────────────────────────────
@@ -137,11 +186,9 @@ public class WaveSpawner : MonoBehaviour
     /// </summary>
     public void StartNextWave()
     {
-        if (CurrentPhase != Phase.Build) return;
-        if (nextWaveIndex >= WaveCount) return;
-        if (Base.Instance == null) return;
-        // Don't allow starting a wave while the player is mid-selection.
-        if (TowerSelectionModal.Instance != null && TowerSelectionModal.Instance.IsOpen) return;
+        if (!isActiveAndEnabled || completingWave || session == null || !session.TryStartWave(
+            subscribedBase != null && subscribedBase.IsAlive,
+            TowerSelectionModal.Instance != null && TowerSelectionModal.Instance.IsOpen)) return;
 
         if (combatRoutine != null) StopCoroutine(combatRoutine);
         combatRoutine = StartCoroutine(RunCombat(nextWaveIndex));
@@ -200,42 +247,30 @@ public class WaveSpawner : MonoBehaviour
 
     // ── Phase transitions ──────────────────────────────────────────────────────
 
-    private void EnterBuildPhase()
+    private void NotifyPhase()
     {
-        CurrentPhase = Phase.Build;
-        Wave w = NextWave;
-        int reward = w != null ? w.coinReward : 0;
-        onBuildPhaseStarted?.Invoke(nextWaveIndex, WaveCount, reward);
+        if (CurrentPhase == Phase.Build)
+            onBuildPhaseStarted.Invoke(nextWaveIndex, WaveCount, NextWave.coinReward);
+        else if (CurrentPhase == Phase.AllCompleted)
+            onAllWavesCompleted.Invoke();
     }
 
     private IEnumerator RunCombat(int waveIndex)
     {
-        CurrentPhase = Phase.Combat;
         Wave wave = waves[waveIndex];
-        onCombatPhaseStarted?.Invoke(waveIndex, WaveCount, wave.coinReward);
-
-        yield return StartCoroutine(SpawnWave(wave));
-
-        while (aliveMobs.Count > 0)
-            yield return null;
-
-        // Award coins
-        if (wave.coinReward > 0 && PlayerWallet.Instance != null)
-            PlayerWallet.Instance.AddCoins(wave.coinReward);
-
-        onWaveCompleted?.Invoke(waveIndex, wave.coinReward);
-
-        nextWaveIndex = waveIndex + 1;
-
-        if (nextWaveIndex >= WaveCount)
+        onCombatPhaseStarted.Invoke(waveIndex, WaveCount, wave.coinReward);
+        if (!IsCombatPhase) yield break;
+        yield return SpawnWave(wave);
+        while (aliveMobs.Count > 0 && IsCombatPhase) yield return null;
+        completingWave = true;
+        try
         {
-            CurrentPhase = Phase.AllCompleted;
-            onAllWavesCompleted?.Invoke();
+            if (!session.TryCompleteWave(waveIndex)) yield break;
+            combatRoutine = null;
+            onWaveCompleted.Invoke(waveIndex, wave.coinReward);
+            NotifyPhase();
         }
-        else
-        {
-            EnterBuildPhase();
-        }
+        finally { completingWave = false; }
     }
 
     private IEnumerator SpawnWave(Wave wave)

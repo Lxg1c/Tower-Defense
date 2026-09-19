@@ -7,25 +7,9 @@ public abstract class Damageable : MonoBehaviour
     [Header("Здоровье")]
     [SerializeField] private float maxHealth = 100f; // Максимальное здоровье. Задаётся в инспекторе и может быть переопределено в подклассах.
 
-    [Header("Полоса здоровья")]
-    [Tooltip("Оставьте пустым, чтобы использовать префаб по умолчанию из HealthBarManager.")]
-    [SerializeField] private HealthBar healthBarPrefab;
-    [Tooltip("Опционально. Если задан — полоса здоровья следует за этим Transform. " +
-             "Если пусто — берётся позиция объекта + глобальный offset из HealthBarManager.")]
-    [SerializeField] private Transform healthBarAnchor;
-
     public float MaxHealth     => maxHealth;
     public float CurrentHealth { get; private set; }
     public bool  IsAlive       => CurrentHealth > 0f;
-
-    public HealthBar HealthBarPrefab => healthBarPrefab;
-    public Transform HealthBarAnchor => healthBarAnchor;
-
-    /// <summary>
-    /// Если true, HealthBarManager автоматически убирает полосу здоровья при смерти сущности.
-    /// Переопределен как false для сущностей, которые возрождаются (например, PlayerHealth).
-    /// </summary>
-    public virtual bool DespawnBarOnDeath => true;
 
     /// <summary>
     /// Могут ли другие системы (поиск целей у врагов, стрельба) выбирать эту сущность как цель.
@@ -33,8 +17,8 @@ public abstract class Damageable : MonoBehaviour
     /// </summary>
     public virtual bool IsTargetable => IsAlive;
 
-    public UnityEvent<float> onHealthChanged;
-    public UnityEvent        onDied;
+    public UnityEvent<float> onHealthChanged = new();
+    public UnityEvent        onDied = new();
 
     // Подклассы могут переопределить, чтобы заблокировать урон (например, состояние призрака).
     protected virtual bool CanTakeDamage => IsAlive;
@@ -44,29 +28,9 @@ public abstract class Damageable : MonoBehaviour
         CurrentHealth = maxHealth;
     }
 
-    protected virtual void OnEnable()
-    {
-        // Повторно регистрируемся при каждой активации, чтобы экземпляры из пула возвращали свою полосу здоровья.
-        TryRegister();
-    }
-
-    protected virtual void OnDisable()
-    {
-        if (HealthBarManager.Instance != null)
-            HealthBarManager.Instance.Unregister(this);
-    }
-
-    protected virtual void Start()
-    {
-        // Запасной вариант для самого первого включения (HealthBarManager мог ещё не проснуться, когда сработал OnEnable).
-        TryRegister();
-    }
-
-    private void TryRegister()
-    {
-        if (HealthBarManager.Instance != null)
-            HealthBarManager.Instance.Register(this);
-    }
+    protected virtual void OnEnable() { }
+    protected virtual void OnDisable() { }
+    protected virtual void Start() { }
 
     /// <summary>
     /// Меняет максимальное HP. Если topUpToFull = true, текущее здоровье поднимается до нового максимума

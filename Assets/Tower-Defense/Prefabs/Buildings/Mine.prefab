@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2907059204251492067}
   - component: {fileID: 3024698343206782186}
   - component: {fileID: 6160282743842059184}
+  - component: {fileID: 4137629854944137103}
   m_Layer: 10
   m_Name: Mine
   m_TagString: Untagged
@@ -73,8 +74,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  healthBarPrefab: {fileID: 9125502953916134260, guid: 0b0c34c4881df3f43951b351a1f3d7c9, type: 3}
-  healthBarAnchor: {fileID: 8841163288952261302}
   onHealthChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -134,6 +133,22 @@ MonoBehaviour:
   onUpgraded:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &4137629854944137103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3853328537901789351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7fd46b87b4097a469b826c40f11545e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 2907059204251492067}
+  prefab: {fileID: 9125502953916134260, guid: 0b0c34c4881df3f43951b351a1f3d7c9, type: 3}
+  anchor: {fileID: 8841163288952261302}
+  hideOnDeath: 1
 --- !u!1 &4054954222644823546
 GameObject:
   m_ObjectHideFlags: 0

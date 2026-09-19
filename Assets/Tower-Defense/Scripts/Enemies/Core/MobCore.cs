@@ -66,14 +66,27 @@ public class MobCore : MonoBehaviour
         CombatBehavior     = combatBehaviorRef     as ICombatBehavior;
         NavigationModifier = navigationModifierRef as INavigationModifier;
 
-        // Fallback: try to find modules on the same GameObject if fields were left empty.
-        if (TargetSelector == null)     TargetSelector     = GetComponent<ITargetSelector>();
-        if (CombatBehavior == null)     CombatBehavior     = GetComponent<ICombatBehavior>();
-        if (NavigationModifier == null) NavigationModifier = GetComponent<INavigationModifier>();
+        if (!ValidateConfiguration(out string error))
+        {
+            Debug.LogError($"[MobCore] {error}", this);
+            enabled = false;
+        }
+    }
 
-        if (TargetSelector == null)     Debug.LogError($"[MobCore] No ITargetSelector on {name}");
-        if (CombatBehavior == null)     Debug.LogError($"[MobCore] No ICombatBehavior on {name}");
-        if (NavigationModifier == null) Debug.LogError($"[MobCore] No INavigationModifier on {name}");
+    public bool ValidateConfiguration(out string error)
+    {
+        if (!(targetSelectorRef is ITargetSelector) || targetSelectorRef.gameObject != gameObject)
+            error = "Assign an ITargetSelector on this enemy.";
+        else if (!(combatBehaviorRef is ICombatBehavior) || combatBehaviorRef.gameObject != gameObject)
+            error = "Assign an ICombatBehavior on this enemy.";
+        else if (!(navigationModifierRef is INavigationModifier) || navigationModifierRef.gameObject != gameObject)
+            error = "Assign an INavigationModifier on this enemy.";
+        else
+        {
+            error = null;
+            return true;
+        }
+        return false;
     }
 
     private void OnEnable()

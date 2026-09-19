@@ -31,6 +31,7 @@ public class TowerUpgradeModal : MonoBehaviour
     private Action<TowerUpgrade> onUpgraded;
     private BaseUpgrade baseTarget;
     private Action<BaseUpgrade> onBaseUpgraded;
+    private Func<bool> tryUpgrade;
 
     public bool IsOpen => modalRoot != null && modalRoot.activeSelf;
 
@@ -60,28 +61,32 @@ public class TowerUpgradeModal : MonoBehaviour
         if (Instance == this) Instance = null;
     }
 
-    public void Open(TowerUpgrade tower, Action<TowerUpgrade> onUpgraded = null)
+    public void Open(TowerUpgrade tower, Action<TowerUpgrade> onUpgraded = null, Func<bool> tryUpgrade = null)
     {
+        if (!HasWallet()) return;
         if (tower == null || modalRoot == null) return;
 
         baseTarget = null;
         onBaseUpgraded = null;
         this.target     = tower;
         this.onUpgraded = onUpgraded;
+        this.tryUpgrade = tryUpgrade;
 
         Refresh();
         modalRoot.SetActive(true);
         onOpened?.Invoke();
     }
 
-    public void Open(BaseUpgrade baseUpgrade, Action<BaseUpgrade> onUpgraded = null)
+    public void Open(BaseUpgrade baseUpgrade, Action<BaseUpgrade> onUpgraded = null, Func<bool> tryUpgrade = null)
     {
+        if (!HasWallet()) return;
         if (baseUpgrade == null || modalRoot == null) return;
 
         target = null;
         this.onUpgraded = null;
         baseTarget = baseUpgrade;
         onBaseUpgraded = onUpgraded;
+        this.tryUpgrade = tryUpgrade;
 
         Refresh();
         modalRoot.SetActive(true);
@@ -94,6 +99,7 @@ public class TowerUpgradeModal : MonoBehaviour
         onUpgraded = null;
         baseTarget = null;
         onBaseUpgraded = null;
+        tryUpgrade = null;
         
         if (modalRoot != null) 
         {
@@ -115,7 +121,7 @@ public class TowerUpgradeModal : MonoBehaviour
 
         if (currentStats != null) 
         {
-            currentStats.text = target.BuildCurrentStatsText();
+            currentStats.text = UpgradeStatsFormatter.Current(target);
         }
 
         var next = target.NextLevelData;
@@ -125,8 +131,8 @@ public class TowerUpgradeModal : MonoBehaviour
             if (nextStats != null) 
             {
                 nextStats.text = target.IsNextLevelUnlocked
-                    ? target.BuildNextStatsText()
-                    : target.BuildLockedText();
+                    ? UpgradeStatsFormatter.Next(target)
+                    : UpgradeStatsFormatter.Locked(target);
             }
             
             if (costLabel != null) 
@@ -136,8 +142,8 @@ public class TowerUpgradeModal : MonoBehaviour
                     : "";
             }
 
-            int coins = PlayerWallet.Instance != null ? PlayerWallet.Instance.Coins : int.MaxValue;
-            bool canAfford = coins >= next.upgradeCost && target.IsNextLevelUnlocked;
+            bool canAfford = PlayerWallet.Instance != null
+                && PlayerWallet.Instance.Coins >= next.upgradeCost && target.IsNextLevelUnlocked;
             
             if (upgradeButton != null) 
             {
@@ -167,7 +173,7 @@ public class TowerUpgradeModal : MonoBehaviour
     {
         if (baseTarget != null)
         {
-            if (baseTarget.TryUpgrade())
+            if (tryUpgrade != null ? tryUpgrade() : baseTarget.TryUpgrade())
             {
                 Refresh();
                 onBaseUpgraded?.Invoke(baseTarget);
@@ -178,7 +184,7 @@ public class TowerUpgradeModal : MonoBehaviour
 
         if (target == null) return;
         
-        if (target.TryUpgrade())
+        if (tryUpgrade != null ? tryUpgrade() : target.TryUpgrade())
         {
             Refresh();
             onUpgraded?.Invoke(target);
@@ -190,20 +196,20 @@ public class TowerUpgradeModal : MonoBehaviour
         if (baseTarget == null) return;
 
         if (currentStats != null)
-            currentStats.text = baseTarget.BuildCurrentStatsText();
+            currentStats.text = UpgradeStatsFormatter.Current(baseTarget);
 
         BaseUpgradeLevel next = baseTarget.NextLevelData;
         if (next != null)
         {
             if (nextStats != null)
-                nextStats.text = baseTarget.BuildNextStatsText();
+                nextStats.text = UpgradeStatsFormatter.Next(baseTarget);
 
             if (costLabel != null)
                 costLabel.text = string.Format(costFormat, next.upgradeCost);
 
-            int coins = PlayerWallet.Instance != null ? PlayerWallet.Instance.Coins : int.MaxValue;
             if (upgradeButton != null)
-                upgradeButton.interactable = coins >= next.upgradeCost;
+                upgradeButton.interactable = PlayerWallet.Instance != null
+                    && PlayerWallet.Instance.Coins >= next.upgradeCost;
         }
         else
         {
@@ -216,5 +222,11 @@ public class TowerUpgradeModal : MonoBehaviour
             if (upgradeButton != null)
                 upgradeButton.interactable = false;
         }
+    }
+    private bool HasWallet()
+    {
+        if (PlayerWallet.Instance != null) return true;
+        Debug.LogError("[TowerUpgradeModal] A PlayerWallet is required to show upgrades.", this);
+        return false;
     }
 }

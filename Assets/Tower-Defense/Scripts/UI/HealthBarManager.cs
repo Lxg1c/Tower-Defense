@@ -3,21 +3,21 @@ using UnityEngine;
 using UnityEngine.Events;
 
 [DisallowMultipleComponent]
+[DefaultExecutionOrder(200)]
 public class HealthBarManager : MonoBehaviour
 {
-    public static HealthBarManager Instance { get; private set; }
 
     private Canvas worldCanvas;
 
     [Header("Default Health Bar Prefab")]
-    [Tooltip("Used when the Damageable does not specify its own prefab.")]
+    [Tooltip("Used by bindings without a prefab override.")]
     [SerializeField] private HealthBar defaultHealthBarPrefab;
 
     [Header("Layout")]
     [SerializeField] private Vector3 barOffset = new Vector3(0f, 1.8f, 0f);
     [SerializeField] private bool hideWhenFull = true;
 
-    private Camera _mainCam;
+    [SerializeField] private Camera worldCamera;
 
     // One pool queue per prefab type (keyed by prefab instance ID).
     private readonly Dictionary<int, Queue<HealthBar>> _pools  = new();
@@ -27,17 +27,40 @@ public class HealthBarManager : MonoBehaviour
         public HealthBar bar;
         public HealthBar prefab;
         public UnityAction<float> hpListener;
-        public UnityAction         diedListener;
     }
 
-    private readonly Dictionary<Damageable, ActiveEntry> _active = new();
+    private readonly Dictionary<HealthBarBinding, ActiveEntry> _active = new();
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this;
-        _mainCam = Camera.main;
         EnsureCanvas();
+    }
+
+    public int ActiveBarCount => _active.Count;
+
+    private void OnEnable()
+    {
+        if (worldCamera == null)
+        {
+            Debug.LogError("[HealthBarManager] Assign the world camera.", this);
+            enabled = false;
+            return;
+        }
+        HealthBarBinding.Added += Register;
+        HealthBarBinding.Removed += Unregister;
+        foreach (var binding in HealthBarBinding.Active) Register(binding);
+    }
+
+    private void OnDisable()
+    {
+        HealthBarBinding.Added -= Register;
+        HealthBarBinding.Removed -= Unregister;
+        foreach (var binding in new List<HealthBarBinding>(_active.Keys)) Unregister(binding);
+    }
+
+    private void OnDestroy()
+    {
+        if (worldCanvas != null) Destroy(worldCanvas.gameObject);
     }
 
     private void LateUpdate()
@@ -48,23 +71,23 @@ public class HealthBarManager : MonoBehaviour
             var entry  = kv.Value;
             if (entity == null || entry.bar == null || !entry.bar.gameObject.activeSelf) continue;
             entry.bar.transform.position = ResolveBarPosition(entity);
-            entry.bar.transform.forward  = _mainCam.transform.forward;
+            entry.bar.transform.forward = worldCamera.transform.forward;
         }
     }
 
-    private Vector3 ResolveBarPosition(Damageable entity)
+    private Vector3 ResolveBarPosition(HealthBarBinding entity)
     {
         // Per-entity anchor wins; otherwise use the global offset above the entity's pivot.
-        var anchor = entity.HealthBarAnchor;
+        var anchor = entity.Anchor;
         return anchor != null ? anchor.position : entity.transform.position + barOffset;
     }
 
-    public void Register(Damageable entity)
+    private void Register(HealthBarBinding entity)
     {
-        if (entity == null || _active.ContainsKey(entity)) return;
+        if (entity == null || entity.gameObject.scene != gameObject.scene || _active.ContainsKey(entity)) return;
 
         // Pick the prefab: entity override → manager default → error.
-        HealthBar prefab = entity.HealthBarPrefab != null ? entity.HealthBarPrefab : defaultHealthBarPrefab;
+        HealthBar prefab = entity.Prefab != null ? entity.Prefab : defaultHealthBarPrefab;
         if (prefab == null)
         {
             Debug.LogError($"[HealthBarManager] No health bar prefab for {entity.name}. " +
@@ -76,43 +99,44 @@ public class HealthBarManager : MonoBehaviour
         bar.transform.SetParent(worldCanvas.transform, true);
         bar.transform.position = ResolveBarPosition(entity);
         bar.gameObject.SetActive(true);
-        SetBarFillAndVisibility(bar, entity.CurrentHealth / entity.MaxHealth);
+        SetBarFillAndVisibility(bar, entity.Target.CurrentHealth / entity.Target.MaxHealth, entity.HideOnDeath);
 
         var entry = new ActiveEntry { bar = bar, prefab = prefab };
         entry.hpListener   = hp => OnHealthChanged(entity, hp);
-        entry.diedListener = () => Unregister(entity);
-
-        entity.onHealthChanged.AddListener(entry.hpListener);
-        if (entity.DespawnBarOnDeath)
-            entity.onDied.AddListener(entry.diedListener);
+        entity.Target.onHealthChanged.AddListener(entry.hpListener);
 
         _active[entity] = entry;
     }
 
-    public void Unregister(Damageable entity)
+    private void Unregister(HealthBarBinding entity)
     {
         if (entity == null || !_active.TryGetValue(entity, out var entry)) return;
 
         // Detach listeners so the entity doesn't keep references and accumulate duplicates on re-spawn.
-        if (entry.hpListener   != null) entity.onHealthChanged.RemoveListener(entry.hpListener);
-        if (entry.diedListener != null) entity.onDied.RemoveListener(entry.diedListener);
+        if (entity.Target != null) entity.Target.onHealthChanged.RemoveListener(entry.hpListener);
 
         _active.Remove(entity);
         ReturnToPool(entry.bar, entry.prefab);
     }
 
-    private void OnHealthChanged(Damageable entity, float current)
+    private void OnHealthChanged(HealthBarBinding entity, float current)
     {
         if (_active.TryGetValue(entity, out var entry))
-            SetBarFillAndVisibility(entry.bar, current / entity.MaxHealth);
+            SetBarFillAndVisibility(entry.bar, current / entity.Target.MaxHealth, entity.HideOnDeath);
     }
 
-    private void SetBarFillAndVisibility(HealthBar bar, float normalized)
+    private void SetBarFillAndVisibility(HealthBar bar, float normalized, bool hideOnDeath)
     {
         if (bar == null)
             return;
 
         float fill = Mathf.Clamp01(normalized);
+        if (hideOnDeath && fill <= 0f)
+        {
+            bar.SetFillInstant(0f);
+            bar.gameObject.SetActive(false);
+            return;
+        }
 
         if (hideWhenFull)
         {
@@ -173,9 +197,10 @@ public class HealthBarManager : MonoBehaviour
         // accidentally inherit a foreign canvas's scale (e.g. someone else's
         // WorldSpace UI at 1:1 would make our bars appear 100× larger).
         GameObject go = new("HealthBar_SharedCanvas");
+        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(go, gameObject.scene);
         worldCanvas = go.AddComponent<Canvas>();
         worldCanvas.renderMode  = RenderMode.WorldSpace;
-        worldCanvas.worldCamera = _mainCam;
+        worldCanvas.worldCamera = worldCamera;
 
         RectTransform rt = go.GetComponent<RectTransform>();
         rt.sizeDelta  = new Vector2(10000f, 10000f);
