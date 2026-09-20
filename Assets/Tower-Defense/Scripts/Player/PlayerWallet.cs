@@ -11,6 +11,14 @@ public class PlayerWallet : MonoBehaviour
     public int Coins { get; private set; }
 
     public UnityEvent<int> onCoinsChanged = new();
+    private bool initialized;
+
+    public void ConfigureStartingCoins(int amount)
+    {
+        if (initialized) throw new System.InvalidOperationException("Configure the wallet before Awake.");
+        if (amount < 0) throw new System.ArgumentOutOfRangeException(nameof(amount));
+        startingCoins = amount;
+    }
 
     private void Awake()
     {
@@ -21,6 +29,7 @@ public class PlayerWallet : MonoBehaviour
         }
         Instance = this;
 
+        initialized = true;
         Coins = startingCoins;
         onCoinsChanged?.Invoke(Coins);
     }

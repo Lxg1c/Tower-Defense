@@ -67,7 +67,8 @@ public class WaveSpawner : MonoBehaviour
 
     [Header("Spawning")]
     [SerializeField] private Transform[] spawnPoints;
-    [SerializeField] private Wave[] waves;
+    // Runtime copy supplied by LevelSetup; authored waves belong to LevelDefinition assets.
+    private Wave[] waves;
     [Tooltip("Prewarm this many instances per prefab at startup. 0 = no prewarm.")]
     [SerializeField] private int prewarmPerPrefab = 0;
 
@@ -157,6 +158,12 @@ public class WaveSpawner : MonoBehaviour
             enabled = false;
             return;
         }
+        if (waves == null || waves.Length == 0)
+        {
+            Debug.LogError("[WaveSpawner] Configure a LevelDefinition through LevelSetup before starting the session.", this);
+            enabled = false;
+            return;
+        }
         var rewards = new int[WaveCount];
         for (int i = 0; i < rewards.Length; i++) rewards[i] = waves[i].coinReward;
         session = new GameSession(rewards, wallet.AddCoins);
@@ -179,6 +186,15 @@ public class WaveSpawner : MonoBehaviour
     }
 
     // ── Public API ─────────────────────────────────────────────────────────────
+
+    public void ConfigureLevel(LevelDefinition level)
+    {
+        if (session != null) throw new System.InvalidOperationException("Cannot replace a running level.");
+        if (level == null) throw new System.ArgumentNullException(nameof(level));
+        if (spawnPoints == null || spawnPoints.Length == 0 || System.Array.Exists(spawnPoints, p => p == null))
+            throw new System.ArgumentException("Assign every spawn point before configuring the level.");
+        waves = level.CreateWaves(spawnPoints.Length);
+    }
 
     /// <summary>
     /// Hook this to the UI "Start Wave" button. Does nothing if already in combat

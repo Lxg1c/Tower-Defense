@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f78beb032483844899f9ce5dfc5e61b, type: 3}
+  m_Name: Level2
+  m_EditorClassIdentifier: 
+  displayName: Level 2
+  description: Flying enemies join the assault. Cover multiple approaches.
+  difficulty: STANDARD
+  startingCoins: 10
+  waves:
+  - coinReward: 4
+    spawnGroups:
+    - spawnPointIndex: 0
+      entries:
+      - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
+        count: 8
+        spawnInterval: 1
+  - coinReward: 4
+    spawnGroups:
+    - spawnPointIndex: 1
+      entries:
+      - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
+        count: 10
+        spawnInterval: 1
+    - spawnPointIndex: 2
+      entries:
+      - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
+        count: 2
+        spawnInterval: 1
+  - coinReward: 4
+    spawnGroups:
+    - spawnPointIndex: 2
+      entries:
+      - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
+        count: 10
+        spawnInterval: 1
+    - spawnPointIndex: 3
+      entries:
+      - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
+        count: 3
+        spawnInterval: 1
+    - spawnPointIndex: 0
+      entries:
+      - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
+        count: 2
+        spawnInterval: 1
+  - coinReward: 4
+    spawnGroups:
+    - spawnPointIndex: 3
+      entries:
+      - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
+        count: 12
+        spawnInterval: 1
+    - spawnPointIndex: 0
+      entries:
+      - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
+        count: 4
+        spawnInterval: 1
+    - spawnPointIndex: 1
+      entries:
+      - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
+        count: 3
+        spawnInterval: 1

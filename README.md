@@ -6,6 +6,8 @@ shooting, build/upgrade phases, enemy waves and allied squads.
 Contributor and agent conventions are in [Skills.md](Skills.md).
 See [Docs/VisualDirection.md](Docs/VisualDirection.md) for the first UI polish pass
 and the remaining visual priorities.
+See [Docs/Balance.md](Docs/Balance.md) for the economy review, measured wave
+results and the next gameplay balance experiments.
 
 ## Open and play
 
@@ -29,6 +31,48 @@ town hall exists. The ally command button switches soldiers to following the her
 The loop is: build/upgrade, fight a wave, receive rewards and repairs, then repeat.
 Player death enters a ghost/respawn state. Destroyed towers recover after a wave.
 Base destruction ends the run; clearing the final wave wins.
+
+### Authored levels on one map
+
+Main Menu offers **Level 1**, **Level 2**, and **Level 3**. Select a level and
+press **Play Level**. All choices load the same Level scene with different
+authored waves, spawn directions and starting coins. Restart retains the selected
+level; returning to the menu clears it. Direct Editor play uses the explicitly
+assigned **Direct Play Level** on the scene's LevelSetup (currently Level 1).
+
+| Level | Focus | Waves | Starting coins |
+|---|---|---|---|
+| 1 | Ground enemies; learn building and economy | 3 | 12 |
+| 2 | Introduce flight and different approaches | 4 | 10 |
+| 3 | Mixed enemies with armored threats | 4 | 10 |
+
+These are starting balance presets, not fully playtested difficulty guarantees.
+Difficulty text is a label; enemy counts, intervals, composition, directions,
+starting coins and wave rewards define the actual challenge.
+
+To create or tune a level:
+
+1. Select an asset in Assets/Tower-Defense/Levels, duplicate one, or use
+   **Create > Tower Defense > Level**.
+2. Edit its title, description, difficulty label and starting coins.
+3. Expand **Waves**. Each wave has a coin reward and ordered **Spawn Groups**.
+   Each group has a spawn-point index and enemy entries with counts and intervals.
+4. Indices 0–3 refer to the four transforms in the scene WaveSpawner's
+   **Spawn Points** array, in Inspector order. Groups execute sequentially.
+5. Add the asset to the Main Menu Canvas component's **Levels** list.
+   Its selection button is created automatically. No additional scene is needed.
+6. For direct iteration, assign that asset to **LevelSetup > Direct Play Level**
+   in Level. Run the EditMode and PlayMode suites after changing code or settings.
+
+Invalid level data is rejected. Runtime waves are copied, so playing or restarting
+does not mutate authored assets. LevelDefinition assets are the sole authored
+wave source; the earlier seeded-wave prototype and inline scene waves have been removed.
+
+
+The new rock material uses `TowerDefense/Mobile/Environment`. It preserves the
+original texture and adds soft directional shading and a restrained edge tint.
+See [Docs/VisualDirection.md](Docs/VisualDirection.md) for its rendering scope and
+the remaining physical-device performance checks.
 
 ## Dependencies
 
@@ -68,8 +112,7 @@ rather than editing generated code.
 
 ## Configuration belongs in assets
 
-- Wave composition, timings, rewards and spawn points are configured on the
-  `WaveSpawner` in the gameplay scene. Assign its session wallet explicitly.
+- Level assets define waves, timings, rewards and starting coins. The scene WaveSpawner owns spawn transforms; LevelSetup assigns the selected level.
 - Game-over and victory screens require an assigned spawner; they observe session
   outcomes. The game-over screen does not decide whether the session is defeated.
 - Entities with health bars require `HealthBarBinding`, with their own `Damageable`

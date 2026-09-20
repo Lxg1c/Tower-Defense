@@ -117,13 +117,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   levels:
-  - upgradeCost: 75
+  - upgradeCost: 1
     damageMul: 1
     rangeMul: 1
     fireRateMul: 1
     hpMul: 1.5
     incomeMul: 2
-  - upgradeCost: 150
+  - upgradeCost: 1
     damageMul: 1
     rangeMul: 1
     fireRateMul: 1

@@ -84,7 +84,46 @@ Required shooter and enemy-module references are now validated explicitly. Enemy
 prefabs supply all three module references. Missing projectiles cannot turn into
 instant damage, and missing wallets cannot make upgrade menus assume unlimited money.
 
+## Attack range
+
+`DetectionZone` defines a horizontal targeting radius and a separate maximum
+height difference. A physics box query collects colliders; aim-point checks narrow
+them to a cylinder and deduplicate damageable entities. This keeps aerial coverage
+consistent with the ground range indicator. `GetClosest` uses horizontal distance
+and drops dead/out-of-range cached targets. `Shooter` still checks line of sight
+and delivers damage through projectiles. Tower range upgrades change the radius;
+vertical reach is configured separately. See `Docs/Balance.md` for tuning targets.
+
 ## Session ownership
+
+### Authored levels
+
+LevelDefinition is a ScriptableObject containing presentation metadata, starting
+coins and waves. Its dedicated wave/group/entry types expose only the supported
+authoring fields, without the spawner's legacy prefab or icon alternatives.
+Validation rejects missing enemies, invalid counts/timings/rewards and invalid
+spawn-point indices. CreateWaves copies data into fresh runtime arrays.
+
+MainMenu creates selection buttons from its Levels list and previews the chosen
+encounter. Start stores the asset and target scene in RunSelection, then loads
+the shared Level scene. LevelSetup executes before the wallet's Awake and the
+spawner's Start: it resolves the selection, validates scene spawn references,
+configures waves and sets starting coins. Direct scene entry uses its explicitly
+assigned Direct Play Level. Missing configuration stops setup with an error.
+Restart retains the selection but creates fresh runtime waves and coins.
+Main Menu and Play Mode subsystem initialization clear the static selection.
+
+The seeded-wave prototype and inline scene waves have been removed. WaveSpawner
+holds only a runtime copy of the selected level's waves. Missing level setup
+stops the spawner with a configuration error instead of creating an empty session.
+LevelDefinitionTests covers asset validity, runtime-copy isolation, restart,
+scene isolation and rejected configuration. LevelSetupTests checks actual
+Awake/Start ordering, initial coins and wave configuration across recreated
+sessions, and rejection of nonexistent spawn points. UIConfigurationTests
+protects serialized menu/modal references and persistent actions.
+
+
+### Session state
 
 `GameSession` is ordinary C# with no Unity dependencies. It receives wave rewards
 and an explicit reward operation. It owns the phase and next-wave index, rejects
