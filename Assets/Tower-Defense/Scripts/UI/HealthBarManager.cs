@@ -25,7 +25,7 @@ public class HealthBarManager : MonoBehaviour
     private class ActiveEntry
     {
         public HealthBar bar;
-        public HealthBar prefab;
+        public int poolKey;
         public UnityAction<float> hpListener;
     }
 
@@ -60,6 +60,7 @@ public class HealthBarManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        _pools.Clear();
         if (worldCanvas != null) Destroy(worldCanvas.gameObject);
     }
 
@@ -101,7 +102,7 @@ public class HealthBarManager : MonoBehaviour
         bar.gameObject.SetActive(true);
         SetBarFillAndVisibility(bar, entity.Target.CurrentHealth / entity.Target.MaxHealth, entity.HideOnDeath);
 
-        var entry = new ActiveEntry { bar = bar, prefab = prefab };
+        var entry = new ActiveEntry { bar = bar, poolKey = prefab.GetInstanceID() };
         entry.hpListener   = hp => OnHealthChanged(entity, hp);
         entity.Target.onHealthChanged.AddListener(entry.hpListener);
 
@@ -116,7 +117,7 @@ public class HealthBarManager : MonoBehaviour
         if (entity.Target != null) entity.Target.onHealthChanged.RemoveListener(entry.hpListener);
 
         _active.Remove(entity);
-        ReturnToPool(entry.bar, entry.prefab);
+        ReturnToPool(entry.bar, entry.poolKey);
     }
 
     private void OnHealthChanged(HealthBarBinding entity, float current)
@@ -169,19 +170,27 @@ public class HealthBarManager : MonoBehaviour
     private HealthBar GetFromPool(HealthBar prefab)
     {
         int key = prefab.GetInstanceID();
-        if (_pools.TryGetValue(key, out Queue<HealthBar> pool) && pool.Count > 0)
+        if (_pools.TryGetValue(key, out Queue<HealthBar> pool))
         {
-            HealthBar recycled = pool.Dequeue();
-            recycled.gameObject.SetActive(true);
-            return recycled;
+            while (pool.Count > 0)
+            {
+                HealthBar recycled = pool.Dequeue();
+                // Unity can destroy scene objects before their owners receive cleanup callbacks.
+                // A destroyed object is no longer a pool resource.
+                if (recycled == null) continue;
+                recycled.gameObject.SetActive(true);
+                return recycled;
+            }
         }
         return Instantiate(prefab, worldCanvas.transform);
     }
 
-    private void ReturnToPool(HealthBar bar, HealthBar prefab)
+    private void ReturnToPool(HealthBar bar, int key)
     {
+        // During scene unload or Play-mode exit, destruction order is not guaranteed.
+        // Listener cleanup still happens, but destroyed resources must not be recycled.
+        if (bar == null) return;
         bar.gameObject.SetActive(false);
-        int key = prefab.GetInstanceID();
         if (!_pools.ContainsKey(key))
             _pools[key] = new Queue<HealthBar>();
         _pools[key].Enqueue(bar);
@@ -205,5 +214,7 @@ public class HealthBarManager : MonoBehaviour
         RectTransform rt = go.GetComponent<RectTransform>();
         rt.sizeDelta  = new Vector2(10000f, 10000f);
         rt.localScale = Vector3.one * 0.01f;
+        // Keep world scale while making the manager the canvas's lifetime owner.
+        rt.SetParent(transform, true);
     }
 }

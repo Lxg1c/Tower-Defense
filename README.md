@@ -3,6 +3,10 @@
 A Unity 3D tower-defense prototype with a directly controlled hero, automatic
 shooting, build/upgrade phases, enemy waves and allied squads.
 
+Contributor and agent conventions are in [Skills.md](Skills.md).
+See [Docs/VisualDirection.md](Docs/VisualDirection.md) for the first UI polish pass
+and the remaining visual priorities.
+
 ## Open and play
 
 1. Install **Unity 6000.0.72f1** through Unity Hub. This is the version recorded in
@@ -99,7 +103,7 @@ by third-party packages. Play Mode tests temporarily enter Play mode.
 | Suite | What it protects |
 |---|---|
 | Edit Mode | Wallet transactions; legal session transitions and terminal outcomes; duplicate/reentrant rewards; prefab health bindings; phase/unlock restrictions; enemy/shooter configuration; upgrade calculations and action limits |
-| Play Mode | Missing-projectile rejection; repeated firing; damage on contact; single death notification; defeat during wave startup; health-bar creation order, enable/disable, death and revival |
+| Play Mode | Missing-projectile rejection; repeated firing; damage on contact; single death notification; defeat during wave startup; health-bar creation order, enable/disable, death, revival and scene teardown; build-objective lifecycle |
 
 The earlier 41-assertion architecture regression sweep is also called from the
 Edit Mode suite. Its menu shortcut, **Tools > Tower Defense > Run Architecture

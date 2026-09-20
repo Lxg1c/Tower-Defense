@@ -112,11 +112,19 @@ supports both creation orders without `Start` retries, scene searches or delayed
 invocations. Execution order initializes health before its presentation binding.
 Disabling either side detaches its subscriptions. Dead entities retain a hidden
 bar until disabled, so revival is handled by the ordinary health-change event.
-The manager releases its generated canvas on destruction.
+The manager owns its generated canvas as a child and releases it on destruction.
+Pool entries retain the prefab's integer key rather than dereferencing a prefab
+during teardown. Scene unloading can destroy bars before binding callbacks run:
+listeners still detach, and destroyed bars are discarded rather than recycled.
 
 Regression tests cover legal transitions, duplicate rewards, defeat during wave
 startup, both binding/manager creation orders, repeated enable/disable, damage,
-death and revival. Full-level playthrough and visual validation remain separate.
+death and revival, destroyed bars and additive scene unloading. Full-level
+playthrough and visual validation remain separate.
+
+`BuildPhaseGuide` observes phase/base events to describe the next build action;
+it owns no gameplay rules. `ScreenSafeArea` fits direct children of screen-space
+canvases to device safe bounds. Both HUD canvases share height-based scaling.
 
 ## Next boundaries to improve
 

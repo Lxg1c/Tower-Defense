@@ -11,6 +11,8 @@ public class WaveDirectionIndicator : MonoBehaviour
     [SerializeField] private float screenEdgePadding = 72f;
     [SerializeField] private Vector2 visibleSpawnPointOffset = new(0f, 48f);
     [SerializeField] private Vector2 stackOffset = new(0f, -56f);
+    [SerializeField] private RectTransform directionArrow;
+    [SerializeField, Range(0f, 0.45f)] private float bottomReservedFraction = 0.36f;
 
     private RectTransform root;
     private RectTransform canvasRect;
@@ -77,6 +79,18 @@ public class WaveDirectionIndicator : MonoBehaviour
             ? rawScreenPoint + visibleSpawnPointOffset
             : ClampToScreenEdge(rawScreenPoint, screenCenter);
         markerScreenPoint += stackOffset * stackIndex;
+        // Leave the lower touch-control region free, including for visible spawns.
+        Rect safe = Screen.safeArea;
+        markerScreenPoint.x = Mathf.Clamp(markerScreenPoint.x,
+            safe.xMin + screenEdgePadding, safe.xMax - screenEdgePadding);
+        markerScreenPoint.y = Mathf.Clamp(markerScreenPoint.y,
+            safe.yMin + safe.height * bottomReservedFraction, safe.yMax - screenEdgePadding);
+        if (directionArrow != null)
+        {
+            Vector2 direction = rawScreenPoint - markerScreenPoint;
+            directionArrow.localRotation = Quaternion.Euler(0f, 0f,
+                Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f);
+        }
 
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, markerScreenPoint, canvasCamera, out Vector2 localPoint))
             return;
