@@ -18,6 +18,7 @@ public class TowerSelectionModal : MonoBehaviour
     [SerializeField] private RectTransform content;
     [Tooltip("Single card prefab — must have a TowerCard component on root.")]
     [SerializeField] private TowerCard     cardPrefab;
+    [SerializeField] private TMPro.TMP_Text heading;
 
     [Header("Events")]
     public UnityEvent onOpened;
@@ -25,8 +26,10 @@ public class TowerSelectionModal : MonoBehaviour
 
     private readonly List<GameObject> spawnedEntries = new();
     private Action<TowerOption> onPick;
+    private int revision;
 
     public bool IsOpen => modalRoot != null && modalRoot.activeSelf;
+    public TowerPlacementZone Owner { get; private set; }
 
     private void Awake()
     {
@@ -42,7 +45,7 @@ public class TowerSelectionModal : MonoBehaviour
         if (Instance == this) Instance = null;
     }
 
-    public void Open(IReadOnlyList<TowerOption> options, Action<TowerOption> onPick)
+    public void Open(IReadOnlyList<TowerOption> options, Action<TowerOption> onPick, TowerPlacementZone owner = null)
     {
         if (PlayerWallet.Instance == null)
         {
@@ -56,6 +59,8 @@ public class TowerSelectionModal : MonoBehaviour
         }
 
         this.onPick = onPick;
+        if (heading != null) heading.text = "CHOOSE A BUILDING";
+        Owner = owner;
         ClearEntries();
 
         int coins = PlayerWallet.Instance.Coins;
@@ -68,12 +73,43 @@ public class TowerSelectionModal : MonoBehaviour
             card.gameObject.SetActive(true);
 
             var captured = opt;
-            card.Bind(opt, coins >= opt.cost, () => HandlePick(captured));
+            int cardRevision = revision;
+            card.Bind(opt, coins >= opt.cost, () =>
+            {
+                if (IsOpen && revision == cardRevision) HandlePick(captured);
+            });
 
             spawnedEntries.Add(card.gameObject);
         }
 
         modalRoot.SetActive(true);
+        Canvas.ForceUpdateCanvases();
+        onOpened?.Invoke();
+    }
+
+    public void OpenUpgrade(TowerOption option, int currentLevel, int? cost, bool unlocked,
+        Func<bool> purchase, TowerPlacementZone owner)
+    {
+        if (PlayerWallet.Instance == null || option == null || option.prefab == null
+            || modalRoot == null || content == null || cardPrefab == null) return;
+        ClearEntries();
+        onPick = null;
+        Owner = owner;
+        if (heading != null) heading.text = "BUILDING LEVELS";
+        var card = Instantiate(cardPrefab, content);
+        card.gameObject.SetActive(true);
+        string action = !cost.HasValue ? "MAX LEVEL" : !unlocked ? "UPGRADE TOWN HALL" : "UPGRADE";
+        bool canBuy = cost.HasValue && unlocked && PlayerWallet.Instance.Coins >= cost.Value;
+        int cardRevision = revision;
+        card.Bind(option, currentLevel, cost, action, canBuy, () =>
+        {
+            // A retained/stale button must not operate after the owning panel closes.
+            if (!IsOpen || Owner != owner || revision != cardRevision || !canBuy) return;
+            if (purchase()) Close();
+        });
+        spawnedEntries.Add(card.gameObject);
+        modalRoot.SetActive(true);
+        Canvas.ForceUpdateCanvases();
         onOpened?.Invoke();
     }
 
@@ -81,6 +117,7 @@ public class TowerSelectionModal : MonoBehaviour
     {
         bool wasOpen = IsOpen;
         onPick = null;
+        Owner = null;
         ClearEntries();
         if (modalRoot != null)
             modalRoot.SetActive(false);
@@ -96,8 +133,9 @@ public class TowerSelectionModal : MonoBehaviour
 
     private void ClearEntries()
     {
+        revision++;
         foreach (var go in spawnedEntries)
-            if (go != null) Destroy(go);
+            if (go != null) { go.SetActive(false); Destroy(go); }
         spawnedEntries.Clear();
     }
 }

@@ -202,7 +202,6 @@ public class WaveHUD : MonoBehaviour
     {
         return modalOpen
             || (TowerSelectionModal.Instance != null && TowerSelectionModal.Instance.IsOpen)
-            || (TowerUpgradeModal.Instance != null && TowerUpgradeModal.Instance.IsOpen)
             || (BaseUpgradeModal.Instance != null && BaseUpgradeModal.Instance.IsOpen);
     }
 

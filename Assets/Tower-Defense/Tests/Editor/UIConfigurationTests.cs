@@ -9,25 +9,24 @@ namespace TowerDefense.Tests
     public class UIConfigurationTests
     {
         [Test]
-        public void BothLevelModalsHavePersistedCloseCallbacksAndDescendantContent()
+        public void BuildingPanelsLeaveWorldInputAvailableAndHaveNoCloseButtons()
         {
             var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level.unity");
             try
             {
                 var components = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<MonoBehaviour>(true));
-                var modals = components.Where(c => c is TowerSelectionModal || c is TowerUpgradeModal).ToArray();
-                Assert.That(modals, Has.Length.EqualTo(2));
+                var modals = components.Where(c => c is TowerSelectionModal).ToArray();
+                Assert.That(modals, Has.Length.EqualTo(1));
                 foreach (var controller in modals)
                 {
                     var data = new SerializedObject(controller);
                     var root = (GameObject)data.FindProperty("modalRoot").objectReferenceValue;
                     Assert.That(root, Is.Not.Null);
-                    var close = root.GetComponentsInChildren<UnityEngine.UI.Button>(true).Single(b => b.name == "Close");
-                    Assert.That(close.onClick.GetPersistentEventCount(), Is.EqualTo(1));
-                    Assert.That(close.onClick.GetPersistentTarget(0), Is.EqualTo(controller));
-                    Assert.That(close.onClick.GetPersistentMethodName(0), Is.EqualTo("Close"));
-                    string[] fields = controller is TowerSelectionModal
-                        ? new[] { "content" } : new[] { "currentStats", "nextStats", "costLabel", "upgradeButton" };
+                    Assert.That(root.GetComponentsInChildren<UnityEngine.UI.Button>(true).Any(b => b.name == "Close"), Is.False);
+                    var backdrop = root.GetComponent<UnityEngine.UI.Image>();
+                    Assert.That(backdrop.enabled, Is.False, "The world must not be dimmed.");
+                    Assert.That(backdrop.raycastTarget, Is.False, "The fullscreen root must not intercept joystick input.");
+                    string[] fields = { "content", "heading" };
                     foreach (string field in fields)
                     {
                         var child = (Component)data.FindProperty(field).objectReferenceValue;

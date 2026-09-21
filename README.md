@@ -28,6 +28,18 @@ orb and release to fire it. Stand in a building zone until its progress circle
 fills to choose a building or upgrade. Use Start Wave to begin combat after the
 town hall exists. The ally command button switches soldiers to following the hero.
 
+Building panels leave movement available and do not darken the world. Walk out
+of the building zone to dismiss its panel; there is no Close button. A successful
+build or upgrade also closes the panel and consumes that zone's action for the phase.
+Construction and upgrades share `BuildingModal.prefab` and `TowerCard.prefab`.
+Each card lists every authored level (starting at 1), with health and damage icons;
+mines show income per wave instead of damage. The current level is highlighted,
+and only buildings with an unlocked next upgrade show an interaction point.
+Upgrade the Town Hall to reveal newly eligible points. Maximum-level buildings
+have no upgrade point. Hold progress appears above each point on the HUD, so
+scenery cannot hide the ring. It stays full while the panel is open and clears
+when walking away or completing the purchase.
+
 The loop is: build/upgrade, fight a wave, receive rewards and repairs, then repeat.
 Player death enters a ghost/respawn state. Destroyed towers recover after a wave.
 Base destruction ends the run; clearing the final wave wins.

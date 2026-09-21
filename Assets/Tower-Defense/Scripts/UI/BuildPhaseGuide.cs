@@ -43,7 +43,7 @@ public sealed class BuildPhaseGuide : MonoBehaviour
     {
         panel.SetActive(spawner.IsBuildPhase);
         label.text = Base.Instance == null
-            ? "BUILD YOUR BASE\n<color=#A9C6CE>Stand on the home marker</color>"
-            : "PREPARE YOUR DEFENSES\n<color=#A9C6CE>Build, upgrade, then start the wave</color>";
+            ? "Stand on the home marker to build your base"
+            : "Prepare your defenses";
     }
 }

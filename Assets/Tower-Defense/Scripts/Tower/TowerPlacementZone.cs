@@ -38,8 +38,8 @@ public class TowerPlacementZone : MonoBehaviour
     [Tooltip("Parent GO holding the zone's meshes, world-space UI, collider — everything player should not see / touch during a wave.")]
     [SerializeField] private GameObject visualRoot;
 
-    [Header("World-space floor circle")]
-    [Tooltip("Image on the world-space canvas. Set Image Type = Filled and Fill Method = Radial 360.")]
+    [Header("Screen-space progress circle")]
+    [Tooltip("HUD progress Image. Set Image Type = Filled and Fill Method = Radial 360.")]
     [FormerlySerializedAs("progressFill")]
     [SerializeField] private Image placementCircleFill;
 
@@ -129,7 +129,9 @@ public class TowerPlacementZone : MonoBehaviour
 
     private void SyncWithPhase()
     {
-        SetVisualActive(Slot.CanInteract(IsBuildPhase, GetTownHallLevel()));
+        bool available = Slot.CanInteract(IsBuildPhase, GetTownHallLevel());
+        if (!available) CloseModal();
+        SetVisualActive(available);
     }
 
     public bool IsUnlocked()
@@ -145,7 +147,13 @@ public class TowerPlacementZone : MonoBehaviour
 
     private void Update()
     {
-        if (!Slot.CanInteract(IsBuildPhase, GetTownHallLevel())) return;
+        if (!Slot.CanInteract(IsBuildPhase, GetTownHallLevel()))
+        {
+            CloseModal();
+            SetVisualActive(false);
+            wasPlayerInZone = false;
+            return;
+        }
 
         DetectPlayer();
 
@@ -171,16 +179,18 @@ public class TowerPlacementZone : MonoBehaviour
 
         currentColor = highlightColor;
         enterTimer  += Time.deltaTime;
-        UpdateFloorCircle();
+        UpdateProgressCircle();
 
         if (enterTimer >= enterDelay)
         {
+            // A shared menu belongs to one zone until its interaction ends.
+            if (TowerSelectionModal.Instance != null && TowerSelectionModal.Instance.IsOpen) return;
             if (IsBuilt) OpenBuiltObjectModal();
             else         OpenModal();
         }
     }
 
-    private void UpdateFloorCircle()
+    private void UpdateProgressCircle()
     {
         if (placementCircleFill != null)
             placementCircleFill.fillAmount = Mathf.Clamp01(enterTimer / enterDelay);
@@ -224,85 +234,42 @@ public class TowerPlacementZone : MonoBehaviour
         }
 
         modalOpenedByMe = true;
-        TowerSelectionModal.Instance.Open(options, HandleOptionPicked);
+        TowerSelectionModal.Instance.Open(options, HandleOptionPicked, this);
+        modalOpenedByMe = TowerSelectionModal.Instance.Owner == this;
     }
 
     private void CloseModal()
     {
         if (modalOpenedByMe)
         {
-            if (TowerSelectionModal.Instance != null && TowerSelectionModal.Instance.IsOpen)
+            if (TowerSelectionModal.Instance != null && TowerSelectionModal.Instance.Owner == this)
                 TowerSelectionModal.Instance.Close();
-            if (TowerUpgradeModal.Instance != null && TowerUpgradeModal.Instance.IsOpen)
-                TowerUpgradeModal.Instance.Close();
         }
         modalOpenedByMe = false;
     }
 
     private void OpenBuiltObjectModal()
     {
-        if (BuiltBase != null) OpenBaseUpgradeModal();
-        else                   OpenUpgradeModal();
+        var modal = TowerSelectionModal.Instance;
+        if (modal == null || Slot.BuiltOption == null || !Slot.CanInteract(IsBuildPhase, GetTownHallLevel())) return;
+        // Buildings without an upgrade component have a single inspectable level.
+        int level = BuiltBase != null ? BuiltBase.CurrentLevel : BuiltTower != null ? BuiltTower.CurrentLevel : 0;
+        int? cost = BuiltBase != null ? BuiltBase.NextLevelData?.upgradeCost : BuiltTower?.NextLevelData?.upgradeCost;
+        bool unlocked = BuiltBase != null || (BuiltTower != null && BuiltTower.IsNextLevelUnlocked);
+        modal.OpenUpgrade(Slot.BuiltOption, level + 1, cost, unlocked, TryUpgradeBuilding, this);
+        modalOpenedByMe = modal.Owner == this;
     }
-
-    private void OpenUpgradeModal()
-    {
-        if (BuiltTower == null)
-        {
-            CancelProgress();
-            return;
-        }
-
-        if (TowerUpgradeModal.Instance == null)
-        {
-            Debug.LogWarning("[TowerPlacementZone] No TowerUpgradeModal in scene.", this);
-            CancelProgress();
-            return;
-        }
-        modalOpenedByMe = true;
-        TowerUpgradeModal.Instance.Open(BuiltTower, OnTowerUpgraded, TryUpgradeBuilding);
-    }
-
-    private void OpenBaseUpgradeModal()
-    {
-        if (BuiltBase == null)
-        {
-            Debug.LogWarning("[TowerPlacementZone] Town hall zone has no BaseUpgrade to open. Add BaseUpgrade to the town hall prefab.", this);
-            CancelProgress();
-            return;
-        }
-
-        if (TowerUpgradeModal.Instance == null)
-        {
-            Debug.LogWarning("[TowerPlacementZone] No TowerUpgradeModal in scene.", this);
-            CancelProgress();
-            return;
-        }
-
-        modalOpenedByMe = true;
-        TowerUpgradeModal.Instance.Open(BuiltBase, OnBaseUpgraded, TryUpgradeBuilding);
-    }
-
     private bool TryUpgradeBuilding()
     {
-        return isActiveAndEnabled && Slot.TryUpgrade(IsBuildPhase, GetTownHallLevel());
-    }
-
-    private void OnBaseUpgraded(BaseUpgrade baseUpgrade)
-    {
-        modalOpenedByMe = false;
-        if (TowerUpgradeModal.Instance != null && TowerUpgradeModal.Instance.IsOpen)
-            TowerUpgradeModal.Instance.Close();
-        SyncWithPhase();
-    }
-
-    private void OnTowerUpgraded(TowerUpgrade tower)
-    {
-        // In-place upgrade — same instance. Zone is "used" for this build phase.
-        modalOpenedByMe = false;
-        if (TowerUpgradeModal.Instance != null && TowerUpgradeModal.Instance.IsOpen)
-            TowerUpgradeModal.Instance.Close();
-        SyncWithPhase();
+        DetectPlayer();
+        if (!isActiveAndEnabled || !playerInZone)
+        {
+            CloseModal();
+            return false;
+        }
+        bool upgraded = Slot.TryUpgrade(IsBuildPhase, GetTownHallLevel());
+        if (upgraded) { modalOpenedByMe = false; SyncWithPhase(); }
+        return upgraded;
     }
 
     private void CancelProgress()
@@ -315,6 +282,8 @@ public class TowerPlacementZone : MonoBehaviour
     private void HandleOptionPicked(TowerOption opt)
     {
         modalOpenedByMe = false;
+        DetectPlayer();
+        if (!isActiveAndEnabled || !playerInZone) return;
 
         Vector3 pos = spawnPoint != null ? spawnPoint.position : transform.position;
         Quaternion rot = spawnPoint != null ? spawnPoint.rotation : transform.rotation;

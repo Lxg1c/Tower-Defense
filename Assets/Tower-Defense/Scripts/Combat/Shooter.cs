@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -31,7 +30,9 @@ public class Shooter : MonoBehaviour
 
     private DetectionZone detectionZone;
     private float fireCooldown;
-    private Coroutine fireRoutine;
+    private Damageable volleyTarget;
+    private int nextFirePoint;
+    private float nextShotTime;
 
     private void Awake()
     {
@@ -63,11 +64,7 @@ public class Shooter : MonoBehaviour
 
     private void OnDisable()
     {
-        if (fireRoutine != null)
-        {
-            StopCoroutine(fireRoutine);
-            fireRoutine = null;
-        }
+        volleyTarget = null;
 
         // Clear state so other systems (PlayerMovement rotation, etc.) stop reacting.
         HasTarget       = false;
@@ -93,13 +90,34 @@ public class Shooter : MonoBehaviour
             TargetDirection = dir.normalized;
 
         HasTarget = true;
+    }
 
+    // PlayerGunAim runs first in LateUpdate, after animation. Firing here keeps
+    // every shot in a staggered volley attached to the displayed muzzle pose.
+    private void LateUpdate()
+    {
         AimFirePoints(CurrentTarget);
+        if (volleyTarget != null && (!volleyTarget.IsTargetable || SuppressFire))
+            volleyTarget = null;
 
-        if (fireCooldown <= 0f && !SuppressFire && fireRoutine == null)
+        if (volleyTarget == null && CurrentTarget != null && fireCooldown <= 0f && !SuppressFire)
         {
-            fireRoutine = StartCoroutine(ShootVolley(CurrentTarget));
+            volleyTarget = CurrentTarget;
+            nextFirePoint = 0;
+            nextShotTime = Time.time;
             fireCooldown = 1f / fireRate;
+        }
+
+        while (volleyTarget != null && Time.time >= nextShotTime)
+        {
+            ShootFrom(firePoints[nextFirePoint++], volleyTarget);
+            if (volleyTarget == null || !isActiveAndEnabled || nextFirePoint >= firePoints.Length
+                || SuppressFire || !volleyTarget.IsTargetable)
+            {
+                volleyTarget = null;
+                break;
+            }
+            nextShotTime = Time.time + delayBetweenFirePoints;
         }
     }
 
@@ -145,26 +163,6 @@ public class Shooter : MonoBehaviour
             return false; // Something blocking the way
 
         return true;
-    }
-
-    private IEnumerator ShootVolley(Damageable target)
-    {
-        if (target == null)
-        {
-            fireRoutine = null;
-            yield break;
-        }
-
-        for (int i = 0; i < firePoints.Length; i++)
-        {
-            if (target == null || !target.IsTargetable || SuppressFire)
-                break;
-            ShootFrom(firePoints[i], target);
-            if (delayBetweenFirePoints > 0f && i < firePoints.Length - 1)
-                yield return new WaitForSeconds(delayBetweenFirePoints);
-        }
-
-        fireRoutine = null;
     }
 
     private void ShootFrom(Transform point, Damageable target)

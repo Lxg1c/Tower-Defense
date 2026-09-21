@@ -17,6 +17,7 @@ public sealed class BuildingSlot
     public bool UsedThisPhase { get; private set; }
     public TowerUpgrade BuiltTower { get; private set; }
     public BaseUpgrade BuiltBase { get; private set; }
+    public TowerOption BuiltOption { get; private set; }
 
     public BuildingSlot(TowerLoadout loadout, BuildSlotType allowedType, int requiredTownHallLevel)
     {
@@ -63,6 +64,7 @@ public sealed class BuildingSlot
         BuiltTower = building.GetComponentInChildren<TowerUpgrade>();
         BuiltBase = building.GetComponentInChildren<BaseUpgrade>();
         IsBuilt = true;
+        BuiltOption = option;
         UsedThisPhase = true;
         return true;
     }
@@ -72,7 +74,8 @@ public sealed class BuildingSlot
         if (!IsBuilt || !CanInteract(isBuildPhase, townHallLevel))
             return false;
 
-        bool upgraded = BuiltBase != null ? BuiltBase.TryUpgrade() : BuiltTower.TryUpgrade();
+        bool upgraded = BuiltBase != null ? BuiltBase.TryUpgrade()
+            : BuiltTower != null && BuiltTower.TryUpgrade();
         if (upgraded)
             UsedThisPhase = true;
         return upgraded;

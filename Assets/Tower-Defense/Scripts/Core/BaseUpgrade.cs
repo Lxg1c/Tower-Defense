@@ -28,6 +28,7 @@ public class BaseUpgrade : MonoBehaviour
     public UnityEvent onUpgraded;
 
     public int CurrentLevel => currentLevel;
+    public System.Collections.Generic.IReadOnlyList<BaseUpgradeLevel> Levels => levels;
     public int TownHallLevel => currentLevel + 1;
     public bool HasNextLevel => levels != null && currentLevel < levels.Length;
     public int MaxBuildUpgradeLevel => CurrentLevelData != null

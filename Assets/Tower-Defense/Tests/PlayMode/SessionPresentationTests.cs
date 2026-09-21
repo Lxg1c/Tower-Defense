@@ -154,14 +154,14 @@ namespace TowerDefense.Tests
             guide.gameObject.SetActive(true);
             yield return null;
             Assert.That(panel.activeSelf, Is.True);
-            Assert.That(label.text, Does.StartWith("BUILD YOUR BASE"));
+            Assert.That(label.text, Is.EqualTo("Stand on the home marker to build your base"));
 
             guide.enabled = false;
             var townHall = New("Base").AddComponent<Base>();
             townHall.gameObject.SetActive(true);
-            Assert.That(label.text, Does.StartWith("BUILD YOUR BASE"), "Disabled guide must detach its listeners.");
+            Assert.That(label.text, Is.EqualTo("Stand on the home marker to build your base"), "Disabled guide must detach its listeners.");
             guide.enabled = true;
-            Assert.That(label.text, Does.StartWith("PREPARE YOUR DEFENSES"));
+            Assert.That(label.text, Does.StartWith("Prepare your defenses"));
             bool hiddenDuringCombat = false;
             spawner.onCombatPhaseStarted.AddListener((_, __, ___) =>
             {

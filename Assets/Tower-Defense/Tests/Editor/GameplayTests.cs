@@ -100,7 +100,6 @@ namespace TowerDefense.Tests
         }
 
         [TestCase("TowerSelectionModal")]
-        [TestCase("TowerUpgradeModal")]
         [TestCase("BaseUpgradeModal")]
         public void BuildMenusRequireAWallet(string modalType)
         {
@@ -110,7 +109,6 @@ namespace TowerDefense.Tests
             switch (modalType)
             {
                 case "TowerSelectionModal": root.AddComponent<TowerSelectionModal>().Open(Array.Empty<TowerOption>(), null); break;
-                case "TowerUpgradeModal": root.AddComponent<TowerUpgradeModal>().Open((TowerUpgrade)null); break;
                 case "BaseUpgradeModal": root.AddComponent<BaseUpgradeModal>().Open(); break;
             }
         }

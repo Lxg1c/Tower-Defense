@@ -3,14 +3,18 @@ using UnityEngine;
 /// <summary>Fits a direct child of a full-screen Canvas to the device safe area.</summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(RectTransform))]
+[ExecuteAlways]
 public sealed class ScreenSafeArea : MonoBehaviour
 {
     private RectTransform rect;
     private Rect lastArea;
     private Vector2Int lastSize;
 
-    private void Awake() => rect = (RectTransform)transform;
-    private void OnEnable() => Apply();
+    private void OnEnable()
+    {
+        rect = (RectTransform)transform;
+        Apply();
+    }
     private void Update()
     {
         if (lastArea != Screen.safeArea || lastSize.x != Screen.width || lastSize.y != Screen.height)

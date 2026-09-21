@@ -36,6 +36,7 @@ public class TowerUpgrade : MonoBehaviour
     public UnityEvent onUpgraded;
 
     public int CurrentLevel => currentLevel;
+    public System.Collections.Generic.IReadOnlyList<TowerUpgradeLevel> Levels => levels;
     public bool HasNextLevel => levels != null && currentLevel < levels.Length;
     public int NextUpgradeLevel => currentLevel + 1;
     public int MaxUnlockedLevel => BaseUpgrade.Instance != null

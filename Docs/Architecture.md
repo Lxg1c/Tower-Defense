@@ -10,8 +10,8 @@ and health presentation. Enemy AI and entity death/respawn remain component-base
 3. `MobCore.Update`: enemy targeting, navigation and attack coordination.
 4. `BuildingSlot`: building ownership, purchases and upgrades.
 5. `TowerPlacementZone`: player interaction and presentation around a slot.
-6. `TowerUpgrade` / `BaseUpgrade`, then `UpgradeStatsFormatter`: upgrade numbers
-   and the separate code that displays them.
+6. `TowerUpgrade` / `BaseUpgrade`, then `BuildingLevelList` and `TowerCard`: upgrade
+   numbers and the shared level-list presentation.
 
 ## Building flow
 
@@ -47,11 +47,31 @@ The phase and unlock checks run at submission time, including upgrades.
 `TowerPlacementZone` keeps the existing serialized Inspector fields, so current
 prefabs and scenes need no field migration. It handles player proximity, progress
 indicators, modal interactions and spawn animation. Its public building properties
-delegate to its slot. Combat and disabling the zone close its active modal.
+delegate to its slot. Leaving the zone, losing interaction eligibility, combat
+and disabling the zone close its owned panel. Shared panels record their owning
+zone; overlapping zones cannot steal or close another zone's interaction.
+Build and upgrade submissions recheck physical proximity before spending coins.
+The panel roots have no active full-screen backdrop or pointer blocker, and no
+Close buttons. The joystick remains available while a panel is open.
 
-`TowerUpgradeModal` accepts an optional upgrade operation. Zones provide their
-validated operation; callers without a zone keep the direct upgrade behavior.
-The completion callback is a notification after a successful upgrade.
+`TowerSelectionModal` now owns both construction and upgrades through the shared
+`BuildingModal.prefab` and `TowerCard.prefab`. Zones supply their validated purchase
+operation and the original `BuildingSlot.BuiltOption`, so the same name, icon and
+authored progression remain available after construction. The separate
+`TowerUpgradeModal` controller and prefab have been removed. A card from an older
+opening cannot submit a transaction after the panel is closed or repopulated.
+
+`BuildingLevelList` reads prefab stats and every authored upgrade without spawning
+objects. `BuildingLevelRow` displays the one-based level, health, and damage (or
+mine income); a missing attack capability is shown as a dash. The current level
+is highlighted and the next level is brighter. The level list scrolls if needed.
+`BuildingSlot.CanInteract` hides built-building points unless a next upgrade is
+unlocked; Town Hall points need only a remaining level. Town Hall changes refresh
+zone visibility immediately. Insufficient funds disable purchasing in the panel.
+`PlacementProgressIndicator` projects hold progress into a Screen Space Overlay
+Canvas above the zone, using the gameplay MainCamera. The Level scene shares its
+HUD canvas; the reusable zone prefab includes its own overlay. Indicators never
+block input, stay full while the modal is open, and clear on exit, purchase, phase changes and zone disabling.
 
 ## Upgrade data and display
 
@@ -171,3 +191,9 @@ canvases to device safe bounds. Both HUD canvases share height-based scaling.
 - Define ownership of ally death cleanup and replacement.
 - Replace singleton lookups selectively with explicit dependencies when touching
   those systems; a new dependency-injection framework is unnecessary.
+
+Player weapon presentation: `PlayerGunAim` applies vertical pitch to both robot
+gun bones after animation, while `PlayerMovement` owns horizontal turning.
+The Player prefab assigns both bones explicitly; muzzle markers are children of
+their respective guns. Elevation/depression limits and turn speed are tunable on
+`PlayerGunAim`. Target loss returns the guns to the animated pose.
