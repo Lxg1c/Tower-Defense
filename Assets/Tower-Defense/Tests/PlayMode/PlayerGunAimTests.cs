@@ -11,7 +11,7 @@ namespace TowerDefense.Tests
         private GameObject player, targetObject, projectile;
         private PlayerGunAim aim;
         private Shooter shooter;
-        private Transform first, second, muzzle;
+        private Transform first, second, muzzle, head;
         private Quaternion firstRest, secondRest;
 
         [UnitySetUp]
@@ -30,6 +30,8 @@ namespace TowerDefense.Tests
             second = new GameObject("Second gun").transform;
             first.SetParent(player.transform);
             second.SetParent(player.transform);
+            head = new GameObject("Head").transform;
+            head.SetParent(player.transform);
             // Reproduce the imported robot's opposing bone axes.
             first.localRotation = firstRest = Quaternion.Euler(0, 0, -90);
             second.localRotation = secondRest = Quaternion.Euler(0, 0, 90);
@@ -44,6 +46,7 @@ namespace TowerDefense.Tests
             Set(aim, "shooter", shooter);
             Set(aim, "firstGun", first);
             Set(aim, "secondGun", second);
+            Set(aim, "head", head);
             player.SetActive(true);
             Physics.SyncTransforms();
             yield return new WaitForSeconds(0.7f);
@@ -57,6 +60,7 @@ namespace TowerDefense.Tests
             Assert.That(shooter.HasTarget, Is.True);
             Assert.That(first.forward.y, Is.GreaterThan(0.6f));
             Assert.That(second.forward.y, Is.GreaterThan(0.6f));
+            Assert.That(head.forward.y, Is.GreaterThan(0.6f));
             Assert.That(muzzle.position.y, Is.GreaterThan(0.6f));
             Assert.That(Vector3.Angle(player.transform.up, Vector3.up), Is.LessThan(0.01f));
             var settled = first.rotation;
@@ -64,6 +68,7 @@ namespace TowerDefense.Tests
             yield return new WaitForEndOfFrame();
             Assert.That(Quaternion.Angle(settled, first.rotation), Is.LessThan(0.1f),
                 "Pitch must not accumulate on bones without animation curves.");
+            Assert.That(Quaternion.Angle(head.rotation, Quaternion.LookRotation(first.forward)), Is.LessThan(0.1f));
         }
 
         [UnityTest]
@@ -75,11 +80,13 @@ namespace TowerDefense.Tests
             yield return new WaitForEndOfFrame();
             Assert.That(first.forward.y, Is.EqualTo(-Mathf.Sin(45 * Mathf.Deg2Rad)).Within(0.01f));
             Assert.That(second.forward.y, Is.EqualTo(first.forward.y).Within(0.01f));
+            Assert.That(head.forward.y, Is.EqualTo(first.forward.y).Within(0.01f));
             targetObject.SetActive(false);
             yield return new WaitForSeconds(0.7f);
             yield return new WaitForEndOfFrame();
             Assert.That(Quaternion.Angle(first.localRotation, firstRest), Is.LessThan(0.1f));
             Assert.That(Quaternion.Angle(second.localRotation, secondRest), Is.LessThan(0.1f));
+            Assert.That(Quaternion.Angle(head.localRotation, Quaternion.identity), Is.LessThan(0.1f));
         }
 
         [UnityTest]
@@ -108,6 +115,7 @@ namespace TowerDefense.Tests
         public IEnumerator DisablingAimRestoresPoseAndDisablingShooterRelaxesGuns()
         {
             aim.enabled = false;
+            Assert.That(Quaternion.Angle(head.localRotation, Quaternion.identity), Is.LessThan(0.1f));
             Assert.That(Quaternion.Angle(first.localRotation, firstRest), Is.LessThan(0.1f));
             Assert.That(Quaternion.Angle(second.localRotation, secondRest), Is.LessThan(0.1f));
             aim.enabled = true;

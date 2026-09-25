@@ -8,19 +8,21 @@ public sealed class PlayerGunAim : MonoBehaviour
     [SerializeField] private Shooter shooter;
     [SerializeField] private Transform firstGun;
     [SerializeField] private Transform secondGun;
+    [SerializeField] private Transform head;
     [SerializeField, Range(0f, 89f)] private float maxElevation = 80f;
     [SerializeField, Range(0f, 89f)] private float maxDepression = 45f;
     [SerializeField, Min(1f)] private float rotationSpeed = 180f;
 
-    private readonly Quaternion[] animatedRotations = new Quaternion[2];
-    private readonly float[] pitches = new float[2];
+    private readonly Quaternion[] animatedRotations = new Quaternion[3];
+    private readonly float[] pitches = new float[3];
     private bool poseApplied;
 
     private void Awake()
     {
-        if (shooter == null || firstGun == null || secondGun == null || firstGun == secondGun)
+        if (shooter == null || firstGun == null || secondGun == null || head == null ||
+            firstGun == secondGun || head == firstGun || head == secondGun)
         {
-            Debug.LogError("[PlayerGunAim] Assign a shooter and two distinct gun bones.", this);
+            Debug.LogError("[PlayerGunAim] Assign a shooter, two distinct gun bones and a separate head bone.", this);
             enabled = false;
         }
     }
@@ -35,6 +37,7 @@ public sealed class PlayerGunAim : MonoBehaviour
         if (target != null && !target.IsTargetable) target = null;
         Aim(firstGun, 0, target);
         Aim(secondGun, 1, target);
+        Aim(head, 2, target);
         poseApplied = true;
     }
 
@@ -61,12 +64,13 @@ public sealed class PlayerGunAim : MonoBehaviour
         if (!poseApplied) return;
         if (firstGun != null) firstGun.localRotation = animatedRotations[0];
         if (secondGun != null) secondGun.localRotation = animatedRotations[1];
+        if (head != null) head.localRotation = animatedRotations[2];
         poseApplied = false;
     }
 
     private void OnDisable()
     {
         RestoreAnimatedPose();
-        pitches[0] = pitches[1] = 0f;
+        pitches[0] = pitches[1] = pitches[2] = 0f;
     }
 }

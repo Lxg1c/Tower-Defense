@@ -9,6 +9,7 @@ public sealed class LevelSetup : MonoBehaviour
     [SerializeField] private LevelDefinition directPlayLevel;
     [SerializeField] private WaveSpawner spawner;
     [SerializeField] private PlayerWallet wallet;
+    public LevelDefinition CurrentLevel { get; private set; }
 
     private void Awake()
     {
@@ -18,6 +19,7 @@ public sealed class LevelSetup : MonoBehaviour
             var level = RunSelection.Resolve(gameObject.scene.name, directPlayLevel);
             spawner.ConfigureLevel(level);
             wallet.ConfigureStartingCoins(level.startingCoins);
+            CurrentLevel = level;
         }
         catch (ArgumentException exception)
         {

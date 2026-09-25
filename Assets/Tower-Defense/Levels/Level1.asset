@@ -15,6 +15,7 @@ MonoBehaviour:
   displayName: Level 1
   description: Learn to build, earn coins and hold off ground attackers.
   difficulty: INTRODUCTION
+  nextLevel: {fileID: 11400000, guid: 08356835dcd40d449ac51205d131c9c5, type: 2}
   startingCoins: 12
   waves:
   - coinReward: 4

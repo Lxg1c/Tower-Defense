@@ -39,6 +39,18 @@ namespace TowerDefense.Tests
         }
 
         [Test]
+        public void VictoryAdvancesThroughLevelsAndStopsAtTheLast()
+        {
+            RunSelection.Select(Level(1), "Level");
+            Assert.That(RunSelection.TrySelectNext(Level(1), "Level"), Is.True);
+            Assert.That(RunSelection.Resolve("Level", null), Is.EqualTo(Level(2)));
+            Assert.That(RunSelection.TrySelectNext(Level(2), "Level"), Is.True);
+            Assert.That(RunSelection.Resolve("Level", null), Is.EqualTo(Level(3)));
+            Assert.That(RunSelection.TrySelectNext(Level(3), "Level"), Is.False);
+            Assert.That(RunSelection.Resolve("Level", null), Is.EqualTo(Level(3)));
+        }
+
+        [Test]
         public void SelectionAndRestartPreserveAuthoredDataAndMenuClearsSelection()
         {
             RunSelection.Select(Level(2), "Level");

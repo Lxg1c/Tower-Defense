@@ -367,6 +367,7 @@ MonoBehaviour:
   shooter: {fileID: 5752556234440033996}
   firstGun: {fileID: 1060760576080830888}
   secondGun: {fileID: 5256401004253501316}
+  head: {fileID: 59969910025052596}
   maxElevation: 80
   maxDepression: 45
   rotationSpeed: 180
@@ -490,6 +491,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2842446286308023425}
   m_SourcePrefab: {fileID: 100100000, guid: 7354c8a7d357aed47af7f101d7bbceaf, type: 3}
+--- !u!4 &59969910025052596 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3405245765916882358, guid: 7354c8a7d357aed47af7f101d7bbceaf, type: 3}
+  m_PrefabInstance: {fileID: 3428596851339793410}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1060760576080830888 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2390363241322182058, guid: 7354c8a7d357aed47af7f101d7bbceaf, type: 3}

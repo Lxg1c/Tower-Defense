@@ -49,6 +49,8 @@ public abstract class MenuScreenBase : MonoBehaviour
 
     public void GoToMainMenu()
     {
+        GameAudioSettings.Save();
+        RunSelection.Clear();
         Time.timeScale = 1f;
         SceneManager.LoadScene(mainMenuSceneName);
     }

@@ -7,6 +7,9 @@ public class PauseMenu : MenuScreenBase
     [Header("Pause Buttons")]
     [SerializeField] private Button pauseButton;
     [SerializeField] private Button resumeButton;
+    [SerializeField] private GameObject menuContent;
+    [SerializeField] private GameObject settingsContent;
+    [SerializeField] private WaveSpawner spawner;
 
     public bool IsPaused { get; private set; }
 
@@ -29,7 +32,10 @@ public class PauseMenu : MenuScreenBase
 
     public void Pause()
     {
+        if (spawner != null && (spawner.CurrentPhase == WaveSpawner.Phase.AllCompleted ||
+            spawner.CurrentPhase == WaveSpawner.Phase.Defeated)) return;
         IsPaused = true;
+        ShowPauseOptions();
         Show();
         Time.timeScale = 0f;
     }
@@ -39,5 +45,19 @@ public class PauseMenu : MenuScreenBase
         IsPaused = false;
         Hide();
         Time.timeScale = 1f;
+    }
+
+    public void ShowSettings()
+    {
+        if (!IsPaused) return;
+        menuContent.SetActive(false);
+        settingsContent.SetActive(true);
+    }
+
+    public void ShowPauseOptions()
+    {
+        settingsContent.SetActive(false);
+        menuContent.SetActive(true);
+        GameAudioSettings.Save();
     }
 }

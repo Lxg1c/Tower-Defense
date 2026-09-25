@@ -7,6 +7,8 @@ public sealed class LevelDefinition : ScriptableObject
     public string displayName;
     [TextArea] public string description;
     public string difficulty;
+    [Tooltip("Next authored level after victory. Leave empty for the final level.")]
+    public LevelDefinition nextLevel;
     [Min(0)] public int startingCoins = 10;
     [Tooltip("Groups run in order. Point 0 is the first entry in the scene's Spawn Points array.")]
     public LevelWave[] waves;

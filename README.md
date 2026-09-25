@@ -46,7 +46,8 @@ Base destruction ends the run; clearing the final wave wins.
 
 ### Authored levels on one map
 
-Main Menu offers **Level 1**, **Level 2**, and **Level 3**. Select a level and
+Main Menu shows one level card at a time. Swipe horizontally, use the side arrows,
+or choose a page number to select **Level 1**, **Level 2**, or **Level 3**, and
 press **Play Level**. All choices load the same Level scene with different
 authored waves, spawn directions and starting coins. Restart retains the selected
 level; returning to the menu clears it. Direct Editor play uses the explicitly
@@ -223,3 +224,16 @@ Local `.vscode` and `.claude` settings are ignored and are not tracked.
 
 Project code is covered by the repository's MIT `LICENSE`. Consult the included
 licenses for third-party assets and packages.
+
+### Main menu and sound
+
+The home screen opens level selection, audio settings, or exits the game. Music and
+sound effects have separate sliders (0–100%). Changes apply immediately and persist
+in PlayerPrefs. Music uses BackgroundMusic; other AudioSources follow the effects
+volume. Back returns to the home screen.
+
+During gameplay, Pause offers Resume, Settings, Restart and Main Menu. Audio
+settings work while paused and share the saved music/effects volumes with the
+home menu. Victory offers Next Level, Replay and Main Menu; defeat offers Main
+Menu. Set Next Level on each LevelDefinition to author progression, and leave it
+empty on the final level. The same Level scene is reused for every encounter.

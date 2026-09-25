@@ -15,6 +15,7 @@ MonoBehaviour:
   displayName: Level 3
   description: Armored attackers and mixed waves test your complete defense.
   difficulty: CHALLENGING
+  nextLevel: {fileID: 0}
   startingCoins: 10
   waves:
   - coinReward: 4

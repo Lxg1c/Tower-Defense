@@ -19,6 +19,8 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private UnityEngine.UI.Button startButton;
     private int selectedIndex;
     private UnityEngine.UI.Button[] buttons;
+    public int SelectedIndex => selectedIndex;
+    public int LevelCount => levels?.Length ?? 0;
 
     private void Awake()
     {
@@ -40,7 +42,7 @@ public class MainMenu : MonoBehaviour
             int index = i;
             var button = Instantiate(levelButtonTemplate, levelButtonContainer);
             button.name = $"Level{i + 1}";
-            button.GetComponentInChildren<TMP_Text>(true).text = levels[i] != null ? levels[i].displayName : "NOT CONFIGURED";
+            button.GetComponentInChildren<TMP_Text>(true).text = (i + 1).ToString();
             button.onClick.AddListener(() => SelectLevel(index));
             button.gameObject.SetActive(true);
             buttons[i] = button;
@@ -53,9 +55,24 @@ public class MainMenu : MonoBehaviour
         if (!enabled || index < 0 || index >= levels.Length) return;
         selectedIndex = index;
         startButton.interactable = false;
-        for (int i = 0; i < buttons.Length; i++) buttons[i].interactable = i != index;
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            bool selected = i == index;
+            buttons[i].transition = UnityEngine.UI.Selectable.Transition.None;
+            buttons[i].targetGraphic.material = null;
+            buttons[i].targetGraphic.canvasRenderer.SetColor(Color.white);
+            buttons[i].targetGraphic.color = selected ? new Color(.08f, .85f, .87f) : new Color(.045f, .12f, .15f);
+            buttons[i].GetComponentInChildren<TMP_Text>(true).color = selected
+                ? new Color(.015f, .05f, .07f) : new Color(.7f, .8f, .83f);
+        }
         var level = levels[index];
-        if (level == null) { wavePreview.text = "Level is not configured."; return; }
+        if (level == null)
+        {
+            levelLabel.text = $"LEVEL {index + 1}";
+            levelDescription.text = "";
+            wavePreview.text = "Level is not configured.";
+            return;
+        }
         levelLabel.text = level.displayName + "  /  " + level.difficulty;
         levelDescription.text = level.description;
         try

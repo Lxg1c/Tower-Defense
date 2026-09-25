@@ -124,13 +124,17 @@ authoring fields, without the spawner's legacy prefab or icon alternatives.
 Validation rejects missing enemies, invalid counts/timings/rewards and invalid
 spawn-point indices. CreateWaves copies data into fresh runtime arrays.
 
-MainMenu creates selection buttons from its Levels list and previews the chosen
+MainMenu creates page selectors from its Levels list and previews the chosen
 encounter. Start stores the asset and target scene in RunSelection, then loads
 the shared Level scene. LevelSetup executes before the wallet's Awake and the
 spawner's Start: it resolves the selection, validates scene spawn references,
 configures waves and sets starting coins. Direct scene entry uses its explicitly
 assigned Direct Play Level. Missing configuration stops setup with an error.
 Restart retains the selection but creates fresh runtime waves and coins.
+`LevelSwipePager` handles horizontal dragging and arrow navigation for the single
+level card. Short or vertical gestures snap back without changing the selection;
+page bounds are clamped, and settling uses unscaled time.
+
 Main Menu and Play Mode subsystem initialization clear the static selection.
 
 The seeded-wave prototype and inline scene waves have been removed. WaveSpawner
@@ -197,3 +201,26 @@ gun bones after animation, while `PlayerMovement` owns horizontal turning.
 The Player prefab assigns both bones explicitly; muzzle markers are children of
 their respective guns. Elevation/depression limits and turn speed are tunable on
 `PlayerGunAim`. Target loss returns the guns to the animated pose.
+
+## Menu screens and audio preferences
+
+MainMenuScreens owns home, level selection and settings visibility. MainMenu owns
+the selected level and explicitly colors the active page independently of keyboard
+focus or button disabled state.
+
+GameAudioSettings loads Music/Effects preferences before scenes start. Effects use
+AudioListener.volume; BackgroundMusic sets ignoreListenerVolume and multiplies its
+authored volume by the music preference. Other sound sources must keep
+ignoreListenerVolume disabled. This covers spawned and pooled effects without a
+scene scan. UI changes are persisted on leaving settings and disabling the menu.
+
+PauseMenu keeps gameplay paused while its audio panel is open. AudioSettingsPanel
+binds the same GameAudioSettings preferences as the home menu and saves on close.
+Outcome screens offer Main Menu; VictoryScreen additionally offers Next Level only
+after a completed session with an assigned LevelDefinition.nextLevel. LevelSetup
+exposes the resolved CurrentLevel, including direct Editor entry. Next Level selects
+the next asset and reloads the shared scene; the last level has no successor.
+The authored chain is Level1 -> Level2 -> Level3. Main-menu transitions clear the
+selection and restore time scale. Defeat exposes only Main Menu.
+PlayerGunAim now also pitches the explicitly assigned head bone, restoring its
+animated pose before each frame and on disable, just like both weapon bones.

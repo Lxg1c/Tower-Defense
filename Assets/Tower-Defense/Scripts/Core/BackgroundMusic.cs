@@ -33,6 +33,20 @@ public class BackgroundMusic : MonoBehaviour
             Play();
     }
 
+    private void OnEnable()
+    {
+        if (Instance != this) return;
+        GameAudioSettings.Changed += ApplyVolume;
+        ApplyVolume();
+    }
+
+    private void OnDisable() => GameAudioSettings.Changed -= ApplyVolume;
+
+    private void ApplyVolume()
+    {
+        if (audioSource != null) audioSource.volume = volume * GameAudioSettings.Music;
+    }
+
     private void OnValidate()
     {
         if (audioSource == null)
@@ -68,7 +82,8 @@ public class BackgroundMusic : MonoBehaviour
     private void ConfigureSource()
     {
         audioSource.clip = musicClip;
-        audioSource.volume = volume;
+        audioSource.ignoreListenerVolume = true;
+        ApplyVolume();
         audioSource.loop = true;
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 0f;

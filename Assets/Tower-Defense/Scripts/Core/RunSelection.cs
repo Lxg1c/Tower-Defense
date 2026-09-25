@@ -7,6 +7,15 @@ public static class RunSelection
     private static LevelDefinition level;
     private static string sceneName;
 
+    public static bool TrySelectNext(LevelDefinition current, string targetScene)
+    {
+        if (current == null) throw new ArgumentNullException(nameof(current));
+        if (current.nextLevel == null) return false;
+        if (current.nextLevel == current) throw new ArgumentException("A level cannot follow itself.");
+        Select(current.nextLevel, targetScene);
+        return true;
+    }
+
     public static void Select(LevelDefinition selection, string targetScene)
     {
         if (selection == null) throw new ArgumentNullException(nameof(selection));

@@ -15,6 +15,11 @@ namespace TowerDefense.Tests
             var so = new SerializedObject(aim);
             var first = (Transform)so.FindProperty("firstGun").objectReferenceValue;
             var second = (Transform)so.FindProperty("secondGun").objectReferenceValue;
+            var head = (Transform)so.FindProperty("head").objectReferenceValue;
+            Assert.That(head, Is.Not.Null);
+            Assert.That(head.name, Is.EqualTo("head"));
+            Assert.That(head.IsChildOf(first), Is.False);
+            Assert.That(head.IsChildOf(second), Is.False);
             var shooter = (Shooter)so.FindProperty("shooter").objectReferenceValue;
             Assert.That(first.name, Is.EqualTo("main_gun"));
             Assert.That(second.name, Is.EqualTo("sec_gun"));
