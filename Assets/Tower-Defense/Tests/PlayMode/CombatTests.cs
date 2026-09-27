@@ -198,6 +198,19 @@ namespace TowerDefense.Tests
             Assert.That(projectile == null, Is.True);
         }
 
+        [UnityTest]
+        public IEnumerator FastProjectileCannotSkipAThinTargetInOneFrame()
+        {
+            var target = Target(new Vector3(0, 0, 3));
+            var projectile = NewObject("Fast projectile").AddComponent<Projectile>();
+            Set(projectile, "speed", 5000f);
+            projectile.Init(target, 12f);
+            yield return null;
+            Assert.That(target.CurrentHealth, Is.EqualTo(target.MaxHealth - 12f));
+            yield return null;
+            Assert.That(projectile == null, Is.True);
+        }
+
         private GameObject NewObject(string name, bool active = true)
         {
             var go = new GameObject(name);

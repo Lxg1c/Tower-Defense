@@ -246,3 +246,8 @@ settings work while paused and share the saved music/effects volumes with the
 home menu. Victory offers Next Level, Replay and Main Menu; defeat offers Main
 Menu. Set Next Level on each LevelDefinition to author progression, and leave it
 empty on the final level. The same Level scene is reused for every encounter.
+
+The ultimate waits eight seconds after a short charge and ten seconds after a
+full charge: the 3–5 second charge cooldown has an additional five-second delay.
+Its button shows the remaining seconds, while
+the radial fill drains from the charge reached before firing.

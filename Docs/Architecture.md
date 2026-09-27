@@ -232,3 +232,9 @@ The authored chain is Level1 -> Level2 -> Level3. Main-menu transitions clear th
 selection and restore time scale. Defeat exposes only Main Menu.
 PlayerGunAim now also pitches the explicitly assigned head bone, restoring its
 animated pose before each frame and on disable, just like both weapon bones.
+
+`PlayerUltimate` adds a five-second delay to its three-to-five-second charge
+cooldown, for eight to ten seconds total. `UltimateButton` shows the remaining seconds
+in a badge and drains the radial fill from the achieved charge level. Both
+normal bullet prefabs fly faster; `Projectile` checks the movement
+segment each frame so it cannot step across a target without hitting it.

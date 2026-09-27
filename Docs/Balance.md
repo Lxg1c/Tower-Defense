@@ -157,3 +157,18 @@ a standalone Player build was not part of this pass.
 Capture minimum base HP during combat: end-of-wave repairs would hide damage in
 an end-of-wave-only measurement. Automated tests can protect mechanics; they
 cannot establish whether the game feels fair or fun.
+
+## September 2026 difficulty pass
+
+The earlier measurements above describe the previous balance. The new pass raises
+enemy health to 90/120/90/360 and attack damage to 6/12/7/35.
+Level 1 begins with 8 spiders and ends with 13 spiders plus 3 shooters. Levels 2
+and 3 introduce bats and destroyers sooner and contain more enemies. Spawn
+intervals are 1.05 seconds in Level 1 and 0.85 seconds in Levels 2–3. The
+`LevelDefinition` assets remain the developer's place to tune each wave.
+
+Normal bullet prefabs now fly at 32 units/second and the ultimate at 30, with an
+eight-second cooldown after a short charge that reaches ten seconds after a full charge.
+Automated tests cover cooldown and high-speed
+projectile hits. Human playtests are still needed to judge whether the increased
+enemy pressure feels fair.

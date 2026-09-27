@@ -23,24 +23,24 @@ MonoBehaviour:
     - spawnPointIndex: 0
       entries:
       - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
-        count: 6
-        spawnInterval: 1.2
-  - coinReward: 4
-    spawnGroups:
-    - spawnPointIndex: 0
-      entries:
-      - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
         count: 8
-        spawnInterval: 1.2
+        spawnInterval: 1.05
   - coinReward: 4
     spawnGroups:
     - spawnPointIndex: 0
       entries:
       - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
-        count: 10
-        spawnInterval: 1.2
+        count: 11
+        spawnInterval: 1.05
+  - coinReward: 4
+    spawnGroups:
+    - spawnPointIndex: 0
+      entries:
+      - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
+        count: 13
+        spawnInterval: 1.05
     - spawnPointIndex: 0
       entries:
       - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
-        count: 2
-        spawnInterval: 1.2
+        count: 3
+        spawnInterval: 1.05

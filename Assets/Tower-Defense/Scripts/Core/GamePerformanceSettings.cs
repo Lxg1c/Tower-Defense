@@ -18,14 +18,7 @@ public static class GamePerformanceSettings
         QualitySettings.vSyncCount = 0;
         OnDemandRendering.renderFrameInterval = 1;
         // Mobile's default (-1) is 30 FPS, not unlimited. Request the display rate.
-        Application.targetFrameRate = 180;
-    }
-
-    public static int SelectTargetFrameRate(bool mobile, double refreshRate)
-    {
-        if (!mobile) return -180;
-        return refreshRate > 0 && !double.IsInfinity(refreshRate)
-            ? (int)Math.Ceiling(refreshRate) : 60;
+        Application.targetFrameRate = 240;
     }
 
     public static void ToggleFps()

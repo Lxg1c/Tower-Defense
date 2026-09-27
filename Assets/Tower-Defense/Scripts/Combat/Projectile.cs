@@ -75,11 +75,18 @@ public class Projectile : MonoBehaviour
 
         Quaternion targetRotation = Quaternion.LookRotation(dir);
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
-        Move(transform.forward);
-
-        // Check if close enough to hit
-        if (dir.sqrMagnitude <= hitDistance * hitDistance)
+        Vector3 moveDirection = transform.forward;
+        float step = speed * Time.deltaTime;
+        Vector3 closestPoint = transform.position + moveDirection *
+            Mathf.Clamp(Vector3.Dot(dir, moveDirection), 0f, step);
+        if ((closestPoint - target.transform.position).sqrMagnitude <= hitDistance * hitDistance)
+        {
+            transform.position = closestPoint;
             Hit();
+            return;
+        }
+
+        Move(moveDirection);
     }
 
     private void FlyStraight()

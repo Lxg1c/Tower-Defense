@@ -107,7 +107,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6acd8d04ce665a4fb5998337a01ae3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 75
+  maxHealth: 90
   onHealthChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -132,7 +132,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdaf58ad3660d6b4e8b5427dea31023a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 5
+  damage: 7
   fireRate: 1
   attackRange: 12
   projectilePrefab: {fileID: 2491343143989108405, guid: d2fd2cf53f87d3749987c517c35bfdc7, type: 3}

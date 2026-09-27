@@ -31,7 +31,7 @@ public sealed class FpsDisplay : MonoBehaviour
         elapsed += Time.unscaledDeltaTime;
         frames++;
         if (elapsed < 0.25f) return;
-        label.SetText("FPS: {0:0}", frames / elapsed);
+        label.text = $"FPS: {Mathf.RoundToInt(frames / elapsed)}";
         elapsed = 0;
         frames = 0;
     }

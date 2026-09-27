@@ -396,7 +396,6 @@ GameObject:
   - component: {fileID: 8031650495811567314}
   - component: {fileID: 2367096496996322632}
   - component: {fileID: 2458244100425565123}
-  - component: {fileID: 3834485241931155262}
   m_Layer: 5
   m_Name: SelectTowerButton
   m_TagString: Untagged
@@ -422,8 +421,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 0, y: 40}
-  m_SizeDelta: {x: -50.000008, y: 50}
+  m_AnchoredPosition: {x: 0, y: 42}
+  m_SizeDelta: {x: -42, y: 58}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8031650495811567314
 CanvasRenderer:
@@ -507,24 +506,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &3834485241931155262
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1070916908189859801}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: abb90c039aeafe64db476d199df3dfb3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pressedScale: 1.1
-  pressDuration: 0.08
-  releaseDuration: 0.12
-  pressEase: 6
-  releaseEase: 27
-  ignoreTimeScale: 1
 --- !u!1 &1085644097314340385
 GameObject:
   m_ObjectHideFlags: 0
@@ -563,7 +544,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 360, y: 400}
+  m_SizeDelta: {x: 380, y: 420}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3599069387706977315
 CanvasRenderer:
@@ -640,9 +621,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0
   m_MinWidth: 240
-  m_MinHeight: 360
-  m_PreferredWidth: 360
-  m_PreferredHeight: 400
+  m_MinHeight: 380
+  m_PreferredWidth: 380
+  m_PreferredHeight: 420
   m_FlexibleWidth: 0
   m_FlexibleHeight: 1
   m_LayoutPriority: 1
@@ -680,7 +661,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 0, y: 90}
+  m_AnchoredPosition: {x: 0, y: 94}
   m_SizeDelta: {x: -16, y: 28}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4180211630736660611

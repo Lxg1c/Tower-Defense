@@ -75,7 +75,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6acd8d04ce665a4fb5998337a01ae3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 75
+  maxHealth: 90
   onHealthChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -100,7 +100,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0985ff250727c0346b85cc1ebb38fc75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 5
+  damage: 6
   attackRate: 1
   attackRange: 5
   multipliers: []

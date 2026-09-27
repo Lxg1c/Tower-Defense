@@ -1,17 +1,15 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
 /// Hold-to-charge UI button for the ultimate. Wires PointerDown → BeginCharge,
-/// PointerUp/Exit → Release. Optional <see cref="chargeFill"/> reflects
-/// PlayerUltimate.ChargeProgress; <see cref="cooldownFill"/> shows cooldown.
 /// </summary>
 [RequireComponent(typeof(RectTransform))]
 public class UltimateButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler
 {
     [SerializeField] private PlayerUltimate ultimate;
-    [SerializeField] private bool logInput = true;
     [SerializeField] private bool releaseOnPointerExit = true;
 
     [Header("Optional radial fill (0..1)")]
@@ -22,9 +20,9 @@ public class UltimateButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     [SerializeField] private Image.Origin360 radialOrigin = Image.Origin360.Top;
     [SerializeField] private bool radialClockwise = true;
     [SerializeField] private Button button;
-
-    private bool isPressed;
-    private int activePointerId;
+    [SerializeField] private TMP_Text cooldownLabel;
+ 
+    private bool _isPressed;
 
     private void Awake()
     {
@@ -41,44 +39,25 @@ public class UltimateButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        LogPointer("Down", eventData);
-
         if (ultimate == null || !ultimate.CanReceiveInput)
-        {
-            LogIgnored("Down", eventData);
             return;
-        }
 
-        isPressed = true;
-        activePointerId = eventData.pointerId;
-
+        _isPressed = true;
         ultimate.BeginCharge();
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        LogPointer("Up", eventData);
-        if (!IsActivePointer(eventData))
-        {
-            LogIgnored("Up", eventData);
-            return;
-        }
-
-        isPressed = false;
-        if (ultimate != null) ultimate.Release();
+        if (!_isPressed) return;
+        _isPressed = false;
+        ultimate.Release();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        LogPointer("Exit", eventData);
-        if (!releaseOnPointerExit || !IsActivePointer(eventData))
-        {
-            LogIgnored("Exit", eventData);
-            return;
-        }
-
-        isPressed = false;
-        if (ultimate != null) ultimate.Release();
+        if (!_isPressed || !releaseOnPointerExit) return;
+        _isPressed = false;
+        ultimate.Release();
     }
 
     private void Update()
@@ -92,28 +71,21 @@ public class UltimateButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
             else                            fill.fillAmount = 0f;
         }
 
+        if (cooldownLabel != null)
+        {
+            bool showCooldown = ultimate.IsOnCooldown;
+            GameObject badge = cooldownLabel.transform.parent.gameObject;
+            if (badge.activeSelf != showCooldown)
+                badge.SetActive(showCooldown);
+            if (showCooldown)
+                cooldownLabel.text = Mathf.CeilToInt(ultimate.CooldownRemaining).ToString();
+        }
+
         if (button != null)
             button.interactable = ultimate.CanReceiveInput || ultimate.IsCharging;
-
+        
         if (!ultimate.CanReceiveInput && !ultimate.IsCharging)
-            isPressed = false;
-    }
-
-    private void LogPointer(string phase, PointerEventData eventData)
-    {
-        if (!logInput)
-            return;
-
-        Debug.Log(
-            $"[UltimateButton] Pointer {phase} on '{name}'. " +
-            $"ultimate={(ultimate != null ? ultimate.name : "NULL")}, " +
-            $"pointerId={eventData.pointerId}, " +
-            $"position={eventData.position}");
-    }
-
-    private bool IsActivePointer(PointerEventData eventData)
-    {
-        return isPressed && eventData.pointerId == activePointerId;
+            _isPressed = false;
     }
 
     private void ConfigureFillImage()
@@ -127,14 +99,5 @@ public class UltimateButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
         fill.fillClockwise = radialClockwise;
         fill.raycastTarget = false;
     }
-
-    private void LogIgnored(string phase, PointerEventData eventData)
-    {
-        if (!logInput)
-            return;
-
-        Debug.Log(
-            $"[UltimateButton] Pointer {phase} ignored on '{name}'. " +
-            $"isPressed={isPressed}, activePointerId={activePointerId}, pointerId={eventData.pointerId}");
-    }
+    
 }

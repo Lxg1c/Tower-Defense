@@ -317,7 +317,7 @@ MonoBehaviour:
   maxChargeTime: 2
   minScale: 0.5
   maxScale: 1.5
-  projectileSpeed: 10
+  projectileSpeed: 30
   projectileLifetime: 4
   hitRadius: 1
   hitMask:
@@ -330,8 +330,7 @@ MonoBehaviour:
   explosionLifetime: 1.5
   minDamage: 30
   maxDamage: 150
-  maxCooldown: 5
-  minCooldown: 0.5
+  cooldownSeconds: 3
   chargeAudioSource: {fileID: 0}
   fireAudioSource: {fileID: 0}
   loopChargeAudio: 1

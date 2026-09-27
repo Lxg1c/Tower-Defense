@@ -9,6 +9,32 @@ namespace TowerDefense.Tests
     public class UIConfigurationTests
     {
         [Test]
+        public void ButtonsInGameplayMenuAndTowerCardHaveNoMissingScripts()
+        {
+            foreach (string path in new[]
+                     {
+                         "Assets/Tower-Defense/Scenes/Level.unity",
+                         "Assets/Tower-Defense/Scenes/MainMenu.unity"
+                     })
+            {
+                var scene = EditorSceneManager.OpenPreviewScene(path);
+                try
+                {
+                    foreach (var button in scene.GetRootGameObjects().SelectMany(r =>
+                                 r.GetComponentsInChildren<UnityEngine.UI.Button>(true)))
+                        Assert.That(GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(button.gameObject),
+                            Is.Zero, $"{path}: {button.name}");
+                }
+                finally { EditorSceneManager.ClosePreviewScene(scene); }
+            }
+
+            var card = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Tower-Defense/Prefabs/UI/TowerCard.prefab");
+            foreach (var button in card.GetComponentsInChildren<UnityEngine.UI.Button>(true))
+                Assert.That(GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(button.gameObject),
+                    Is.Zero, $"TowerCard: {button.name}");
+        }
+
+        [Test]
         public void BuildingPanelsLeaveWorldInputAvailableAndHaveNoCloseButtons()
         {
             var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level.unity");
@@ -56,6 +82,31 @@ namespace TowerDefense.Tests
                 foreach (string method in new[] { "StartGame", "ExitGame" })
                     Assert.That(buttons.Any(b => Enumerable.Range(0, b.onClick.GetPersistentEventCount()).Any(i =>
                         b.onClick.GetPersistentTarget(i) == menu && b.onClick.GetPersistentMethodName(i) == method)), Is.True, method);
+            }
+            finally { EditorSceneManager.ClosePreviewScene(scene); }
+        }
+
+        [Test]
+        public void UltimateProgressAndCountdownAreWiredToTheButton()
+        {
+            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level.unity");
+            try
+            {
+                var control = scene.GetRootGameObjects()
+                    .SelectMany(r => r.GetComponentsInChildren<UltimateButton>(true)).Single();
+                var data = new SerializedObject(control);
+                var fill = (UnityEngine.UI.Image)data.FindProperty("fill").objectReferenceValue;
+                var label = (Component)data.FindProperty("cooldownLabel").objectReferenceValue;
+
+                Assert.That(fill, Is.Not.Null);
+                Assert.That(fill.transform.parent, Is.EqualTo(control.transform));
+                Assert.That(fill.transform.GetSiblingIndex(), Is.Zero,
+                    "The charge fill must render behind the icon.");
+                Assert.That(fill.rectTransform.anchoredPosition, Is.EqualTo(Vector2.zero));
+                Assert.That(fill.rectTransform.sizeDelta,
+                    Is.EqualTo(((RectTransform)control.transform).rect.size));
+                Assert.That(label, Is.Not.Null);
+                Assert.That(label.transform.parent.parent, Is.EqualTo(control.transform));
             }
             finally { EditorSceneManager.ClosePreviewScene(scene); }
         }

@@ -51,12 +51,12 @@ namespace TowerDefense.Tests
                     if (i > 0)
                     {
                         Assert.That(health, Is.GreaterThan(previousHealth), $"Wave {i + 1}");
-                        Assert.That(health, Is.LessThanOrEqualTo(previousHealth * 1.6f),
-                            $"Wave {i + 1}: introductory wave HP budget must grow by at most 60%.");
+                        Assert.That(health, Is.LessThanOrEqualTo(previousHealth * 1.8f),
+                            $"Wave {i + 1}: wave HP must grow by at most 80%.");
                     }
                     int flyers = entries.Where(e => e.Prefab.GetComponent<FlyingNav>() != null).Sum(e => e.count);
                     if (i == 0) Assert.That(flyers, Is.Zero);
-                    if (i == 1) Assert.That(flyers, Is.InRange(1, 2), "Introduce flight with a small group.");
+                    if (i == 1) Assert.That(flyers, Is.InRange(1, 3), "Introduce flight with a small group.");
                     if (i == 3)
                         Assert.That(entries.Any(e => e.Prefab.GetComponent<MobHealth>().MaxHealth >= 300),
                             Is.True, "The finale should include the previously introduced armored threat.");

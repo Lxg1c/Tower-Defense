@@ -45,9 +45,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3af74f47579177145aba76ef4bf591fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 20
-  rotateSpeed: 200
+  speed: 32
+  rotateSpeed: 320
   lifeTime: 5
+  hitDistance: 0.5
+  maxHomingTurnAngle: 30
+  missOvershootDistance: 1
 --- !u!1001 &4339376413685915897
 PrefabInstance:
   m_ObjectHideFlags: 0
