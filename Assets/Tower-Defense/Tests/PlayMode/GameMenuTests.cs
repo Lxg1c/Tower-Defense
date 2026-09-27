@@ -65,6 +65,8 @@ namespace TowerDefense.Tests
         [UnityTest]
         public IEnumerator AudioControlsWorkAtZeroTimeScaleAndRefreshOnReopen()
         {
+            fixture.AddComponent<Canvas>();
+            Child("Back", settings.transform).AddComponent<Button>();
             var music = Child("Music", settings.transform).AddComponent<Slider>();
             var effects = Child("Effects", settings.transform).AddComponent<Slider>();
             var ml = Child("Music value", settings.transform).AddComponent<TextMeshProUGUI>();

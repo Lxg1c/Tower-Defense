@@ -10,6 +10,12 @@ public sealed class AudioSettingsPanel : MonoBehaviour
     [SerializeField] private TMP_Text musicValue;
     [SerializeField] private TMP_Text effectsValue;
 
+    private void Awake()
+    {
+        FpsInterface.AddSettingsButton((RectTransform)transform, musicValue.font);
+        FpsInterface.EnsureOverlay(GetComponentInParent<Canvas>().rootCanvas, musicValue.font);
+    }
+
     private void OnEnable()
     {
         music.onValueChanged.AddListener(GameAudioSettings.SetMusic);

@@ -39,6 +39,8 @@ public class WaveHUD : MonoBehaviour
     private readonly List<WaveSpawner.WavePreviewEntry> previewEntries = new();
     private readonly List<WaveDirectionIndicator> directionIndicators = new();
 
+    private void Awake() => FpsInterface.EnsureOverlay(GetComponentInParent<Canvas>().rootCanvas, waveLabel.font);
+
     private void OnEnable()
     {
         spawner = WaveSpawner.Instance;

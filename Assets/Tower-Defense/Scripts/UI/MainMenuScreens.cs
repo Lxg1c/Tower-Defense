@@ -20,7 +20,10 @@ public sealed class MainMenuScreens : MonoBehaviour
         {
             Debug.LogError("[MainMenuScreens] Assign the three screens, audio sliders and value labels.", this);
             enabled = false;
+            return;
         }
+        FpsInterface.AddSettingsButton((RectTransform)music.transform.parent, musicValue.font);
+        FpsInterface.EnsureOverlay(music.GetComponentInParent<Canvas>().rootCanvas, musicValue.font);
     }
 
     private void OnEnable()

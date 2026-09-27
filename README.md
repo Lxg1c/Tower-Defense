@@ -44,6 +44,15 @@ The loop is: build/upgrade, fight a wave, receive rewards and repairs, then repe
 Player death enters a ghost/respawn state. Destroyed towers recover after a wave.
 Base destruction ends the run; clearing the final wave wins.
 
+### Frame rate and FPS display
+
+The settings panels in the main menu and pause menu include **FPS: ON/OFF**.
+The preference is saved locally. The counter reports frames per real second over
+a 0.25-second window, including while gameplay is paused.
+`GamePerformanceSettings` disables desktop VSync and the software frame limit.
+On mobile it requests the current display refresh rate instead of Unity's default
+30 FPS; actual performance still depends on the device and operating system.
+
 ### Authored levels on one map
 
 Main Menu shows one level card at a time. Swipe horizontally, use the side arrows,

@@ -204,6 +204,14 @@ their respective guns. Elevation/depression limits and turn speed are tunable on
 
 ## Menu screens and audio preferences
 
+`GamePerformanceSettings` initializes frame pacing before scene load and owns the
+saved FPS visibility preference. `FpsInterface` creates one overlay per root Canvas
+and adds an FPS button to the existing settings panels at runtime; scenes need no
+new serialized references. `MainMenuScreens`, `AudioSettingsPanel` and `WaveHUD`
+provide their existing UI/font references. `FpsDisplay` uses unscaled frame time,
+so the counter continues to update on pause. Frame-rate policy and FPS interaction
+tests are in `FrameRatePolicyTests` and `FpsDisplayTests`.
+
 MainMenuScreens owns home, level selection and settings visibility. MainMenu owns
 the selected level and explicitly colors the active page independently of keyboard
 focus or button disabled state.

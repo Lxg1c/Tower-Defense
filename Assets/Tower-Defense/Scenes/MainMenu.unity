@@ -306,7 +306,6 @@ GameObject:
   - component: {fileID: 24752708}
   - component: {fileID: 24752706}
   - component: {fileID: 24752705}
-  - component: {fileID: 24752707}
   m_Layer: 5
   m_Name: PreviousLevel
   m_TagString: Untagged
@@ -400,27 +399,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &24752707
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 24752704}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: abb90c039aeafe64db476d199df3dfb3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 0}
-  pressedScale: 1.1
-  pressDuration: 0.08
-  releaseDuration: 0.12
-  pressEase: 6
-  releaseEase: 27
-  ignoreTimeScale: 1
-  button: {fileID: 0}
-  initialScale: {x: 0, y: 0, z: 0}
 --- !u!222 &24752708
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1874,7 +1852,6 @@ GameObject:
   - component: {fileID: 542243771}
   - component: {fileID: 542243769}
   - component: {fileID: 542243768}
-  - component: {fileID: 542243770}
   m_Layer: 5
   m_Name: NextLevel
   m_TagString: Untagged
@@ -1968,27 +1945,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &542243770
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 542243767}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: abb90c039aeafe64db476d199df3dfb3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 0}
-  pressedScale: 1.1
-  pressDuration: 0.08
-  releaseDuration: 0.12
-  pressEase: 6
-  releaseEase: 27
-  ignoreTimeScale: 1
-  button: {fileID: 0}
-  initialScale: {x: 0, y: 0, z: 0}
 --- !u!222 &542243771
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -5094,7 +5050,6 @@ GameObject:
   - component: {fileID: 1357989028}
   - component: {fileID: 1357989027}
   - component: {fileID: 1357989026}
-  - component: {fileID: 1357989029}
   m_Layer: 5
   m_Name: StartButton
   m_TagString: Untagged
@@ -5217,27 +5172,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1357989024}
   m_CullTransparentMesh: 1
---- !u!114 &1357989029
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1357989024}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: abb90c039aeafe64db476d199df3dfb3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 0}
-  pressedScale: 1.1
-  pressDuration: 0.08
-  releaseDuration: 0.12
-  pressEase: 6
-  releaseEase: 27
-  ignoreTimeScale: 1
-  button: {fileID: 0}
-  initialScale: {x: 0, y: 0, z: 0}
 --- !u!1 &1393769430
 GameObject:
   m_ObjectHideFlags: 0

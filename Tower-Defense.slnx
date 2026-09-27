@@ -4,8 +4,8 @@
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="DOTween.Modules.csproj" />
   <Project Path="Joystick.Editor.csproj" />
+  <Project Path="TowerDefense.PlayMode.Tests.csproj" />
   <Project Path="Joystick.Runtime.csproj" />
   <Project Path="TowerDefense.EditMode.Tests.csproj" />
   <Project Path="FastScriptReload.Runtime.csproj" />
-  <Project Path="TowerDefense.PlayMode.Tests.csproj" />
 </Solution>
