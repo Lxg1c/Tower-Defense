@@ -169,6 +169,9 @@ intervals are 1.05 seconds in Level 1 and 0.85 seconds in Levels 2–3. The
 
 Normal bullet prefabs now fly at 32 units/second and the ultimate at 30, with an
 eight-second cooldown after a short charge that reaches ten seconds after a full charge.
+Spider pickups currently have a 25% drop chance and grant 12 seconds of
+slowing shots; each hit halves enemy movement speed for 2.5 seconds. The player
+can accumulate up to 24 seconds of bonus time.
 Automated tests cover cooldown and high-speed
 projectile hits. Human playtests are still needed to judge whether the increased
 enemy pressure feels fair.

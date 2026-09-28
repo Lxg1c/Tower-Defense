@@ -64,6 +64,7 @@ public class WaveSpawner : MonoBehaviour
 
     [Header("Session dependencies")]
     [SerializeField] private PlayerWallet wallet;
+    [SerializeField] private EnemyLoadout enemyLoadout;
 
     [Header("Spawning")]
     [SerializeField] private Transform[] spawnPoints;
@@ -193,7 +194,15 @@ public class WaveSpawner : MonoBehaviour
         if (level == null) throw new System.ArgumentNullException(nameof(level));
         if (spawnPoints == null || spawnPoints.Length == 0 || System.Array.Exists(spawnPoints, p => p == null))
             throw new System.ArgumentException("Assign every spawn point before configuring the level.");
-        waves = level.CreateWaves(spawnPoints.Length);
+        var configuredWaves = level.CreateWaves(spawnPoints.Length);
+        if (enemyLoadout == null) throw new System.ArgumentException("Assign EnemyLoadout to the spawner.");
+        enemyLoadout.Validate();
+        foreach (var wave in configuredWaves)
+            foreach (var group in wave.spawnGroups)
+                foreach (var entry in group.entries)
+                    if (!enemyLoadout.TryGetSlowAmmoDrop(entry.enemy, out _))
+                        throw new System.ArgumentException($"{enemyLoadout.name}: {entry.enemy.name} has no drop entry.");
+        waves = configuredWaves;
     }
 
     /// <summary>
@@ -307,7 +316,7 @@ public class WaveSpawner : MonoBehaviour
 
                     for (int i = 0; i < entry.count; i++)
                     {
-                        SpawnOne(prefab, point);
+                        SpawnOne(entry.enemy, prefab, point);
                         if (entry.spawnInterval > 0f)
                             yield return new WaitForSeconds(entry.spawnInterval);
                     }
@@ -326,14 +335,14 @@ public class WaveSpawner : MonoBehaviour
 
             for (int i = 0; i < entry.count; i++)
             {
-                SpawnOne(prefab, GetRandomSpawnPoint());
+                SpawnOne(entry.enemy, prefab, GetRandomSpawnPoint());
                 if (entry.spawnInterval > 0f)
                     yield return new WaitForSeconds(entry.spawnInterval);
             }
         }
     }
 
-    private void SpawnOne(MobCore prefab, Transform point)
+    private void SpawnOne(EnemyOption option, MobCore prefab, Transform point)
     {
         if (point == null)
         {
@@ -351,6 +360,18 @@ public class WaveSpawner : MonoBehaviour
 
         var pool = GetOrCreatePool(prefab);
         var mob  = pool.Get(pos, point.rotation);
+
+        if (option != null)
+        {
+            if (enemyLoadout == null || !enemyLoadout.TryGetSlowAmmoDrop(option, out var drop))
+                Debug.LogError($"[WaveSpawner] Configure loot for {option.name} in EnemyLoadout.", this);
+            else
+            {
+                var loot = mob.GetComponent<MobLootDrop>();
+                if (loot == null) loot = mob.gameObject.AddComponent<MobLootDrop>();
+                loot.Configure(drop, enemyLoadout.slowAmmoPickupPrefab);
+            }
+        }
 
         var member = mob.GetComponent<MobPoolMember>();
         if (member == null) member = mob.gameObject.AddComponent<MobPoolMember>();

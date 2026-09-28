@@ -73,6 +73,28 @@ Canvas above the zone, using the gameplay MainCamera. The Level scene shares its
 HUD canvas; the reusable zone prefab includes its own overlay. Indicators never
 block input, stay full while the modal is open, and clear on exit, purchase, phase changes and zone disabling.
 
+## Timed slowing bonus
+
+`EnemyLoadout.asset` holds one slow-ammo drop entry per enemy option, including
+explicit 0% entries. It also holds the shared pickup prefab. The Spider entry
+currently drops a 12-second slowing bonus at 25% chance. `WaveSpawner` validates the
+table when the level is configured, then configures a
+`MobLootDrop` on each spawned or pooled enemy. The drop subscribes to
+`MobHealth.OnDeathHandled` and creates a standalone pickup before the enemy
+returns to its pool. `SlowAmmoPickup` grants bonus time on player contact.
+
+`SlowAmmoInventory` owns the player's remaining bonus time (capped at 24 seconds).
+While it is active, every normal projectile from the player's `Shooter`
+can apply `MobSlow` only
+after hitting a surviving mob. `MobSlow` changes NavMeshAgent speed or the
+`FlyingNav` speed multiplier, restores speed when time expires, and clears on
+pool disable. `SlowAmmoCounter` shows a snowflake, seconds and a draining ring
+on the left side of the HUD while the bonus is active.
+
+`LevelSetup` ignores physical collisions between Player and Enemy layers while
+the level is loaded, so the player cannot stand on mobs. `PlayerHealth` restores
+only collisions it temporarily changed during ghost state.
+
 ## Upgrade data and display
 
 `TowerUpgrade.GetCurrentStats` reads current component values. `GetNextStats`

@@ -29,6 +29,7 @@ public class Shooter : MonoBehaviour
     public float FireRate { get => fireRate; set => fireRate = Mathf.Max(0.0001f, value); }
 
     private DetectionZone detectionZone;
+    private SlowAmmoInventory slowAmmo;
     private float fireCooldown;
     private Damageable volleyTarget;
     private int nextFirePoint;
@@ -37,6 +38,7 @@ public class Shooter : MonoBehaviour
     private void Awake()
     {
         detectionZone = GetComponent<DetectionZone>();
+        slowAmmo = GetComponent<SlowAmmoInventory>();
         if (!ValidateConfiguration(out string error))
         {
             Debug.LogError($"[Shooter] {error}", this);
@@ -174,7 +176,10 @@ public class Shooter : MonoBehaviour
         Vector3 dir = (target.transform.position - origin).normalized;
 
         GameObject go = Instantiate(projectilePrefab, origin, Quaternion.LookRotation(dir));
-        go.GetComponent<Projectile>().Init(target, damage);
+        if (slowAmmo != null && slowAmmo.IsActive)
+            go.GetComponent<Projectile>().Init(target, damage, slowAmmo.SlowMultiplier, slowAmmo.SlowDuration);
+        else
+            go.GetComponent<Projectile>().Init(target, damage);
 
         onFired?.Invoke();
     }

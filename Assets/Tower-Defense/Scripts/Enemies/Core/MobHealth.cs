@@ -7,8 +7,6 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class MobHealth : Damageable
 {
-    [Header("Reward")]
-    [SerializeField] private int coinReward = 0;
 
     [Header("Death VFX")]
     [SerializeField] private GameObject deathExplosionPrefab;
@@ -16,8 +14,6 @@ public class MobHealth : Damageable
     [SerializeField] private float deathExplosionLifetime = 2f;
     [SerializeField] private float deathExplosionSoundCooldown = 0.08f;
     [SerializeField] private bool muteSkippedDeathExplosionSounds = true;
-
-    public int CoinReward => coinReward;
 
     public System.Action<MobHealth> OnDeathHandled;
 
@@ -33,10 +29,6 @@ public class MobHealth : Damageable
     protected override void OnDeath()
     {
         SpawnDeathExplosion();
-
-        if (coinReward > 0 && PlayerWallet.Instance != null)
-            PlayerWallet.Instance.AddCoins(coinReward);
-
         OnDeathHandled?.Invoke(this);
     }
 

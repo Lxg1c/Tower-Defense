@@ -9,6 +9,32 @@ namespace TowerDefense.Tests
     public class BalanceConfigurationTests
     {
         [Test]
+        public void EveryEnemyHasOneCentralDropSetting()
+        {
+            var loadout = AssetDatabase.LoadAssetAtPath<EnemyLoadout>(
+                "Assets/Tower-Defense/Prefabs/EnemyLoadout.asset");
+            Assert.That(loadout, Is.Not.Null);
+            Assert.DoesNotThrow(loadout.Validate);
+            Assert.That(loadout.slowAmmoDrops.Length, Is.EqualTo(loadout.options.Length));
+            var spider = loadout.options.Single(option => option.name == "Spider");
+            Assert.That(loadout.TryGetSlowAmmoDrop(spider, out var drop), Is.True);
+            Assert.That(drop.chance, Is.EqualTo(0.25f));
+            Assert.That(drop.durationSeconds, Is.EqualTo(12f));
+            Assert.That(loadout.slowAmmoPickupPrefab, Is.Not.Null);
+        }
+
+        [Test]
+        public void PlayerAndSpiderUseTheLayersIgnoredDuringTheLevel()
+        {
+            var player = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Tower-Defense/Prefabs/Player.prefab");
+            var spider = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Tower-Defense/Prefabs/Mobs/EnemySpider.prefab");
+            Assert.That(player.layer, Is.EqualTo(LayerMask.NameToLayer("Player")));
+            Assert.That(spider.layer, Is.EqualTo(LayerMask.NameToLayer("Enemy")));
+            Assert.That(player.GetComponent<Collider>().isTrigger, Is.False);
+            Assert.That(spider.GetComponent<Collider>().isTrigger, Is.False);
+        }
+
+        [Test]
         public void MineUpgradesRepayTheirCostAfterOneSurvivingWave()
         {
             var loadout = AssetDatabase.LoadAssetAtPath<TowerLoadout>(

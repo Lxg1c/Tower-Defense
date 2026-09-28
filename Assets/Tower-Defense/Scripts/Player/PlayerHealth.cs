@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -43,6 +44,7 @@ public class PlayerHealth : Damageable
     private bool     hasIsDeadParam;
     private bool     hasDeathTrigger;
     private bool     hasReviveTrigger;
+    private readonly HashSet<int> ghostIgnoredLayers = new();
 
     /// <summary>True while the player is dead and regenerating.</summary>
     public bool  IsGhost         { get; private set; }
@@ -115,6 +117,7 @@ public class PlayerHealth : Damageable
     {
         base.OnDisable();
         onHealthChanged.RemoveListener(OnHealthChangedTracker);
+        SetGhostCollisionIgnore(false);
     }
 
     private void OnHealthChangedTracker(float current)
@@ -167,13 +170,22 @@ public class PlayerHealth : Damageable
     private void SetGhostCollisionIgnore(bool ignore)
     {
         int myLayer = gameObject.layer;
+        if (!ignore)
+        {
+            foreach (int other in ghostIgnoredLayers)
+                Physics.IgnoreLayerCollision(myLayer, other, false);
+            ghostIgnoredLayers.Clear();
+            return;
+        }
         if (ignoreLayersWhileGhost == null) return;
 
         foreach (var layerName in ignoreLayersWhileGhost)
         {
             int other = LayerMask.NameToLayer(layerName);
             if (other < 0) continue;
-            Physics.IgnoreLayerCollision(myLayer, other, ignore);
+            if (Physics.GetIgnoreLayerCollision(myLayer, other)) continue;
+            Physics.IgnoreLayerCollision(myLayer, other, true);
+            ghostIgnoredLayers.Add(other);
         }
     }
 

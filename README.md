@@ -28,6 +28,13 @@ orb and release to fire it. Stand in a building zone until its progress circle
 fills to choose a building or upgrade. Use Start Wave to begin combat after the
 town hall exists. The ally command button switches soldiers to following the hero.
 
+Spiders can drop cyan slowing pickups. Walk over one to activate slowing shots
+for 12 seconds (up to 24 seconds can be stored). While active, every normal
+shot can slow a surviving enemy to half movement speed for 2.5 seconds. The
+snowflake ring between Pause and the joystick shows the time left. Pickups
+disappear after 12 seconds.
+The hero passes through enemy colliders, so mobs cannot serve as platforms.
+
 Building panels leave movement available and do not darken the world. Walk out
 of the building zone to dismiss its panel; there is no Close button. A successful
 build or upgrade also closes the panel and consumes that zone's action for the phase.
@@ -143,6 +150,9 @@ rather than editing generated code.
 - `Prefabs/TowerLoadout.asset` lists the available buildings and their costs.
 - Enemy option assets point at enemy prefabs. Each enemy prefab explicitly
   assigns its targeting, combat and navigation modules on `MobCore`.
+- `Prefabs/EnemyLoadout.asset` contains one slowing-bonus drop chance and duration per
+  enemy. Set a chance to 0% when that enemy should never drop it; assign the
+  shared pickup prefab there. The Level scene's WaveSpawner references this asset.
 - Shooter components require a nonempty fire-point array and a prefab containing
   `Projectile`. A missing projectile is a setup error, not an instant-hit weapon.
 - Upgrade levels are configured on the building prefabs. Multipliers apply to

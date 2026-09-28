@@ -20,11 +20,17 @@ public class Projectile : MonoBehaviour
     private float maxTravelDistance;
     private float traveledDistance;
     private bool homingEnabled;
+    private float slowMultiplier = 1f;
+    private float slowDuration;
 
-    public void Init(Damageable target, float damage)
+    public void Init(Damageable target, float damage, float slowMultiplier = 1f, float slowDuration = 0f)
     {
         this.target = target;
         this.damage = damage;
+        this.slowMultiplier = slowMultiplier;
+        this.slowDuration = slowDuration;
+        if (slowDuration > 0f && slowMultiplier < 1f)
+            TintSlowProjectile();
         lifeTimer = lifeTime;
 
         lockedTargetPoint = target != null ? target.transform.position : transform.position + transform.forward;
@@ -110,8 +116,24 @@ public class Projectile : MonoBehaviour
     private void Hit()
     {
         if (target != null && target.IsAlive)
+        {
             target.TakeDamage(damage);
+            if (target is MobHealth mob && mob.IsAlive && slowDuration > 0f && slowMultiplier < 1f)
+            {
+                var slow = mob.GetComponent<MobSlow>();
+                if (slow == null) slow = mob.gameObject.AddComponent<MobSlow>();
+                slow.Apply(slowMultiplier, slowDuration);
+            }
+        }
 
         Destroy(gameObject);
+    }
+
+    private void TintSlowProjectile()
+    {
+        var block = new MaterialPropertyBlock();
+        block.SetColor("_BaseColor", new Color(0.25f, 0.9f, 1f));
+        foreach (Renderer visual in GetComponentsInChildren<Renderer>())
+            visual.SetPropertyBlock(block);
     }
 }

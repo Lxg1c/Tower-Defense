@@ -17,3 +17,17 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f95b8e55cd011eb48aa6e5173af7e84e, type: 2}
   - {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
   - {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
+  slowAmmoPickupPrefab: {fileID: 4219296093323964739, guid: bf09635682ddef9448498b0e4d6a04c9, type: 3}
+  slowAmmoDrops:
+  - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
+    chance: 0
+    durationSeconds: 12
+  - enemy: {fileID: 11400000, guid: f95b8e55cd011eb48aa6e5173af7e84e, type: 2}
+    chance: 0
+    durationSeconds: 12
+  - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
+    chance: 0
+    durationSeconds: 12
+  - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
+    chance: 0.25
+    durationSeconds: 12

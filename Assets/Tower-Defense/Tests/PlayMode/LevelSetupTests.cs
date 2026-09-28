@@ -10,6 +10,7 @@ namespace TowerDefense.Tests
     {
         private GameObject root, enemy;
         private EnemyOption option;
+        private EnemyLoadout loadout;
         private LevelDefinition level;
         static void Set(object target, string field, object value) =>
             target.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(target, value);
@@ -24,6 +25,9 @@ namespace TowerDefense.Tests
             var core = enemy.AddComponent<MobCore>();
             option = ScriptableObject.CreateInstance<EnemyOption>();
             option.prefab = core;
+            loadout = ScriptableObject.CreateInstance<EnemyLoadout>();
+            loadout.options = new[] { option };
+            loadout.slowAmmoDrops = new[] { new EnemyLoadout.SlowAmmoDrop { enemy = option, durationSeconds = 12f } };
             level = ScriptableObject.CreateInstance<LevelDefinition>();
             level.displayName = "Test Level";
             level.startingCoins = 17;
@@ -48,6 +52,7 @@ namespace TowerDefense.Tests
             spawnerObject.transform.SetParent(root.transform);
             var spawner = spawnerObject.AddComponent<WaveSpawner>();
             Set(spawner, "wallet", wallet);
+            Set(spawner, "enemyLoadout", loadout);
             Set(spawner, "spawnPoints", new[] { root.transform });
             var setup = root.AddComponent<LevelSetup>();
             Set(setup, "wallet", wallet);
@@ -59,11 +64,16 @@ namespace TowerDefense.Tests
         public IEnumerator SelectedLevelInitializesCoinsAndFreshWavesOnRestart()
         {
             RunSelection.Select(level, UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+            int playerLayer = LayerMask.NameToLayer("Player");
+            int enemyLayer = LayerMask.NameToLayer("Enemy");
+            bool originallyIgnored = Physics.GetIgnoreLayerCollision(playerLayer, enemyLayer);
             for (int attempt = 0; attempt < 2; attempt++)
             {
                 CreateSceneObjects();
                 root.SetActive(true);
                 yield return null;
+                Assert.That(Physics.GetIgnoreLayerCollision(playerLayer, enemyLayer), Is.True,
+                    "The player must not stand on enemy colliders.");
                 var wallet = root.GetComponentInChildren<PlayerWallet>();
                 var spawner = root.GetComponentInChildren<WaveSpawner>();
                 Assert.That(wallet.Coins, Is.EqualTo(17));
@@ -75,6 +85,7 @@ namespace TowerDefense.Tests
                 spawner.NextWave.spawnGroups[0].entries[0].count = 99;
                 Object.Destroy(root);
                 yield return null;
+                Assert.That(Physics.GetIgnoreLayerCollision(playerLayer, enemyLayer), Is.EqualTo(originallyIgnored));
             }
         }
 
@@ -117,6 +128,7 @@ namespace TowerDefense.Tests
             Object.Destroy(enemy);
             Object.Destroy(level);
             Object.Destroy(option);
+            Object.Destroy(loadout);
             Time.timeScale = 1;
             yield return null;
         }

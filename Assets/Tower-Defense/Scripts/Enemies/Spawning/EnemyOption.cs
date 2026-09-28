@@ -11,4 +11,5 @@ public class EnemyOption : ScriptableObject
 
     [Tooltip("Icon shown in wave direction preview.")]
     public Sprite icon;
+
 }

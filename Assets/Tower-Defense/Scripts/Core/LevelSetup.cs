@@ -9,6 +9,7 @@ public sealed class LevelSetup : MonoBehaviour
     [SerializeField] private LevelDefinition directPlayLevel;
     [SerializeField] private WaveSpawner spawner;
     [SerializeField] private PlayerWallet wallet;
+    private bool restorePlayerEnemyCollision;
     public LevelDefinition CurrentLevel { get; private set; }
 
     private void Awake()
@@ -20,6 +21,12 @@ public sealed class LevelSetup : MonoBehaviour
             spawner.ConfigureLevel(level);
             wallet.ConfigureStartingCoins(level.startingCoins);
             CurrentLevel = level;
+            int playerLayer = LayerMask.NameToLayer("Player");
+            int enemyLayer = LayerMask.NameToLayer("Enemy");
+            if (playerLayer < 0 || enemyLayer < 0)
+                throw new ArgumentException("Define Player and Enemy physics layers.");
+            restorePlayerEnemyCollision = !Physics.GetIgnoreLayerCollision(playerLayer, enemyLayer);
+            Physics.IgnoreLayerCollision(playerLayer, enemyLayer, true);
         }
         catch (ArgumentException exception)
         {
@@ -27,5 +34,11 @@ public sealed class LevelSetup : MonoBehaviour
             Debug.LogError($"[LevelSetup] {exception.Message}", this);
             enabled = false;
         }
+    }
+
+    private void OnDestroy()
+    {
+        if (!restorePlayerEnemyCollision) return;
+        Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Enemy"), false);
     }
 }

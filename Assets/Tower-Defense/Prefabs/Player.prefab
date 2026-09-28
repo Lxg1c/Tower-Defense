@@ -82,6 +82,7 @@ GameObject:
   - component: {fileID: 2110692544236287025}
   - component: {fileID: 6327217339226770337}
   - component: {fileID: 6755879347016941808}
+  - component: {fileID: 6585691809613987800}
   m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
@@ -328,9 +329,11 @@ MonoBehaviour:
     m_Bits: 64
   explosionPrefab: {fileID: 5740835249752665754, guid: d9547b9d51ee91546836af47fad2d816, type: 3}
   explosionLifetime: 1.5
+  ultimateCooldown: 5
   minDamage: 30
   maxDamage: 150
   cooldownSeconds: 3
+  maxCooldownSeconds: 5
   chargeAudioSource: {fileID: 0}
   fireAudioSource: {fileID: 0}
   loopChargeAudio: 1
@@ -370,6 +373,21 @@ MonoBehaviour:
   maxElevation: 80
   maxDepression: 45
   rotationSpeed: 180
+--- !u!114 &6585691809613987800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8238938828016473868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cff0140c8981ae46b038987e088e2a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  capacity: 24
+  slowMultiplier: 0.5
+  slowDuration: 2.5
 --- !u!1 &8246063992435225512
 GameObject:
   m_ObjectHideFlags: 0

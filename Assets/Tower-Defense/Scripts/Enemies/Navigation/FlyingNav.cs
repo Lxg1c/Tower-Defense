@@ -14,6 +14,7 @@ using UnityEngine.AI;
 public class FlyingNav : MonoBehaviour, INavigationModifier
 {
     [SerializeField] private float speed         = 4f;
+    public float SpeedMultiplier { get; set; } = 1f;
     [SerializeField] private float rotationSpeed = 8f;
     [Tooltip("Vertical offset above the target's hit point.")]
     [SerializeField] private float hoverHeight   = 5f;
@@ -60,7 +61,7 @@ public class FlyingNav : MonoBehaviour, INavigationModifier
         if (toAttackPoint.sqrMagnitude > stop * stop)
         {
             Vector3 dir = GetMoveDirection(toHoverPoint.normalized);
-            transform.position += dir * speed * Time.deltaTime;
+            transform.position += dir * speed * SpeedMultiplier * Time.deltaTime;
 
             Vector3 flat = new Vector3(dir.x, 0f, dir.z);
             if (flat.sqrMagnitude > 0.0001f)
