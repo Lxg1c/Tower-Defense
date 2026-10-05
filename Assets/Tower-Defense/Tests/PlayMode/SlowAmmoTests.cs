@@ -61,14 +61,14 @@ namespace TowerDefense.Tests
             var loadout = ScriptableObject.CreateInstance<EnemyLoadout>();
             created.Add(loadout);
             loadout.slowAmmoPickupPrefab = pickupPrefab;
-            loadout.slowAmmoDrops = new[] { new EnemyLoadout.SlowAmmoDrop
-                { enemy = option, chance = 1f, durationSeconds = 12f } };
+            loadout.enemies = new[] { new EnemyLoadout.EnemyEntry
+                { enemy = option, slowAmmoChance = 1f, slowAmmoDurationSeconds = 12f } };
 
             var spider = NewObject("Spider");
             var health = spider.AddComponent<MobHealth>();
             var loot = spider.AddComponent<MobLootDrop>();
-            Assert.That(loadout.TryGetSlowAmmoDrop(option, out var drop), Is.True);
-            loot.Configure(drop, loadout.slowAmmoPickupPrefab);
+            Assert.That(loadout.TryGetEntry(option, out var drop), Is.True);
+            loot.Configure(drop, loadout.slowAmmoPickupPrefab, null);
             health.TakeDamage(health.MaxHealth);
             yield return null;
 

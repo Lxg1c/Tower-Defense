@@ -68,8 +68,8 @@ Liberation Sans is used for functional labels and numbers.
 - Joystick, Home, Rally and charge controls share dark circular plates, cyan rims,
   white symbols and compact labels. Existing input handlers and charge/rally state
   indicators remain connected.
-- Both screen-space canvases use the same 1920×1080 reference and height-based
-  scaling. HUD and touch groups fit device safe areas.
+- The level's screen-space canvas uses a 1920×1080 reference and height-based
+  scaling. HUD and touch containers stretch across the full canvas.
 - A build-phase hint explains the home marker before the base exists, then prompts
   building/upgrading and starting the wave. Combat and terminal phases hide it.
 - Wave-preview icons and counts share one card. A chevron points toward the spawn;

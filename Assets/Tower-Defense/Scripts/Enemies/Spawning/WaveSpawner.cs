@@ -200,8 +200,8 @@ public class WaveSpawner : MonoBehaviour
         foreach (var wave in configuredWaves)
             foreach (var group in wave.spawnGroups)
                 foreach (var entry in group.entries)
-                    if (!enemyLoadout.TryGetSlowAmmoDrop(entry.enemy, out _))
-                        throw new System.ArgumentException($"{enemyLoadout.name}: {entry.enemy.name} has no drop entry.");
+                    if (!enemyLoadout.TryGetEntry(entry.enemy, out _))
+                        throw new System.ArgumentException($"{enemyLoadout.name}: {entry.enemy.name} has no enemy entry.");
         waves = configuredWaves;
     }
 
@@ -363,13 +363,15 @@ public class WaveSpawner : MonoBehaviour
 
         if (option != null)
         {
-            if (enemyLoadout == null || !enemyLoadout.TryGetSlowAmmoDrop(option, out var drop))
+            if (enemyLoadout == null ||
+                !enemyLoadout.TryGetEntry(option, out var entry))
                 Debug.LogError($"[WaveSpawner] Configure loot for {option.name} in EnemyLoadout.", this);
             else
             {
                 var loot = mob.GetComponent<MobLootDrop>();
                 if (loot == null) loot = mob.gameObject.AddComponent<MobLootDrop>();
-                loot.Configure(drop, enemyLoadout.slowAmmoPickupPrefab);
+                loot.Configure(entry, enemyLoadout.slowAmmoPickupPrefab,
+                    enemyLoadout.shieldPickupPrefab, enemyLoadout.companionPickupPrefab);
             }
         }
 

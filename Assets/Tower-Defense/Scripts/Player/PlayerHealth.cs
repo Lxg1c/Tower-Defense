@@ -34,6 +34,18 @@ public class PlayerHealth : Damageable
     [Tooltip("HP per second regenerated while out of combat.")]
     [SerializeField] private float regenPerSecond = 10f;
 
+    [Header("Shield")]
+    [SerializeField, Min(0f)] private float maxShield = 50f;
+    private const float MaxShieldDuration = 24f;
+    public float MaxShield => maxShield;
+    public float CurrentShield { get; private set; }
+    public float RemainingShieldSeconds => Mathf.Max(0f, shieldExpiresAt - Time.time);
+    public float ShieldProgress => shieldDisplayDuration > 0f
+        ? Mathf.Clamp01(RemainingShieldSeconds / shieldDisplayDuration) : 0f;
+    public UnityEvent<float> onShieldChanged = new();
+
+    private float shieldExpiresAt;
+    private float shieldDisplayDuration;
     private float    lastHealth;
     private float    lastDamageTime = -999f;
     private Shooter  shooter;
@@ -64,12 +76,15 @@ public class PlayerHealth : Damageable
     protected override void Awake()
     {
         base.Awake();
+        CurrentShield = 0f;
         shooter  = GetComponentInChildren<Shooter>();
         animator = GetComponentInChildren<Animator>();
         isDeadHash = Animator.StringToHash(isDeadParam);
         deathTriggerHash = Animator.StringToHash(deathTriggerParam);
         reviveTriggerHash = Animator.StringToHash(reviveTriggerParam);
         CacheAnimatorParameters();
+        if (Application.isPlaying && GetComponent<PlayerShieldVisual>() == null)
+            gameObject.AddComponent<PlayerShieldVisual>();
     }
 
     private void SetIsDeadParam(bool dead)
@@ -126,9 +141,57 @@ public class PlayerHealth : Damageable
         lastHealth = current;
     }
 
+    public override void TakeDamage(float damage)
+    {
+        if (!CanTakeDamage || damage <= 0f) return;
+
+        lastDamageTime = Time.time;
+        if (CurrentShield > 0f && RemainingShieldSeconds <= 0f) ExpireShield();
+        float absorbed = Mathf.Min(CurrentShield, damage);
+        if (absorbed > 0f)
+        {
+            CurrentShield -= absorbed;
+            if (CurrentShield <= 0f) ClearShieldTimer();
+            onShieldChanged?.Invoke(CurrentShield);
+        }
+
+        float remaining = damage - absorbed;
+        if (remaining > 0f) base.TakeDamage(remaining);
+    }
+
+    public bool GrantShield(float seconds)
+    {
+        if (!IsAlive || IsGhost || maxShield <= 0f || seconds <= 0f ||
+            float.IsNaN(seconds) || float.IsInfinity(seconds)) return false;
+
+        float previous = CurrentShield > 0f ? RemainingShieldSeconds : 0f;
+        float duration = Mathf.Min(MaxShieldDuration, previous + seconds);
+        if (duration <= 0f || (duration <= previous && CurrentShield >= maxShield)) return false;
+        shieldExpiresAt = Time.time + duration;
+        shieldDisplayDuration = duration;
+        CurrentShield = maxShield;
+        onShieldChanged?.Invoke(CurrentShield);
+        return true;
+    }
+
+    private void ClearShieldTimer()
+    {
+        shieldExpiresAt = 0f;
+        shieldDisplayDuration = 0f;
+    }
+
+    private void ExpireShield()
+    {
+        CurrentShield = 0f;
+        ClearShieldTimer();
+        onShieldChanged?.Invoke(CurrentShield);
+    }
+
     private void Update()
     {
         if (IsGhost || !IsAlive) return;
+        if (CurrentShield > 0f && RemainingShieldSeconds <= 0f)
+            ExpireShield();
         if (CurrentHealth >= MaxHealth) return;
         if (Time.time - lastDamageTime < regenDelay) return;
 
@@ -137,6 +200,7 @@ public class PlayerHealth : Damageable
 
     protected override void OnDeath()
     {
+        ExpireShield();
         IsGhost         = true;
         RespawnProgress = 0f;
         SetGhostCollisionIgnore(true);

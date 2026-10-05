@@ -12,22 +12,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 933177ed6addd7247976e8a482d6f028, type: 3}
   m_Name: EnemyLoadout
   m_EditorClassIdentifier: 
-  options:
-  - {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
-  - {fileID: 11400000, guid: f95b8e55cd011eb48aa6e5173af7e84e, type: 2}
-  - {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
-  - {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
-  slowAmmoPickupPrefab: {fileID: 4219296093323964739, guid: bf09635682ddef9448498b0e4d6a04c9, type: 3}
-  slowAmmoDrops:
+  enemies:
   - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
-    chance: 0
-    durationSeconds: 12
+    slowAmmoChance: 0
+    slowAmmoDurationSeconds: 12
+    shieldChance: 0
+    shieldDurationSeconds: 12
+    companionChance: 0
+    companionDurationSeconds: 18
   - enemy: {fileID: 11400000, guid: f95b8e55cd011eb48aa6e5173af7e84e, type: 2}
-    chance: 0
-    durationSeconds: 12
+    slowAmmoChance: 0
+    slowAmmoDurationSeconds: 12
+    shieldChance: 0.25
+    shieldDurationSeconds: 12
+    companionChance: 0
+    companionDurationSeconds: 18
   - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
-    chance: 0
-    durationSeconds: 12
+    slowAmmoChance: 0
+    slowAmmoDurationSeconds: 12
+    shieldChance: 0
+    shieldDurationSeconds: 12
+    companionChance: 0.2
+    companionDurationSeconds: 18
   - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
-    chance: 0.25
-    durationSeconds: 12
+    slowAmmoChance: 0.25
+    slowAmmoDurationSeconds: 12
+    shieldChance: 0
+    shieldDurationSeconds: 12
+    companionChance: 0
+    companionDurationSeconds: 18
+  slowAmmoPickupPrefab: {fileID: 4219296093323964739, guid: bf09635682ddef9448498b0e4d6a04c9, type: 3}
+  shieldPickupPrefab: {fileID: 4351590762873711336, guid: a0ed83ea9946c8b4c8227969c9bc8e0a, type: 3}
+  companionPickupPrefab: {fileID: 5731713138254485654, guid: 5fb714032e4ca4b41adb30bae5f310f5, type: 3}

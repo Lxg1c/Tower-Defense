@@ -87,7 +87,7 @@ namespace TowerDefense.Tests
         }
 
         [Test]
-        public void UltimateProgressAndCountdownAreWiredToTheButton()
+        public void UltimateProgressIsWiredToTheButton()
         {
             var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level.unity");
             try
@@ -96,8 +96,6 @@ namespace TowerDefense.Tests
                     .SelectMany(r => r.GetComponentsInChildren<UltimateButton>(true)).Single();
                 var data = new SerializedObject(control);
                 var fill = (UnityEngine.UI.Image)data.FindProperty("fill").objectReferenceValue;
-                var label = (Component)data.FindProperty("cooldownLabel").objectReferenceValue;
-
                 Assert.That(fill, Is.Not.Null);
                 Assert.That(fill.transform.parent, Is.EqualTo(control.transform));
                 Assert.That(fill.transform.GetSiblingIndex(), Is.Zero,
@@ -105,8 +103,6 @@ namespace TowerDefense.Tests
                 Assert.That(fill.rectTransform.anchoredPosition, Is.EqualTo(Vector2.zero));
                 Assert.That(fill.rectTransform.sizeDelta,
                     Is.EqualTo(((RectTransform)control.transform).rect.size));
-                Assert.That(label, Is.Not.Null);
-                Assert.That(label.transform.parent.parent, Is.EqualTo(control.transform));
             }
             finally { EditorSceneManager.ClosePreviewScene(scene); }
         }

@@ -50,7 +50,7 @@ public abstract class Damageable : MonoBehaviour
         onHealthChanged?.Invoke(CurrentHealth);
     }
 
-    public void TakeDamage(float damage)
+    public virtual void TakeDamage(float damage)
     {
         if (!CanTakeDamage) return;
 

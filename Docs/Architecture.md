@@ -75,8 +75,10 @@ block input, stay full while the modal is open, and clear on exit, purchase, pha
 
 ## Timed slowing bonus
 
-`EnemyLoadout.asset` holds one slow-ammo drop entry per enemy option, including
-explicit 0% entries. It also holds the shared pickup prefab. The Spider entry
+`EnemyLoadout.asset` holds one entry per enemy option with slow-ammo, shield and
+companion drop chances and durations. The chances are mutually exclusive and
+sum to at most 100%; the remaining probability means no pickup. It also holds
+the shared pickup prefabs. The Spider entry
 currently drops a 12-second slowing bonus at 25% chance. `WaveSpawner` validates the
 table when the level is configured, then configures a
 `MobLootDrop` on each spawned or pooled enemy. The drop subscribes to
@@ -88,12 +90,39 @@ While it is active, every normal projectile from the player's `Shooter`
 can apply `MobSlow` only
 after hitting a surviving mob. `MobSlow` changes NavMeshAgent speed or the
 `FlyingNav` speed multiplier, restores speed when time expires, and clears on
-pool disable. `SlowAmmoCounter` shows a snowflake, seconds and a draining ring
+pool disable. `EffectStatusPanel` shows a snowflake, seconds and a draining ring
 on the left side of the HUD while the bonus is active.
+
+The same enemy entry has shield drop settings.
+Destroyer currently has a 25% chance to drop a 12-second shield pickup. The
+pickup grants 50 shield points, refills them on a second collection, and adds
+remaining time up to 24 seconds. The Level scene contains the effect icons in an
+`EffectStatusRow` under `MainCanvas/TouchControls`. `EffectStatusPanel` updates their
+timers and hides inactive child objects, so the layout has no gaps. The UI is
+authored in the scene and is never instantiated by the shield component.
+
+The Shooter entry currently has a 20% chance to drop an 18-second companion
+capsule. `CompanionTurretController` on the Player prefab owns two slots. A pickup
+fills an empty slot or refreshes the turret with less time remaining. Each
+`CompanionTurret` follows its slot beside the player and reuses `DetectionZone`,
+`Shooter` and `Projectile` for autonomous fire. Turrets expire independently and
+are removed on player death. `PickupHighlight` animates lightweight glimmers on
+the slow-ammo, shield and companion pickups so they remain visible against the
+arena. `EffectStatusPanel` reads the companion controller and shows its active
+count and longest remaining duration beside the slow-ammo and shield statuses.
 
 `LevelSetup` ignores physical collisions between Player and Enemy layers while
 the level is loaded, so the player cannot stand on mobs. `PlayerHealth` restores
 only collisions it temporarily changed during ghost state.
+
+`PlayerHealth` starts without a shield. A pickup calls `GrantShield`, after which
+damage consumes shield before reaching HP. The shield disappears when depleted,
+on expiry, or on death; respawn does not restore it. `PlayerShieldVisual` toggles
+a non-colliding, transparent URP sphere while shield remains.
+The player placed directly in `Level` creates this visual from
+`Resources/PlayerShieldSphere` at runtime; `Player.prefab` has it assigned.
+`HealthBarManager` listens to shield changes only for the player and updates the
+blue shield row in `HealthBarPlayer.prefab` above the existing HP fill.
 
 ## Upgrade data and display
 
@@ -208,8 +237,9 @@ death and revival, destroyed bars and additive scene unloading. Full-level
 playthrough and visual validation remain separate.
 
 `BuildPhaseGuide` observes phase/base events to describe the next build action;
-it owns no gameplay rules. `ScreenSafeArea` fits direct children of screen-space
-canvases to device safe bounds. Both HUD canvases share height-based scaling.
+it owns no gameplay rules. The level UI uses one screen-space `MainCanvas` with
+full-stretch HUD, touch, modal and screen containers. Its Canvas Scaler uses a
+1920×1080 reference and height-based scaling.
 
 ## Next boundaries to improve
 

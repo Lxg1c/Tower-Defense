@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 /// <summary>
 /// Pure visual component — knows nothing about game logic.
@@ -10,6 +11,7 @@ using UnityEngine.UI;
 ///     └─ Background  (Image — dark, stretch to fill)
 ///     └─ GhostFill   (Image — white, Filled/Horizontal — sits BELOW Fill)
 ///     └─ Fill        (Image — coloured, Filled/Horizontal — sits ON TOP)
+///     └─ ShieldRow   (optional, player bar only — blue fill and remaining value)
 /// </summary>
 [DisallowMultipleComponent]
 public class HealthBar : MonoBehaviour
@@ -17,6 +19,9 @@ public class HealthBar : MonoBehaviour
     [Header("References")]
     [SerializeField] private Image fillImage;
     [SerializeField] private Image ghostFillImage;
+    [SerializeField] private GameObject shieldRow;
+    [SerializeField] private Image shieldFillImage;
+    [SerializeField] private TMP_Text shieldValue;
 
     [Header("Size (canvas units)")]
     [SerializeField] private Vector2 barSize = new Vector2(60f, 10f);
@@ -127,6 +132,16 @@ public class HealthBar : MonoBehaviour
         ApplyFill(_currentFill);
         if (ghostFillImage != null)
             ghostFillImage.fillAmount = _ghostFill;
+    }
+
+    public void SetShield(float current, float maximum)
+    {
+        if (shieldRow == null || shieldFillImage == null || shieldValue == null) return;
+        bool visible = maximum > 0f && current > 0f;
+        shieldRow.SetActive(visible);
+        if (!visible) return;
+        shieldFillImage.fillAmount = Mathf.Clamp01(current / maximum);
+        shieldValue.text = Mathf.CeilToInt(Mathf.Max(0f, current)).ToString();
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

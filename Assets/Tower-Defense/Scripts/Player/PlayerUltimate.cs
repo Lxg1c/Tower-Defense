@@ -16,7 +16,6 @@ public class PlayerUltimate : MonoBehaviour
     [Header("References")]
     [Tooltip("Origin of the charge orb and its launch point.")]
     [SerializeField] private Transform firePoint;
-    [SerializeField] private bool logInput = true;
 
     private PlayerAnimator playerAnimator;
     private Shooter        normalShooter;
@@ -160,9 +159,10 @@ public class PlayerUltimate : MonoBehaviour
         Launch(chargeNorm);
 
         lastCooldownDuration = Mathf.Lerp(
-            cooldownSeconds, Mathf.Max(cooldownSeconds, maxCooldownSeconds), chargeNorm);
+            cooldownSeconds, Mathf.Max(cooldownSeconds, maxCooldownSeconds), chargeNorm)
+            + ultimateCooldown;
         lastChargeProgress = chargeNorm;
-        nextReadyTime = Time.time + lastCooldownDuration + ultimateCooldown;
+        nextReadyTime = Time.time + lastCooldownDuration;
         IsCharging = false;
         ChargeProgress = 0f;
         routine = null;

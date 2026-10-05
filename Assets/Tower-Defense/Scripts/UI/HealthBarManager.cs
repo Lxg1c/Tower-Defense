@@ -27,6 +27,8 @@ public class HealthBarManager : MonoBehaviour
         public HealthBar bar;
         public int poolKey;
         public UnityAction<float> hpListener;
+        public UnityAction<float> shieldListener;
+        public PlayerHealth player;
     }
 
     private readonly Dictionary<HealthBarBinding, ActiveEntry> _active = new();
@@ -100,11 +102,18 @@ public class HealthBarManager : MonoBehaviour
         bar.transform.SetParent(worldCanvas.transform, true);
         bar.transform.position = ResolveBarPosition(entity);
         bar.gameObject.SetActive(true);
-        SetBarFillAndVisibility(bar, entity.Target.CurrentHealth / entity.Target.MaxHealth, entity.HideOnDeath);
+        PlayerHealth player = entity.Target as PlayerHealth;
+        SetBarFillAndVisibility(bar, entity.Target.CurrentHealth / entity.Target.MaxHealth,
+            entity.HideOnDeath, player);
 
-        var entry = new ActiveEntry { bar = bar, poolKey = prefab.GetInstanceID() };
+        var entry = new ActiveEntry { bar = bar, poolKey = prefab.GetInstanceID(), player = player };
         entry.hpListener   = hp => OnHealthChanged(entity, hp);
         entity.Target.onHealthChanged.AddListener(entry.hpListener);
+        if (player != null)
+        {
+            entry.shieldListener = shield => OnShieldChanged(entity);
+            player.onShieldChanged.AddListener(entry.shieldListener);
+        }
 
         _active[entity] = entry;
     }
@@ -115,6 +124,8 @@ public class HealthBarManager : MonoBehaviour
 
         // Detach listeners so the entity doesn't keep references and accumulate duplicates on re-spawn.
         if (entity.Target != null) entity.Target.onHealthChanged.RemoveListener(entry.hpListener);
+        if (entry.player != null && entry.shieldListener != null)
+            entry.player.onShieldChanged.RemoveListener(entry.shieldListener);
 
         _active.Remove(entity);
         ReturnToPool(entry.bar, entry.poolKey);
@@ -123,15 +134,27 @@ public class HealthBarManager : MonoBehaviour
     private void OnHealthChanged(HealthBarBinding entity, float current)
     {
         if (_active.TryGetValue(entity, out var entry))
-            SetBarFillAndVisibility(entry.bar, current / entity.Target.MaxHealth, entity.HideOnDeath);
+            SetBarFillAndVisibility(entry.bar, current / entity.Target.MaxHealth,
+                entity.HideOnDeath, entry.player);
     }
 
-    private void SetBarFillAndVisibility(HealthBar bar, float normalized, bool hideOnDeath)
+    private void OnShieldChanged(HealthBarBinding entity)
+    {
+        if (_active.TryGetValue(entity, out var entry) && entity.Target != null)
+            SetBarFillAndVisibility(entry.bar,
+                entity.Target.CurrentHealth / entity.Target.MaxHealth,
+                entity.HideOnDeath, entry.player);
+    }
+
+    private void SetBarFillAndVisibility(HealthBar bar, float normalized, bool hideOnDeath,
+        PlayerHealth player)
     {
         if (bar == null)
             return;
 
         float fill = Mathf.Clamp01(normalized);
+        bar.SetShield(player != null ? player.CurrentShield : 0f,
+            player != null ? player.MaxShield : 0f);
         if (hideOnDeath && fill <= 0f)
         {
             bar.SetFillInstant(0f);
@@ -141,7 +164,7 @@ public class HealthBarManager : MonoBehaviour
 
         if (hideWhenFull)
         {
-            bool isFull = fill >= 0.999f;
+            bool isFull = fill >= 0.999f && (player == null || player.CurrentShield <= 0f);
             if (isFull)
             {
                 bar.SetFillInstant(1f);

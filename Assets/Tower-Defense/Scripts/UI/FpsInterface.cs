@@ -45,11 +45,10 @@ public static class FpsInterface
         var overlay = go.AddComponent<Canvas>();
         overlay.overrideSorting = true;
         overlay.sortingOrder = 100;
-        go.AddComponent<ScreenSafeArea>();
         var label = CreateLabel("FpsLabel", rect, font, 28);
         var labelRect = label.rectTransform;
         labelRect.anchorMin = labelRect.anchorMax = labelRect.pivot = Vector2.one;
-        labelRect.anchoredPosition = new Vector2(-100, -150);
+        labelRect.anchoredPosition = new Vector2(-140, -140);
         labelRect.sizeDelta = new Vector2(180, 48);
         label.alignment = TextAlignmentOptions.MidlineRight;
         label.outlineColor = Color.black;

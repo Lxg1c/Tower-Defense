@@ -1,64 +1,85 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-/// <summary>
-/// Shared list of enemies available for wave setup.
-/// Create via Assets -> Create -> Enemies -> Loadout.
-/// </summary>
+/// <summary>Enemy types and their pickup chances for this level.</summary>
 [CreateAssetMenu(menuName = "Enemies/Loadout", fileName = "EnemyLoadout")]
 public class EnemyLoadout : ScriptableObject
 {
-    public EnemyOption[] options;
+    public enum PickupKind { None, SlowAmmo, Shield, Companion }
 
-    [System.Serializable]
-    public struct SlowAmmoDrop
+    [Serializable]
+    public struct EnemyEntry
     {
         public EnemyOption enemy;
-        [Range(0f, 1f)] public float chance;
-        [FormerlySerializedAs("amount"), Min(0.1f)] public float durationSeconds;
+        [Range(0f, 1f)] public float slowAmmoChance;
+        [Min(0.1f)] public float slowAmmoDurationSeconds;
+        [Range(0f, 1f)] public float shieldChance;
+        [Min(0.1f)] public float shieldDurationSeconds;
+        [Range(0f, 1f)] public float companionChance;
+        [Min(0.1f)] public float companionDurationSeconds;
+
+        public PickupKind PickDrop(float roll)
+        {
+            // Random.value can return 1 exactly; keep a full 100% table exhaustive.
+            roll = Mathf.Min(roll, 0.99999994f);
+            if (roll < slowAmmoChance) return PickupKind.SlowAmmo;
+            roll -= slowAmmoChance;
+            if (roll < shieldChance) return PickupKind.Shield;
+            roll -= shieldChance;
+            return roll < companionChance ? PickupKind.Companion : PickupKind.None;
+        }
     }
 
-    [Header("Slow ammo drops")]
+    [Header("Enemies and pickup chances")]
+    public EnemyEntry[] enemies;
+
+    [Header("Pickup prefabs")]
     public SlowAmmoPickup slowAmmoPickupPrefab;
-    public SlowAmmoDrop[] slowAmmoDrops;
+    public ShieldPickup shieldPickupPrefab;
+    public CompanionTurretPickup companionPickupPrefab;
 
     public void Validate()
     {
-        if (options == null || options.Length == 0 || slowAmmoDrops == null)
-            throw new ArgumentException($"{name}: assign enemy options and a drop entry for each one.");
+        if (enemies == null || enemies.Length == 0)
+            throw new ArgumentException($"{name}: assign at least one enemy entry.");
 
         var seen = new HashSet<EnemyOption>();
-        foreach (SlowAmmoDrop drop in slowAmmoDrops)
+        foreach (EnemyEntry entry in enemies)
         {
-            if (drop.enemy == null || !seen.Add(drop.enemy))
-                throw new ArgumentException($"{name}: drop entries need unique enemy options.");
-            if (float.IsNaN(drop.chance) || drop.chance < 0f || drop.chance > 1f ||
-                (drop.chance > 0f && (float.IsNaN(drop.durationSeconds) ||
-                                      float.IsInfinity(drop.durationSeconds) ||
-                                      drop.durationSeconds <= 0f || slowAmmoPickupPrefab == null)))
-                throw new ArgumentException($"{name}: {drop.enemy.name} has invalid slow ammo drop settings.");
+            if (entry.enemy == null || !seen.Add(entry.enemy))
+                throw new ArgumentException($"{name}: enemy entries must be assigned and unique.");
+            ValidateDrop(entry.enemy, "slow ammo", entry.slowAmmoChance,
+                entry.slowAmmoDurationSeconds, slowAmmoPickupPrefab);
+            ValidateDrop(entry.enemy, "shield", entry.shieldChance,
+                entry.shieldDurationSeconds, shieldPickupPrefab);
+            ValidateDrop(entry.enemy, "companion turret", entry.companionChance,
+                entry.companionDurationSeconds, companionPickupPrefab);
+            if (entry.slowAmmoChance + entry.shieldChance + entry.companionChance > 1.00001f)
+                throw new ArgumentException($"{name}: {entry.enemy.name} pickup chances must total at most 100%.");
         }
-
-        foreach (EnemyOption option in options)
-            if (option == null || !seen.Contains(option))
-                throw new ArgumentException($"{name}: every enemy option needs a drop entry (use 0% for no drop).");
     }
 
-    public bool TryGetSlowAmmoDrop(EnemyOption enemy, out SlowAmmoDrop drop)
+    private void ValidateDrop(EnemyOption enemy, string kind, float chance,
+        float duration, UnityEngine.Object prefab)
     {
-        if (enemy != null && slowAmmoDrops != null)
-        {
-            foreach (SlowAmmoDrop candidate in slowAmmoDrops)
-            {
-                if (candidate.enemy != enemy) continue;
-                drop = candidate;
-                return true;
-            }
-        }
+        if (float.IsNaN(chance) || float.IsInfinity(chance) || chance < 0f || chance > 1f ||
+            (chance > 0f && (float.IsNaN(duration) || float.IsInfinity(duration) ||
+                              duration <= 0f || prefab == null)))
+            throw new ArgumentException($"{name}: {enemy.name} has invalid {kind} drop settings.");
+    }
 
-        drop = default;
+    public bool TryGetEntry(EnemyOption enemy, out EnemyEntry entry)
+    {
+        if (enemy != null && enemies != null)
+            foreach (EnemyEntry candidate in enemies)
+                if (candidate.enemy == enemy)
+                {
+                    entry = candidate;
+                    return true;
+                }
+
+        entry = default;
         return false;
     }
 }

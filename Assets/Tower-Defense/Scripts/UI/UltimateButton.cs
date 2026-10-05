@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -20,7 +19,6 @@ public class UltimateButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     [SerializeField] private Image.Origin360 radialOrigin = Image.Origin360.Top;
     [SerializeField] private bool radialClockwise = true;
     [SerializeField] private Button button;
-    [SerializeField] private TMP_Text cooldownLabel;
  
     private bool _isPressed;
 
@@ -69,16 +67,6 @@ public class UltimateButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
             if (ultimate.IsCharging)        fill.fillAmount = ultimate.ChargeProgress;
             else if (ultimate.IsOnCooldown) fill.fillAmount = ultimate.CooldownProgress;
             else                            fill.fillAmount = 0f;
-        }
-
-        if (cooldownLabel != null)
-        {
-            bool showCooldown = ultimate.IsOnCooldown;
-            GameObject badge = cooldownLabel.transform.parent.gameObject;
-            if (badge.activeSelf != showCooldown)
-                badge.SetActive(showCooldown);
-            if (showCooldown)
-                cooldownLabel.text = Mathf.CeilToInt(ultimate.CooldownRemaining).ToString();
         }
 
         if (button != null)

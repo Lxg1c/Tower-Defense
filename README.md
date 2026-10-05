@@ -33,6 +33,17 @@ for 12 seconds (up to 24 seconds can be stored). While active, every normal
 shot can slow a surviving enemy to half movement speed for 2.5 seconds. The
 snowflake ring between Pause and the joystick shows the time left. Pickups
 disappear after 12 seconds.
+Destroyers can drop a shield pickup. Collecting it gives 50 shield points for
+12 seconds; another pickup refills the shield and extends the remaining time,
+up to 24 seconds. The snowflake and blue shield rings appear in one HUD row only
+while their effects are active; the row closes gaps automatically. Damage removes
+shield before HP, and either depletion or expiry ends it.
+Shooter enemies can also drop a companion capsule. Collecting one summons an
+automatic turret beside the hero for 18 seconds. Up to two can follow at once;
+another pickup refreshes the one with less time remaining. The companion uses
+the existing projectile targeting and disappears when its time ends or the hero
+dies. Moving glimmers make all three pickup types easier to spot on the ground.
+The in-game effect row shows the active companion count and remaining time.
 The hero passes through enemy colliders, so mobs cannot serve as platforms.
 
 Building panels leave movement available and do not darken the world. Walk out
@@ -50,6 +61,10 @@ when walking away or completing the purchase.
 The loop is: build/upgrade, fight a wave, receive rewards and repairs, then repeat.
 Player death enters a ghost/respawn state. Destroyed towers recover after a wave.
 Base destruction ends the run; clearing the final wave wins.
+
+The blue value above the health bar shows active shield strength, and a
+transparent sphere surrounds the hero while the bonus is active. Shield is
+only gained from pickups; respawning does not restore it.
 
 ### Frame rate and FPS display
 
@@ -150,9 +165,12 @@ rather than editing generated code.
 - `Prefabs/TowerLoadout.asset` lists the available buildings and their costs.
 - Enemy option assets point at enemy prefabs. Each enemy prefab explicitly
   assigns its targeting, combat and navigation modules on `MobCore`.
-- `Prefabs/EnemyLoadout.asset` contains one slowing-bonus drop chance and duration per
-  enemy. Set a chance to 0% when that enemy should never drop it; assign the
-  shared pickup prefab there. The Level scene's WaveSpawner references this asset.
+- `Prefabs/EnemyLoadout.asset` contains one entry per enemy with slow-ammo,
+  shield and companion pickup chances and durations. One roll selects at most one
+  pickup per enemy; the chances in an entry must total no more than 100%.
+  Set a chance to 0% to disable that drop;
+  assign the shared pickup prefabs there. The Level scene's WaveSpawner references
+  this asset.
 - Shooter components require a nonempty fire-point array and a prefab containing
   `Projectile`. A missing projectile is a setup error, not an instant-hit weapon.
 - Upgrade levels are configured on the building prefabs. Multipliers apply to

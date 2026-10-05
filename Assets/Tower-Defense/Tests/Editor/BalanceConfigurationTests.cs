@@ -15,12 +15,73 @@ namespace TowerDefense.Tests
                 "Assets/Tower-Defense/Prefabs/EnemyLoadout.asset");
             Assert.That(loadout, Is.Not.Null);
             Assert.DoesNotThrow(loadout.Validate);
-            Assert.That(loadout.slowAmmoDrops.Length, Is.EqualTo(loadout.options.Length));
-            var spider = loadout.options.Single(option => option.name == "Spider");
-            Assert.That(loadout.TryGetSlowAmmoDrop(spider, out var drop), Is.True);
-            Assert.That(drop.chance, Is.EqualTo(0.25f));
-            Assert.That(drop.durationSeconds, Is.EqualTo(12f));
+            Assert.That(loadout.enemies.Length, Is.EqualTo(4));
+            var spider = loadout.enemies.Single(entry => entry.enemy.name == "Spider");
+            Assert.That(spider.slowAmmoChance, Is.EqualTo(0.25f));
+            Assert.That(spider.slowAmmoDurationSeconds, Is.EqualTo(12f));
+            Assert.That(spider.shieldChance, Is.Zero);
+            Assert.That(spider.companionChance, Is.Zero);
             Assert.That(loadout.slowAmmoPickupPrefab, Is.Not.Null);
+            var destroyer = loadout.enemies.Single(entry => entry.enemy.name == "Destoyer");
+            Assert.That(destroyer.shieldChance, Is.EqualTo(0.25f));
+            Assert.That(destroyer.shieldDurationSeconds, Is.EqualTo(12f));
+            Assert.That(loadout.shieldPickupPrefab, Is.Not.Null);
+            var shooter = loadout.enemies.Single(entry => entry.enemy.name == "Shooter");
+            Assert.That(shooter.companionChance, Is.EqualTo(0.2f));
+            Assert.That(shooter.companionDurationSeconds, Is.EqualTo(18f));
+            Assert.That(loadout.companionPickupPrefab, Is.Not.Null);
+            Assert.That(loadout.slowAmmoPickupPrefab.GetComponent<PickupHighlight>(), Is.Not.Null);
+            Assert.That(loadout.shieldPickupPrefab.GetComponent<PickupHighlight>(), Is.Not.Null);
+            Assert.That(loadout.companionPickupPrefab.GetComponent<PickupHighlight>(), Is.Not.Null);
+            var player = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Tower-Defense/Prefabs/Player.prefab");
+            var companion = player.GetComponent<CompanionTurretController>();
+            Assert.That(companion, Is.Not.Null);
+            Assert.That(new SerializedObject(companion).FindProperty("turretPrefab").objectReferenceValue,
+                Is.Not.Null);
+        }
+
+        [TestCase(0.10f, EnemyLoadout.PickupKind.SlowAmmo)]
+        [TestCase(0.30f, EnemyLoadout.PickupKind.Shield)]
+        [TestCase(0.60f, EnemyLoadout.PickupKind.Companion)]
+        [TestCase(0.90f, EnemyLoadout.PickupKind.None)]
+        public void OneRollSelectsAtMostOnePickup(float roll, EnemyLoadout.PickupKind expected)
+        {
+            var entry = new EnemyLoadout.EnemyEntry
+            {
+                slowAmmoChance = 0.25f,
+                shieldChance = 0.25f,
+                companionChance = 0.25f
+            };
+            Assert.That(entry.PickDrop(roll), Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void FullDropTableIncludesTheUpperRandomBoundary()
+        {
+            var entry = new EnemyLoadout.EnemyEntry
+            {
+                slowAmmoChance = 0.5f,
+                shieldChance = 0.25f,
+                companionChance = 0.25f
+            };
+            Assert.That(entry.PickDrop(1f), Is.EqualTo(EnemyLoadout.PickupKind.Companion));
+        }
+
+        [Test]
+        public void DropChancesAboveOneHundredPercentAreRejected()
+        {
+            var source = AssetDatabase.LoadAssetAtPath<EnemyLoadout>(
+                "Assets/Tower-Defense/Prefabs/EnemyLoadout.asset");
+            var copy = Object.Instantiate(source);
+            try
+            {
+                var spider = copy.enemies[3];
+                spider.slowAmmoChance = 0.6f;
+                spider.shieldChance = 0.6f;
+                copy.enemies[3] = spider;
+                Assert.Throws<System.ArgumentException>(copy.Validate);
+            }
+            finally { Object.DestroyImmediate(copy); }
         }
 
         [Test]
@@ -32,6 +93,23 @@ namespace TowerDefense.Tests
             Assert.That(spider.layer, Is.EqualTo(LayerMask.NameToLayer("Enemy")));
             Assert.That(player.GetComponent<Collider>().isTrigger, Is.False);
             Assert.That(spider.GetComponent<Collider>().isTrigger, Is.False);
+        }
+
+        [Test]
+        public void LevelWiresCompanionStatusIntoTheEffectRow()
+        {
+            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level.unity");
+            try
+            {
+                var panel = scene.GetRootGameObjects()
+                    .SelectMany(root => root.GetComponentsInChildren<EffectStatusPanel>(true)).Single();
+                var serialized = new SerializedObject(panel);
+                foreach (string field in new[] { "companionTurrets", "companionIndicator",
+                             "companionRing", "companionTime", "companionCount" })
+                    Assert.That(serialized.FindProperty(field).objectReferenceValue, Is.Not.Null, field);
+                Assert.That(panel.transform.Find("TurretEffect"), Is.Not.Null);
+            }
+            finally { EditorSceneManager.ClosePreviewScene(scene); }
         }
 
         [Test]

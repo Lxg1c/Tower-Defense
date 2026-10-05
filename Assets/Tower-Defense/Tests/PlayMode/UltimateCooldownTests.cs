@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
-using TMPro;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.UI;
 
 namespace TowerDefense.Tests
 {
@@ -27,19 +27,12 @@ namespace TowerDefense.Tests
         public IEnumerator UltimateAddsFixedDelayAfterShortCharge()
         {
             PlayerUltimate ultimate = CreatePlayer();
-            GameObject buttonObject = new GameObject("Ultimate button", typeof(RectTransform), typeof(UltimateButton));
+            GameObject buttonObject = new GameObject("Ultimate button", typeof(RectTransform), typeof(Image), typeof(UltimateButton));
             created.Add(buttonObject);
             var button = buttonObject.GetComponent<UltimateButton>();
-            GameObject badge = new GameObject("Cooldown badge", typeof(RectTransform));
-            badge.SetActive(false);
-            created.Add(badge);
-            badge.transform.SetParent(buttonObject.transform);
-            GameObject labelObject = new GameObject("Cooldown seconds", typeof(RectTransform), typeof(TextMeshProUGUI));
-            created.Add(labelObject);
-            var label = labelObject.GetComponent<TextMeshProUGUI>();
-            label.transform.SetParent(badge.transform);
+            var fill = buttonObject.GetComponent<Image>();
             Set(button, "ultimate", ultimate);
-            Set(button, "cooldownLabel", label);
+            Set(button, "fill", fill);
             ultimate.BeginCharge();
             ultimate.Release();
             yield return null;
@@ -50,8 +43,7 @@ namespace TowerDefense.Tests
             Assert.That(ultimate.CooldownProgress, Is.LessThan(0.1f),
                 "A short charge must not jump to a full radial indicator after firing.");
             Assert.That(ultimate.CanReceiveInput, Is.False);
-            Assert.That(badge.activeSelf, Is.True, "The countdown panel must become visible.");
-            Assert.That(label.text, Is.Not.Empty);
+            Assert.That(fill.fillAmount, Is.EqualTo(ultimate.CooldownProgress).Within(0.02f));
             ultimate.BeginCharge();
             Assert.That(ultimate.IsCharging, Is.False);
             yield return new WaitForSeconds(3.05f);
@@ -61,7 +53,7 @@ namespace TowerDefense.Tests
             yield return null;
             Assert.That(ultimate.IsOnCooldown, Is.False);
             Assert.That(ultimate.CanReceiveInput, Is.True);
-            Assert.That(badge.activeSelf, Is.False);
+            Assert.That(fill.fillAmount, Is.EqualTo(0f).Within(0.01f));
         }
 
         [UnityTest]
@@ -80,10 +72,13 @@ namespace TowerDefense.Tests
             yield return new WaitForSeconds(3.05f);
             Assert.That(ultimate.CanReceiveInput, Is.False,
                 "A full charge must still be locked after the three-second minimum.");
+            Assert.That(ultimate.CooldownProgress, Is.InRange(0.6f, 0.8f),
+                "The radial progress must move during the additional fixed cooldown.");
 
             yield return new WaitForSeconds(2.05f);
             Assert.That(ultimate.CanReceiveInput, Is.False,
                 "The five-second charge cooldown ends before the added five-second delay.");
+            Assert.That(ultimate.CooldownProgress, Is.InRange(0.35f, 0.65f));
 
             yield return new WaitForSeconds(5.1f);
             Assert.That(ultimate.CanReceiveInput, Is.True);
@@ -100,7 +95,6 @@ namespace TowerDefense.Tests
             Set(shooter, "firePoints", new[] { player.transform });
             Set(shooter, "projectilePrefab", bullet);
             PlayerUltimate ultimate = player.AddComponent<PlayerUltimate>();
-            Set(ultimate, "logInput", false);
             Set(ultimate, "chargeOrbPrefab", orb);
             player.SetActive(true);
             return ultimate;

@@ -26,8 +26,8 @@ namespace TowerDefense.Tests
             option = ScriptableObject.CreateInstance<EnemyOption>();
             option.prefab = core;
             loadout = ScriptableObject.CreateInstance<EnemyLoadout>();
-            loadout.options = new[] { option };
-            loadout.slowAmmoDrops = new[] { new EnemyLoadout.SlowAmmoDrop { enemy = option, durationSeconds = 12f } };
+            loadout.enemies = new[] { new EnemyLoadout.EnemyEntry
+                { enemy = option, slowAmmoDurationSeconds = 12f, shieldDurationSeconds = 12f } };
             level = ScriptableObject.CreateInstance<LevelDefinition>();
             level.displayName = "Test Level";
             level.startingCoins = 17;
