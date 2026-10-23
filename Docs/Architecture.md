@@ -13,6 +13,22 @@ and health presentation. Enemy AI and entity death/respawn remain component-base
 6. `TowerUpgrade` / `BaseUpgrade`, then `BuildingLevelList` and `TowerCard`: upgrade
    numbers and the shared level-list presentation.
 
+## Permanent player progression
+
+`SkillTreeState` owns permanent money, purchased ranks, prerequisites, and
+the highest cleared difficulty of each level. `PlayerProgression` saves that
+state to PlayerPrefs and migrates old skill points at 100 money per point; it
+never spends `PlayerWallet` coins. `LevelSetup` resolves the selected
+difficulty, configures its waves and grants the permanent victory reward through
+`VictoryRewardGate` when `VictoryScreen` observes `AllCompleted`. Reopening
+the victory screen cannot pay twice in one run; replaying a level pays again.
+The Victory Skills button requests the skill screen
+in the next MainMenu scene. `MainMenuScreens` opens `SkillTreePanel`, which only
+displays state and submits purchases. `PlayerSkillBonus` on the Player prefab
+applies the purchased health, shot-damage, and fire-rate bonuses once when the
+level starts. New levels need a unique progression ID and three authored
+difficulty configurations.
+
 ## Building flow
 
 ```mermaid
@@ -54,6 +70,33 @@ Build and upgrade submissions recheck physical proximity before spending coins.
 The panel roots have no active full-screen backdrop or pointer blocker, and no
 Close buttons. The joystick remains available while a panel is open.
 
+`LevelGrid` and its custom Inspector are editor-only level-authoring helpers:
+the selected scene grid draws cell and building-footprint previews. Placement
+first fixes the future building footprint, then restricts the interaction marker
+to adjacent free cells. The connected `TowerBuildZone` prefab keeps its spawn
+point at the building center and its marker at the selected side. Existing
+building footprints and markers block occupied cells. Runtime purchase
+and interaction rules remain in `TowerPlacementZone` and `BuildingSlot`.
+Grid-created zones carry `LevelGridPlacedZone` authoring metadata so clicking
+their footprint or marker selects the pair. A line shows their relationship,
+and the LevelGrid Inspector can move either the building with its marker or
+just the marker, or delete the pair. Placement checks ignore the selected
+zone's old cells during a move, while all other occupied cells still block it.
+Unity Undo handles creation, movement, deletion and type changes; this metadata
+has no runtime logic.
+Each grid is independent; the Scene view painter checks zones across the scene
+for occupied cells. A temporary purple model follows the pointer. Each
+grid-created zone stores an automatically chosen representative preview prefab
+for its building type; the selected grid draws
+cyan editor-only ghosts for its placed zones and red/orange occupancy marks for
+all building footprints and interaction cells. Preview objects have no active
+behaviors or colliders and are destroyed when the grid is deselected. Existing
+zones without a saved model use the first matching option in their loadout.
+`LevelGridTileSurface` is an optional visual floor for the same grid: it builds
+one mesh with a separate 0–1 UV island per cell and can use one shared collider.
+The existing Level 1 terrain stays in place unless the surface is explicitly
+enabled and given a material.
+
 `TowerSelectionModal` now owns both construction and upgrades through the shared
 `BuildingModal.prefab` and `TowerCard.prefab`. Zones supply their validated purchase
 operation and the original `BuildingSlot.BuiltOption`, so the same name, icon and
@@ -69,9 +112,20 @@ is highlighted and the next level is brighter. The level list scrolls if needed.
 unlocked; Town Hall points need only a remaining level. Town Hall changes refresh
 zone visibility immediately. Insufficient funds disable purchasing in the panel.
 `PlacementProgressIndicator` projects hold progress into a Screen Space Overlay
-Canvas above the zone, using the gameplay MainCamera. The Level scene shares its
+Canvas above the zone, using the gameplay MainCamera. The Level 1 scene shares its
 HUD canvas; the reusable zone prefab includes its own overlay. Indicators never
 block input, stay full while the modal is open, and clear on exit, purchase, phase changes and zone disabling.
+
+## Allied squads
+
+`TowerLoadout` offers melee and ranged barracks cards when the town hall reaches
+level 2. The ranged card builds `BarracksRanged`, a variant of the melee Barracks
+prefab with `squadType` set to Ranged. Each barracks trains its entire `squadSize`
+from its selected ally prefab; the squad type stays fixed after construction.
+When an ally dies, its slot respawns with the same selected type. Both types
+obey the existing formation, attack and follow commands. A ranged `AllySoldier`
+requires an assigned `Projectile` prefab and fire point; its shot deals damage
+only on projectile impact. The `Ally Ranged` prefab is a variant of `Ally Soldier`.
 
 ## Timed slowing bonus
 
@@ -96,7 +150,7 @@ on the left side of the HUD while the bonus is active.
 The same enemy entry has shield drop settings.
 Destroyer currently has a 25% chance to drop a 12-second shield pickup. The
 pickup grants 50 shield points, refills them on a second collection, and adds
-remaining time up to 24 seconds. The Level scene contains the effect icons in an
+remaining time up to 24 seconds. The Level 1 scene contains the effect icons in an
 `EffectStatusRow` under `MainCanvas/TouchControls`. `EffectStatusPanel` updates their
 timers and hides inactive child objects, so the layout has no gaps. The UI is
 authored in the scene and is never instantiated by the shield component.
@@ -177,7 +231,7 @@ spawn-point indices. CreateWaves copies data into fresh runtime arrays.
 
 MainMenu creates page selectors from its Levels list and previews the chosen
 encounter. Start stores the asset and target scene in RunSelection, then loads
-the shared Level scene. LevelSetup executes before the wallet's Awake and the
+the shared Level 1 scene. LevelSetup executes before the wallet's Awake and the
 spawner's Start: it resolves the selection, validates scene spawn references,
 configures waves and sets starting coins. Direct scene entry uses its explicitly
 assigned Direct Play Level. Missing configuration stops setup with an error.
@@ -191,6 +245,13 @@ Main Menu and Play Mode subsystem initialization clear the static selection.
 The seeded-wave prototype and inline scene waves have been removed. WaveSpawner
 holds only a runtime copy of the selected level's waves. Missing level setup
 stops the spawner with a configuration error instead of creating an empty session.
+During Build, `WaveHUD` asks the spawner for the next wave's preview. The
+spawner combines counts by spawn transform and enemy prefab, then assigns a
+stack position for each type at that point. `WaveDirectionIndicator` projects
+the actual spawn position onto the root HUD Canvas. Visible points show an
+icon and count for each enemy type; off-screen points collapse to one circular
+badge with the total count and an arrow toward the spawn. The preview is
+cleared at the start of Combat.
 LevelDefinitionTests covers asset validity, runtime-copy isolation, restart,
 scene isolation and rejected configuration. LevelSetupTests checks actual
 Awake/Start ordering, initial coins and wave configuration across recreated

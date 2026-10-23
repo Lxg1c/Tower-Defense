@@ -225,7 +225,7 @@ public class TowerPlacementZone : MonoBehaviour
             return;
         }
 
-        IReadOnlyList<TowerOption> options = Slot.GetOptions();
+        IReadOnlyList<TowerOption> options = Slot.GetOptions(GetTownHallLevel());
         if (options.Count == 0)
         {
             Debug.LogWarning($"[TowerPlacementZone] No build options for slot type {allowedType}.", this);

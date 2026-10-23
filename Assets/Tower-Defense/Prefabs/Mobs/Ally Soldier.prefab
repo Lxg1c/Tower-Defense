@@ -84,9 +84,12 @@ MonoBehaviour:
     m_Bits: 128
   awarenessRadius: 32
   maxTargets: 24
+  combatType: 0
   damage: 10
   attackRate: 1
-  attackRange: 4
+  attackRange: 1.8
+  projectilePrefab: {fileID: 0}
+  firePoint: {fileID: 0}
   hitAudioSource: {fileID: 0}
   hitAudioClip: {fileID: 0}
   hitAudioVolume: 1

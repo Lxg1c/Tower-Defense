@@ -104,7 +104,7 @@ public static class ArchitectureRefactorChecks
             loadout = ScriptableObject.CreateInstance<TowerLoadout>();
             loadout.options = new[] { option, wrongType, null };
             var slot = new BuildingSlot(loadout, BuildSlotType.Defense, 2);
-            Check(slot.GetOptions().Count == 1, "Only valid options matching the slot are shown.");
+            Check(slot.GetOptions(2).Count == 1, "Only valid options matching the slot are shown.");
             int coinsBefore = wallet.Coins;
             GameObject built;
             Check(!slot.TryBuild(option, wallet, false, 2, Vector3.zero, Quaternion.identity, out built), "Combat blocks building.");

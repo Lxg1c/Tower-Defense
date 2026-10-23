@@ -15,6 +15,8 @@ MonoBehaviour:
   displayName: Level 2
   description: Flying enemies join the assault. Cover multiple approaches.
   difficulty: STANDARD
+  progressionId: level-2
+  moneyReward: 100
   nextLevel: {fileID: 11400000, guid: cb5c51150a1d00246a4c47227a8a3809, type: 2}
   startingCoins: 10
   waves:
@@ -23,51 +25,164 @@ MonoBehaviour:
     - spawnPointIndex: 0
       entries:
       - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
-        count: 10
+        count: 13
         spawnInterval: 0.85
   - coinReward: 4
     spawnGroups:
     - spawnPointIndex: 1
       entries:
       - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
-        count: 13
+        count: 17
         spawnInterval: 0.85
     - spawnPointIndex: 2
-      entries:
-      - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
-        count: 3
-        spawnInterval: 0.85
-  - coinReward: 4
-    spawnGroups:
-    - spawnPointIndex: 2
-      entries:
-      - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
-        count: 13
-        spawnInterval: 0.85
-    - spawnPointIndex: 3
       entries:
       - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
         count: 4
         spawnInterval: 0.85
-    - spawnPointIndex: 0
-      entries:
-      - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
-        count: 3
-        spawnInterval: 0.85
   - coinReward: 4
     spawnGroups:
-    - spawnPointIndex: 3
+    - spawnPointIndex: 2
       entries:
       - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
-        count: 15
+        count: 17
         spawnInterval: 0.85
-    - spawnPointIndex: 0
+    - spawnPointIndex: 3
       entries:
       - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
         count: 5
         spawnInterval: 0.85
-    - spawnPointIndex: 1
+    - spawnPointIndex: 0
       entries:
       - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
         count: 4
         spawnInterval: 0.85
+  - coinReward: 4
+    spawnGroups:
+    - spawnPointIndex: 3
+      entries:
+      - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
+        count: 19
+        spawnInterval: 0.85
+    - spawnPointIndex: 0
+      entries:
+      - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
+        count: 7
+        spawnInterval: 0.85
+    - spawnPointIndex: 1
+      entries:
+      - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
+        count: 5
+        spawnInterval: 0.85
+  additionalDifficulties:
+  - startingCoins: 10
+    moneyReward: 150
+    waves:
+    - coinReward: 4
+      spawnGroups:
+      - spawnPointIndex: 0
+        entries:
+        - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
+          count: 18
+          spawnInterval: 0.7225
+    - coinReward: 4
+      spawnGroups:
+      - spawnPointIndex: 1
+        entries:
+        - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
+          count: 23
+          spawnInterval: 0.7225
+      - spawnPointIndex: 2
+        entries:
+        - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
+          count: 7
+          spawnInterval: 0.7225
+    - coinReward: 4
+      spawnGroups:
+      - spawnPointIndex: 2
+        entries:
+        - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
+          count: 23
+          spawnInterval: 0.7225
+      - spawnPointIndex: 3
+        entries:
+        - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
+          count: 8
+          spawnInterval: 0.7225
+      - spawnPointIndex: 0
+        entries:
+        - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
+          count: 7
+          spawnInterval: 0.7225
+    - coinReward: 4
+      spawnGroups:
+      - spawnPointIndex: 3
+        entries:
+        - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
+          count: 27
+          spawnInterval: 0.7225
+      - spawnPointIndex: 0
+        entries:
+        - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
+          count: 9
+          spawnInterval: 0.7225
+      - spawnPointIndex: 1
+        entries:
+        - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
+          count: 8
+          spawnInterval: 0.7225
+  - startingCoins: 10
+    moneyReward: 225
+    waves:
+    - coinReward: 4
+      spawnGroups:
+      - spawnPointIndex: 0
+        entries:
+        - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
+          count: 23
+          spawnInterval: 0.595
+    - coinReward: 4
+      spawnGroups:
+      - spawnPointIndex: 1
+        entries:
+        - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
+          count: 29
+          spawnInterval: 0.595
+      - spawnPointIndex: 2
+        entries:
+        - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
+          count: 8
+          spawnInterval: 0.595
+    - coinReward: 4
+      spawnGroups:
+      - spawnPointIndex: 2
+        entries:
+        - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
+          count: 29
+          spawnInterval: 0.595
+      - spawnPointIndex: 3
+        entries:
+        - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
+          count: 9
+          spawnInterval: 0.595
+      - spawnPointIndex: 0
+        entries:
+        - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
+          count: 8
+          spawnInterval: 0.595
+    - coinReward: 4
+      spawnGroups:
+      - spawnPointIndex: 3
+        entries:
+        - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
+          count: 34
+          spawnInterval: 0.595
+      - spawnPointIndex: 0
+        entries:
+        - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
+          count: 12
+          spawnInterval: 0.595
+      - spawnPointIndex: 1
+        entries:
+        - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
+          count: 9
+          spawnInterval: 0.595

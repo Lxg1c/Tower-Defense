@@ -171,6 +171,7 @@ GameObject:
   - component: {fileID: 6585691809613987800}
   - component: {fileID: 4627760082307498683}
   - component: {fileID: 3663154105290944427}
+  - component: {fileID: 673507647641260488}
   m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
@@ -406,7 +407,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   firePoint: {fileID: 6908353990229652119}
-  logInput: 0
   chargeOrbPrefab: {fileID: 9156768072905796618, guid: c5440a2ea2b4d7e4bbca56ba94b24b9e, type: 3}
   maxChargeTime: 2
   minScale: 0.5
@@ -507,6 +507,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   turretPrefab: {fileID: 3869929255006236203, guid: 46f47ffc7c2d9b64eacd5b73894c6252, type: 3}
+--- !u!114 &673507647641260488
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8238938828016473868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: afb24187830478843bb785589ce16645, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  health: {fileID: 1352034482218691407}
+  shooter: {fileID: 5752556234440033996}
 --- !u!1 &8246063992435225512
 GameObject:
   m_ObjectHideFlags: 0

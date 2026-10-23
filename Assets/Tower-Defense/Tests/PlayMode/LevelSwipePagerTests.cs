@@ -41,6 +41,7 @@ namespace TowerDefense.Tests
             {
                 levels[i] = ScriptableObject.CreateInstance<LevelDefinition>();
                 levels[i].displayName = $"Level {i + 1}";
+                levels[i].progressionId = $"pager-test-{i + 1}";
                 levels[i].description = $"Description {i + 1}";
                 levels[i].waves = new[] { new LevelDefinition.LevelWave { spawnGroups = new[] {
                     new LevelDefinition.LevelSpawnGroup { entries = new[] {
@@ -54,6 +55,9 @@ namespace TowerDefense.Tests
             Set(menu, "levelButtonContainer", UI("Pages").transform);
             Set(menu, "levelLabel", title); Set(menu, "levelDescription", description);
             Set(menu, "wavePreview", Label("Preview")); Set(menu, "startButton", start);
+            var difficulties = new[] { Button("Normal"), Button("Hard"), Button("Nightmare") };
+            foreach (var button in difficulties) Label("Difficulty label").transform.SetParent(button.transform, false);
+            Set(menu, "difficultyButtons", difficulties);
             var view = UI("Viewport"); card = (RectTransform)UI("Card").transform;
             card.SetParent(view.transform, false); card.sizeDelta = new Vector2(800, 500);
             pager = view.AddComponent<LevelSwipePager>();

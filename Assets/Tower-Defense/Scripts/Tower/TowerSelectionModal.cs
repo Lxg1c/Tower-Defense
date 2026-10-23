@@ -83,6 +83,7 @@ public class TowerSelectionModal : MonoBehaviour
         }
 
         modalRoot.SetActive(true);
+        PositionPanel(spawnedEntries.Count, owner);
         Canvas.ForceUpdateCanvases();
         onOpened?.Invoke();
     }
@@ -109,6 +110,7 @@ public class TowerSelectionModal : MonoBehaviour
         });
         spawnedEntries.Add(card.gameObject);
         modalRoot.SetActive(true);
+        PositionPanel(1, owner);
         Canvas.ForceUpdateCanvases();
         onOpened?.Invoke();
     }
@@ -129,6 +131,54 @@ public class TowerSelectionModal : MonoBehaviour
         var callback = onPick;
         Close();
         callback?.Invoke(opt);
+    }
+
+    private void PositionPanel(int cardCount, TowerPlacementZone owner)
+    {
+        var surface = content.parent as RectTransform;
+        var canvasRect = modalRoot.transform as RectTransform;
+        if (surface == null || canvasRect == null)
+            return;
+
+        var layout = content.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>();
+        var cardLayout = cardPrefab.GetComponent<UnityEngine.UI.LayoutElement>();
+        float cardWidth = cardLayout != null && cardLayout.preferredWidth > 0f
+            ? cardLayout.preferredWidth : ((RectTransform)cardPrefab.transform).rect.width;
+        if (cardCount > 1)
+        {
+            cardWidth = Mathf.Min(cardWidth, 300f);
+            foreach (var entry in spawnedEntries)
+            {
+                if (entry != null && entry.TryGetComponent(out UnityEngine.UI.LayoutElement element))
+                    element.preferredWidth = cardWidth;
+            }
+        }
+        float spacing = layout != null ? layout.spacing : 0f;
+        float width = 36f + Mathf.Max(1, cardCount) * cardWidth
+            + Mathf.Max(0, cardCount - 1) * spacing;
+        width = Mathf.Min(width, canvasRect.rect.width - 48f);
+        surface.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+
+        float x = 0f;
+        Camera camera = Camera.main;
+        if (owner != null && camera != null)
+        {
+            Vector3 screen = camera.WorldToScreenPoint(owner.transform.position);
+            if (screen.z > 0f && RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    canvasRect, screen, null, out Vector2 point))
+            {
+                const float progressClearance = 96f;
+                float left = canvasRect.rect.xMin + 24f;
+                float right = canvasRect.rect.xMax - 24f;
+                float leftSpace = point.x - progressClearance - left;
+                float rightSpace = right - point.x - progressClearance;
+                x = rightSpace >= leftSpace
+                    ? point.x + progressClearance + width * 0.5f
+                    : point.x - progressClearance - width * 0.5f;
+                x = Mathf.Clamp(x, left + width * 0.5f, right - width * 0.5f);
+            }
+        }
+        surface.anchoredPosition = new Vector2(x, surface.anchoredPosition.y);
     }
 
     private void ClearEntries()

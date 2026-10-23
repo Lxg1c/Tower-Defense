@@ -175,7 +175,7 @@ namespace TowerDefense.Tests
         }
 
         [UnityTest]
-        public IEnumerator WavePreviewLeavesTouchControlsClearAndPointsToSpawn()
+        public IEnumerator OffscreenWavePreviewStaysNearEdgeAndPointsToSpawn()
         {
             var camera = New("Preview camera").AddComponent<Camera>();
             camera.tag = "MainCamera";
@@ -193,16 +193,75 @@ namespace TowerDefense.Tests
             Set(indicator, "worldCamera", camera);
             marker.SetActive(true);
             var spawn = New("Spawn").transform;
-            foreach (var position in new[] { new Vector3(10, -10, 10), new Vector3(-10, -10, 10) })
+            foreach (var position in new[] { new Vector3(10, -100, 10), new Vector3(-10, -100, 10) })
             {
                 spawn.position = position;
                 indicator.Bind(new WaveSpawner.WavePreviewEntry { spawnPoint = spawn, count = 10 });
                 yield return null;
                 Vector2 screen = RectTransformUtility.WorldToScreenPoint(null, rect.position);
-                Assert.That(screen.y, Is.GreaterThanOrEqualTo(Screen.safeArea.yMin + Screen.safeArea.height * 0.36f - 1));
+                Assert.That(screen.y, Is.LessThan(Screen.safeArea.yMin + Screen.safeArea.height * 0.25f));
                 Vector2 desired = (Vector2)camera.WorldToScreenPoint(position) - screen;
                 Assert.That(Vector2.Dot(arrow.up, desired.normalized), Is.GreaterThan(0.99f));
             }
+        }
+
+        [UnityTest]
+        public IEnumerator WavePreviewShowsEnemyTypesInViewAndOneTotalAtScreenEdge()
+        {
+            var camera = New("Preview camera").AddComponent<Camera>();
+            camera.tag = "MainCamera";
+            camera.gameObject.SetActive(true);
+            var canvas = New("Preview canvas").AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.gameObject.SetActive(true);
+            var spawn = New("Spawn").transform;
+            spawn.position = new Vector3(0f, 0f, 10f);
+
+            var indicators = new WaveDirectionIndicator[2];
+            var labels = new TMPro.TextMeshProUGUI[2];
+            var arrows = new RectTransform[2];
+            for (int i = 0; i < 2; i++)
+            {
+                var marker = New("Wave marker " + i);
+                marker.AddComponent<RectTransform>().SetParent(canvas.transform, false);
+                marker.AddComponent<UnityEngine.UI.Image>();
+                indicators[i] = marker.AddComponent<WaveDirectionIndicator>();
+                var label = New("Count");
+                label.AddComponent<RectTransform>().SetParent(marker.transform, false);
+                labels[i] = label.AddComponent<TMPro.TextMeshProUGUI>();
+                var arrow = New("Direction arrow");
+                arrows[i] = arrow.AddComponent<RectTransform>();
+                arrows[i].SetParent(marker.transform, false);
+                Set(indicators[i], "countLabel", labels[i]);
+                Set(indicators[i], "directionArrow", arrows[i]);
+                Set(indicators[i], "worldCamera", camera);
+                marker.SetActive(true);
+                indicators[i].Bind(new WaveSpawner.WavePreviewEntry
+                {
+                    spawnPoint = spawn,
+                    count = i == 0 ? 3 : 8,
+                    stackIndex = i,
+                    stackCount = 2
+                }, 11);
+            }
+
+            yield return null;
+            Assert.That(labels[0].text, Is.EqualTo("x3"));
+            Assert.That(labels[1].text, Is.EqualTo("x8"));
+            Assert.That(arrows[0].gameObject.activeSelf, Is.False);
+            Assert.That(arrows[1].gameObject.activeSelf, Is.False);
+
+            spawn.position = new Vector3(100f, 0f, 10f);
+            yield return null;
+            Assert.That(labels[0].text, Is.EqualTo("11"));
+            Assert.That(arrows[0].gameObject.activeSelf, Is.True);
+            Assert.That(indicators[0].GetComponent<CanvasGroup>().alpha, Is.EqualTo(1f));
+            Assert.That(indicators[1].GetComponent<CanvasGroup>().alpha, Is.Zero);
+
+            spawn.position = new Vector3(0f, 0f, 10f);
+            yield return null;
+            Assert.That(labels[0].text, Is.EqualTo("x3"));
+            Assert.That(indicators[1].GetComponent<CanvasGroup>().alpha, Is.EqualTo(1f));
         }
 
         private GameObject New(string name)

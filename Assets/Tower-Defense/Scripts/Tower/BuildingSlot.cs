@@ -32,18 +32,20 @@ public sealed class BuildingSlot
 
     public bool CanInteract(bool isBuildPhase, int townHallLevel)
     {
-        return isBuildPhase && !UsedThisPhase && IsUnlocked(townHallLevel) && CanUseBuilding;
+        return isBuildPhase && !UsedThisPhase && IsUnlocked(townHallLevel)
+            && CanUseBuilding && (IsBuilt || GetOptions(townHallLevel).Count > 0);
     }
 
     private bool CanUseBuilding => !IsBuilt
         || (BuiltBase != null ? BuiltBase.HasNextLevel : BuiltTower != null && BuiltTower.CanUpgrade);
 
-    public IReadOnlyList<TowerOption> GetOptions()
+    public IReadOnlyList<TowerOption> GetOptions(int townHallLevel)
     {
         options.Clear();
         if (loadout != null && loadout.options != null)
             foreach (TowerOption option in loadout.options)
-                if (option != null && option.prefab != null && option.slotType == allowedType)
+                if (option != null && option.prefab != null && option.slotType == allowedType
+                    && townHallLevel >= option.requiredTownHallLevel)
                     options.Add(option);
         return options;
     }
@@ -54,6 +56,7 @@ public sealed class BuildingSlot
         building = null;
         if (IsBuilt || !CanInteract(isBuildPhase, townHallLevel)
             || option == null || option.prefab == null || option.slotType != allowedType
+            || townHallLevel < option.requiredTownHallLevel
             || option.cost < 0 || !IsAvailableOption(option) || wallet == null)
             return false;
 

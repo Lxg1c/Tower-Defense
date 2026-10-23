@@ -60,6 +60,7 @@ public class WaveSpawner : MonoBehaviour
         public Sprite icon;
         public int count;
         public int stackIndex;
+        public int stackCount;
     }
 
     [Header("Session dependencies")]
@@ -188,13 +189,13 @@ public class WaveSpawner : MonoBehaviour
 
     // ── Public API ─────────────────────────────────────────────────────────────
 
-    public void ConfigureLevel(LevelDefinition level)
+    public void ConfigureLevel(LevelDefinition level, int difficulty = 1)
     {
         if (session != null) throw new System.InvalidOperationException("Cannot replace a running level.");
         if (level == null) throw new System.ArgumentNullException(nameof(level));
         if (spawnPoints == null || spawnPoints.Length == 0 || System.Array.Exists(spawnPoints, p => p == null))
             throw new System.ArgumentException("Assign every spawn point before configuring the level.");
-        var configuredWaves = level.CreateWaves(spawnPoints.Length);
+        var configuredWaves = level.CreateWaves(spawnPoints.Length, difficulty);
         if (enemyLoadout == null) throw new System.ArgumentException("Assign EnemyLoadout to the spawner.");
         enemyLoadout.Validate();
         foreach (var wave in configuredWaves)
@@ -263,11 +264,13 @@ public class WaveSpawner : MonoBehaviour
                 AddPreviewEntries(GetSpawnPoint(group.spawnPointIndex), group.entries, results);
             }
 
+            AssignPreviewStacks(results);
             return;
         }
 
         Transform point = GetDefaultSpawnPoint();
         AddPreviewEntries(point, wave.entries, results);
+        AssignPreviewStacks(results);
     }
 
     // ── Phase transitions ──────────────────────────────────────────────────────
@@ -428,12 +431,21 @@ public class WaveSpawner : MonoBehaviour
         if (entries == null)
             return;
 
-        int stackIndex = 0;
         for (int i = 0; i < entries.Length; i++)
         {
             MobEntry entry = entries[i];
             if (entry == null || entry.Prefab == null || entry.count <= 0)
                 continue;
+
+            int existing = results.FindIndex(preview => preview.spawnPoint == point
+                && preview.prefab == entry.Prefab);
+            if (existing >= 0)
+            {
+                WavePreviewEntry combined = results[existing];
+                combined.count += entry.count;
+                results[existing] = combined;
+                continue;
+            }
 
             results.Add(new WavePreviewEntry
             {
@@ -441,9 +453,28 @@ public class WaveSpawner : MonoBehaviour
                 prefab = entry.Prefab,
                 icon = entry.PreviewIcon,
                 count = entry.count,
-                stackIndex = stackIndex
             });
-            stackIndex++;
+        }
+    }
+
+    private static void AssignPreviewStacks(List<WavePreviewEntry> results)
+    {
+        for (int i = 0; i < results.Count; i++)
+        {
+            WavePreviewEntry current = results[i];
+            int preceding = 0;
+            int total = 0;
+            for (int j = 0; j < results.Count; j++)
+            {
+                if (results[j].spawnPoint != current.spawnPoint)
+                    continue;
+                if (j < i)
+                    preceding++;
+                total++;
+            }
+            current.stackIndex = preceding;
+            current.stackCount = total;
+            results[i] = current;
         }
     }
 

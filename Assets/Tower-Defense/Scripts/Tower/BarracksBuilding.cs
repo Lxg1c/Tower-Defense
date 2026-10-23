@@ -6,7 +6,9 @@ using UnityEngine;
 public class BarracksBuilding : MonoBehaviour
 {
     [Header("Squad")]
+    [SerializeField] private AllySoldier.CombatType squadType = AllySoldier.CombatType.Melee;
     [SerializeField] private AllySoldier allyPrefab;
+    [SerializeField] private AllySoldier rangedAllyPrefab;
     [Min(1)] [SerializeField] private int squadSize = 3;
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private Transform formationCenter;
@@ -15,6 +17,7 @@ public class BarracksBuilding : MonoBehaviour
     [SerializeField] private float spawnInterval = 0.15f;
 
     private readonly List<AllySoldier> soldiers = new();
+    private readonly HashSet<int> pendingRespawns = new();
     private WaveSpawner spawner;
     private Transform player;
     private bool combatActive;
@@ -33,6 +36,9 @@ public class BarracksBuilding : MonoBehaviour
 
     private void OnDisable()
     {
+        StopAllCoroutines();
+        spawning = false;
+        pendingRespawns.Clear();
         AllyCommand.OnFollowPlayerChanged -= OnFollowPlayerChanged;
 
         if (spawner != null)
@@ -87,40 +93,55 @@ public class BarracksBuilding : MonoBehaviour
 
     private void EnsureSquad()
     {
-        if (spawning || allyPrefab == null)
+        if (spawning)
             return;
 
-        soldiers.RemoveAll(s => s == null || !s.isActiveAndEnabled);
+        if (GetSelectedPrefab() == null)
+        {
+            Debug.LogError($"[BarracksBuilding] Assign an ally prefab for {squadType} squads.", this);
+            return;
+        }
 
-        int missing = squadSize - soldiers.Count;
-        if (missing > 0)
+        while (soldiers.Count < squadSize)
+            soldiers.Add(null);
+
+        var missing = new List<int>();
+        for (int slot = 0; slot < squadSize; slot++)
+            if ((soldiers[slot] == null || !soldiers[slot].isActiveAndEnabled)
+                && !pendingRespawns.Contains(slot))
+                missing.Add(slot);
+
+        if (missing.Count > 0)
             StartCoroutine(SpawnMissing(missing));
     }
 
-    private IEnumerator SpawnMissing(int count)
+    private IEnumerator SpawnMissing(List<int> missing)
     {
         spawning = true;
 
-        for (int i = 0; i < count; i++)
+        foreach (int slot in missing)
         {
-            SpawnOne();
+            if (soldiers[slot] == null || !soldiers[slot].isActiveAndEnabled)
+                SpawnOne(slot);
 
             if (spawnInterval > 0f)
                 yield return new WaitForSeconds(spawnInterval);
         }
 
         spawning = false;
+        EnsureSquad();
     }
 
-    private void SpawnOne()
+    private void SpawnOne(int slot)
     {
+        AllySoldier prefab = GetSelectedPrefab();
         Vector3 position = spawnPoint != null ? spawnPoint.position : transform.position;
         Quaternion rotation = spawnPoint != null ? spawnPoint.rotation : transform.rotation;
-        AllySoldier soldier = Instantiate(allyPrefab, position, rotation);
+        AllySoldier soldier = Instantiate(prefab, position, rotation);
 
         soldier.Died += OnSoldierDied;
-        soldiers.Add(soldier);
-        InitSoldier(soldier, soldiers.Count - 1);
+        soldiers[slot] = soldier;
+        InitSoldier(soldier, slot);
         ApplyMode(soldier);
     }
 
@@ -134,19 +155,26 @@ public class BarracksBuilding : MonoBehaviour
 
     private void OnSoldierDied(AllySoldier soldier)
     {
-        if (soldier != null)
-            soldier.Died -= OnSoldierDied;
+        int slot = soldiers.IndexOf(soldier);
+        if (slot < 0)
+            return;
 
-        soldiers.Remove(soldier);
-        StartCoroutine(RespawnOne());
+        soldier.Died -= OnSoldierDied;
+        soldiers[slot] = null;
+        if (!isActiveAndEnabled)
+            return;
+
+        pendingRespawns.Add(slot);
+        StartCoroutine(RespawnOne(slot));
     }
 
-    private IEnumerator RespawnOne()
+    private IEnumerator RespawnOne(int slot)
     {
         if (respawnDelay > 0f)
             yield return new WaitForSeconds(respawnDelay);
 
-        SpawnOne();
+        pendingRespawns.Remove(slot);
+        EnsureSquad();
     }
 
     private void ApplyModeToSquad()
@@ -175,8 +203,18 @@ public class BarracksBuilding : MonoBehaviour
 
     private Vector3 GetSlotOffset(int index)
     {
-        int centered = index - (squadSize - 1) / 2;
+        float centered = index - (squadSize - 1) * 0.5f;
         return transform.right * (centered * formationSpacing);
+    }
+
+    private AllySoldier GetSelectedPrefab()
+    {
+        return squadType switch
+        {
+            AllySoldier.CombatType.Melee => allyPrefab,
+            AllySoldier.CombatType.Ranged => rangedAllyPrefab,
+            _ => null
+        };
     }
 
     private Transform ResolvePlayer()

@@ -9,11 +9,53 @@ namespace TowerDefense.Tests
     public class UIConfigurationTests
     {
         [Test]
+        public void GameplayPlayerUsesTheVisibleJoystick()
+        {
+            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");
+            try
+            {
+                var roots = scene.GetRootGameObjects();
+                var player = roots.SelectMany(r => r.GetComponentsInChildren<PlayerMovement>(true)).Single();
+                var joystick = roots.SelectMany(r => r.GetComponentsInChildren<MonoBehaviour>(true))
+                    .Single(c => c.GetType().Name == "FloatingJoystick");
+                var assigned = new SerializedObject(player).FindProperty("joystick").objectReferenceValue;
+
+                Assert.That(assigned, Is.SameAs(joystick),
+                    "PlayerMovement must read the joystick shown in the gameplay HUD.");
+            }
+            finally { EditorSceneManager.ClosePreviewScene(scene); }
+        }
+
+        [Test]
+        public void EveryPlacementProgressIndicatorBelongsToItsZone()
+        {
+            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");
+            try
+            {
+                var roots = scene.GetRootGameObjects();
+                var zones = roots.SelectMany(r => r.GetComponentsInChildren<TowerPlacementZone>(true)).ToArray();
+                var indicators = roots.SelectMany(r => r.GetComponentsInChildren<PlacementProgressIndicator>(true)).ToArray();
+                Assert.That(indicators, Has.Length.EqualTo(zones.Length));
+                foreach (var indicator in indicators)
+                {
+                    var data = new SerializedObject(indicator);
+                    var zone = data.FindProperty("zone").objectReferenceValue as TowerPlacementZone;
+                    var fill = data.FindProperty("fill").objectReferenceValue as UnityEngine.UI.Image;
+                    Assert.That(zone, Is.Not.Null, indicator.name);
+                    Assert.That(fill, Is.Not.Null, indicator.name);
+                    Assert.That(new SerializedObject(zone).FindProperty("placementCircleFill").objectReferenceValue,
+                        Is.SameAs(fill), indicator.name);
+                }
+            }
+            finally { EditorSceneManager.ClosePreviewScene(scene); }
+        }
+
+        [Test]
         public void ButtonsInGameplayMenuAndTowerCardHaveNoMissingScripts()
         {
             foreach (string path in new[]
                      {
-                         "Assets/Tower-Defense/Scenes/Level.unity",
+                         "Assets/Tower-Defense/Scenes/Level 1.unity",
                          "Assets/Tower-Defense/Scenes/MainMenu.unity"
                      })
             {
@@ -37,7 +79,7 @@ namespace TowerDefense.Tests
         [Test]
         public void BuildingPanelsLeaveWorldInputAvailableAndHaveNoCloseButtons()
         {
-            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level.unity");
+            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");
             try
             {
                 var components = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<MonoBehaviour>(true));
@@ -89,7 +131,7 @@ namespace TowerDefense.Tests
         [Test]
         public void UltimateProgressIsWiredToTheButton()
         {
-            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level.unity");
+            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");
             try
             {
                 var control = scene.GetRootGameObjects()

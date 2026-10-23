@@ -6,6 +6,12 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class AllySoldier : Damageable
 {
+    public enum CombatType
+    {
+        Melee,
+        Ranged
+    }
+
     public enum Mode
     {
         Formation,
@@ -19,9 +25,12 @@ public class AllySoldier : Damageable
     [SerializeField] private int maxTargets = 24;
 
     [Header("Combat")]
+    [SerializeField] private CombatType combatType = CombatType.Melee;
     [SerializeField] private float damage = 8f;
     [SerializeField] private float attackRate = 1f;
     [SerializeField] private float attackRange = 1.4f;
+    [SerializeField] private Projectile projectilePrefab;
+    [SerializeField] private Transform firePoint;
 
     [Header("Audio")]
     [SerializeField] private AudioSource hitAudioSource;
@@ -45,6 +54,7 @@ public class AllySoldier : Damageable
     [SerializeField] private float movingVelocityThreshold = 0.05f;
 
     public event Action<AllySoldier> Died;
+    public CombatType Type => combatType;
 
     private NavMeshAgent agent;
     private Animator animator;
@@ -78,6 +88,9 @@ public class AllySoldier : Damageable
         ownColliders = GetComponentsInChildren<Collider>();
         targetBuffer = new Collider[Mathf.Max(4, maxTargets)];
         CacheAnimatorParameters();
+
+        if (combatType == CombatType.Ranged && (projectilePrefab == null || firePoint == null))
+            Debug.LogError("[AllySoldier] A ranged ally needs a Projectile prefab and fire point.", this);
     }
 
     protected override void OnEnable()
@@ -186,9 +199,24 @@ public class AllySoldier : Damageable
         if (attackCooldown > 0f)
             return;
 
-        TriggerAttackAnimation();
+        if (combatType == CombatType.Ranged)
+        {
+            if (projectilePrefab == null || firePoint == null)
+                return;
 
-        currentTarget.TakeDamage(damage);
+            Vector3 direction = currentTarget.transform.position - firePoint.position;
+            if (direction.sqrMagnitude < 0.001f)
+                return;
+
+            Projectile shot = Instantiate(projectilePrefab, firePoint.position, Quaternion.LookRotation(direction));
+            shot.Init(currentTarget, damage);
+        }
+        else
+        {
+            currentTarget.TakeDamage(damage);
+        }
+
+        TriggerAttackAnimation();
         PlayHitAudio();
         attackCooldown = 1f / Mathf.Max(0.01f, attackRate);
     }

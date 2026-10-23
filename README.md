@@ -16,9 +16,9 @@ results and the next gameplay balance experiments.
 2. Add this repository folder as a project in Unity Hub and open it. Let package
    resolution, asset import and script compilation finish.
 3. Open `Assets/Tower-Defense/Scenes/MainMenu.unity` and press Play, then Start.
-   Open `Level.unity` directly when iterating on gameplay.
+   Open `Assets/Tower-Defense/Scenes/Level 1.unity` directly when iterating on gameplay.
 
-The build scenes are **MainMenu**, then **Level**. The obsolete `GameScene.unity`
+The build scenes are **MainMenu**, then **Level 1**. The obsolete `GameScene.unity`
 has been removed. Keep unused scenes out of Build Settings: the installed Test
 Framework includes disabled entries when building a test Player.
 
@@ -26,7 +26,9 @@ Use the on-screen joystick to move (drag it with the mouse in the Editor).
 The hero aims and shoots automatically. Hold the ultimate button to charge an
 orb and release to fire it. Stand in a building zone until its progress circle
 fills to choose a building or upgrade. Use Start Wave to begin combat after the
-town hall exists. The ally command button switches soldiers to following the hero.
+town hall exists. At town hall level 2, the barracks card offers melee and ranged
+variants; the chosen type stays with that barracks. The ally command button switches
+soldiers to following the hero.
 
 Spiders can drop cyan slowing pickups. Walk over one to activate slowing shots
 for 12 seconds (up to 24 seconds can be stored). While active, every normal
@@ -75,14 +77,95 @@ a 0.25-second window, including while gameplay is paused.
 On mobile it requests the current display refresh rate instead of Unity's default
 30 FPS; actual performance still depends on the device and operating system.
 
+### Permanent money and skill tree
+
+The Main Menu has a **Skills** screen. Each victory awards permanent money:
+100 on Normal, 150 on Hard and 225 on Nightmare. Replaying a cleared difficulty
+pays again; reopening the Victory panel within the same run does not. The money
+balance and purchases are saved locally with PlayerPrefs and are separate from
+the per-run coins used to build towers. Use **Skills** on the Victory screen to
+open the tree between levels, or open it from the main menu. This same permanent
+balance can fund future loadout purchases.
+
+Buy **Vitality** first to unlock the two branches. Each branch has three ranks:
+Vitality adds 15% maximum player HP per rank, Firepower adds 10% normal-shot
+damage per rank, and Rapid Fire adds 8% normal-shot fire rate per rank. Rank
+costs are 100, 200, then 300 money. Bonuses apply when a level starts and do
+not change an already-running level. Existing skill saves are migrated once:
+one unused old point becomes 100 money, purchased ranks remain purchased, and
+an old first-clear claim counts as Normal cleared. The three `LevelDefinition`
+assets hold stable progression IDs and reward amounts; keep an ID unchanged
+after release so existing saves still recognize cleared difficulties.
+
 ### Authored levels on one map
 
 Main Menu shows one level card at a time. Swipe horizontally, use the side arrows,
 or choose a page number to select **Level 1**, **Level 2**, or **Level 3**, and
-press **Play Level**. All choices load the same Level scene with different
-authored waves, spawn directions and starting coins. Restart retains the selected
-level; returning to the menu clears it. Direct Editor play uses the explicitly
-assigned **Direct Play Level** on the scene's LevelSetup (currently Level 1).
+choose Normal, Hard or Nightmare, then press **Play Level**. Hard opens after
+beating Normal on that level, and Nightmare after beating Hard. Cleared
+difficulties remain replayable. All choices load the same Level 1 scene with
+different authored waves, spawn directions and starting coins. Restart retains
+the selected level and difficulty; returning to the menu clears the selection.
+Direct Editor play uses the explicitly assigned **Direct Play Level** on the
+scene's LevelSetup (currently Level 1) on Normal.
+
+`Level 1.unity` contains the shared gameplay setup, eight build zones and four
+enemy spawn points. The new terrain has a MeshCollider; buildings, rocks and
+fences have simple static colliders. Its `Surface` object uses the baked
+`Scenes/Level 1/NavMesh-Surface.asset`. If you move the terrain or obstacles,
+rebake that NavMeshSurface and check that all four spawn points remain on it.
+The five buildable prefabs were reduced to fit this map; keep their model scale
+and placement zones in sync when changing the environment.
+
+To lay out more building spots, drag `Prefabs/level/LevelGrid.prefab` into the
+scene and select it. The Scene view shows a 20 × 20 grid with 3-unit cells;
+adjust its dimensions, cell size and position in the Inspector to match the
+buildable floor. Optionally assign the scene's `TowerBuildZones` as Zones Parent
+so new spots sit alongside the existing ones. Choose a building type, press
+**Place building zones**, then click a free building footprint. The purple ghost
+previews the building, while the green footprint shows
+where it will stand; red means that position is blocked. Next, move the pointer
+to one of the highlighted cells directly beside that footprint and click to
+place the interaction zone there. The zone snaps only to those adjacent cells;
+press Esc to cancel the building position. Town Hall and Barracks default to
+2 × 2 cells, Defense and Mine to 1 × 1; these sizes are editable. The second
+click creates an undoable `TowerBuildZone` prefab instance. Its marker sits in
+the chosen adjacent cell, while its spawn point and building rotation stay at
+the selected footprint and faces the interaction zone. The chosen model remains as a bright cyan editor-only
+ghost after placement, including
+when placement mode is stopped. Red marked cells are occupied building
+footprints; orange marked cells are occupied interaction zones. These marks
+also cover manually placed zones while the grid is selected. They are not
+saved as scene objects and do not appear in the game. While placement mode is
+active in Scene view, use
+1–4 to select Town Hall, Defense, Mine or Barracks. Hover a grid-created
+building or its interaction marker and press Delete/Backspace to remove its
+zone; Ctrl+Z restores it. Click either cell to select the pair: a cyan line
+connects its building footprint to its interaction cell. In the LevelGrid
+Inspector, use **Move building** to choose a new footprint and then its adjacent
+interaction cell, **Move interaction zone** to change only the marker side, or
+**Delete selected zone** to remove the pair. **Face existing buildings toward their zones**
+updates the rotation of previously placed grid buildings. Esc cancels a pending move or
+clears the selection. Manually placed zones can be deleted with Unity's
+normal selection and Delete. Stop placement with the same
+button. Multiple grids can coexist in one scene, each with its own transform and
+dimensions. Select only the building type in the grid Inspector. The editor
+automatically shows the first matching `TowerLoadout` model as a placement ghost;
+it does not choose the tower for the player. The grid is an Editor authoring aid, not 225 floor objects or a
+runtime building system; existing spots are left where they were.
+
+For an optional tiled floor, use the grid's `LevelGridTileSurface`. Enable
+**Show Tiles** to display `Materials/LevelGridTile.mat`, made from the imported
+tile base and normal maps. The supplied mask map has constant channels, so its
+metallic, occlusion and smoothness values are stored as material constants
+instead of an extra mobile texture sample. The material is assigned to the LevelGrid
+prefab; rerun **Tools > Tower Defense > Configure Level Grid Tile Material**
+if the source maps change. The texture is
+mapped once onto each cell, but all cells share one mesh and material for mobile
+rendering. **Height Above Grid** raises it slightly to avoid overlapping the
+underlying ground. Leave **Solid Floor** off when the existing terrain supplies
+collision; turn it on only when the tiles themselves are the walkable floor, then
+rebake the NavMesh. The existing Level 1 floor is not replaced automatically.
 
 | Level | Focus | Waves | Starting coins |
 |---|---|---|---|
@@ -91,26 +174,36 @@ assigned **Direct Play Level** on the scene's LevelSetup (currently Level 1).
 | 3 | Mixed enemies with armored threats | 4 | 10 |
 
 These are starting balance presets, not fully playtested difficulty guarantees.
-Difficulty text is a label; enemy counts, intervals, composition, directions,
-starting coins and wave rewards define the actual challenge.
+Each level asset contains its Normal waves plus two additional difficulty
+variants. The current Hard and Nightmare presets increase enemy counts and
+shorten spawn intervals; all numbers and enemy packs can be tuned independently
+in the Inspector. The level's descriptive difficulty text is separate from
+this three-step difficulty selection.
 
 To create or tune a level:
 
 1. Select an asset in Assets/Tower-Defense/Levels, duplicate one, or use
    **Create > Tower Defense > Level**.
-2. Edit its title, description, difficulty label and starting coins.
+2. Give it a unique progression ID and edit its title, description, Normal
+   waves, starting coins and permanent money reward.
 3. Expand **Waves**. Each wave has a coin reward and ordered **Spawn Groups**.
    Each group has a spawn-point index and enemy entries with counts and intervals.
 4. Indices 0–3 refer to the four transforms in the scene WaveSpawner's
    **Spawn Points** array, in Inspector order. Groups execute sequentially.
-5. Add the asset to the Main Menu Canvas component's **Levels** list.
+5. Set both **Additional Difficulties** entries with their own starting coins,
+   money rewards and waves. Add the asset to the Main Menu Canvas component's
+   **Levels** list.
    Its selection button is created automatically. No additional scene is needed.
 6. For direct iteration, assign that asset to **LevelSetup > Direct Play Level**
-   in Level. Run the EditMode and PlayMode suites after changing code or settings.
+   in Level 1. Run the EditMode and PlayMode suites after changing code or settings.
 
 Invalid level data is rejected. Runtime waves are copied, so playing or restarting
 does not mutate authored assets. LevelDefinition assets are the sole authored
 wave source; the earlier seeded-wave prototype and inline scene waves have been removed.
+During the build phase, the HUD previews the next wave at each authored spawn
+point. Each indicator points toward its spawn position and shows enemy icons
+with total counts by type; repeated groups from the same point are combined.
+The indicators disappear when combat starts and update for the following wave.
 
 
 The new rock material uses `TowerDefense/Mobile/Environment`. It preserves the
@@ -142,7 +235,7 @@ Gameplay source is under `Assets/Tower-Defense/Scripts`.
 | Building | `BuildingSlot`, `TowerPlacementZone` | Validated building operations and zone interaction |
 | Upgrades | `TowerUpgrade`, `BaseUpgrade`, `BuildingStats` | Costs, unlocks and numeric stats |
 | Presentation | `HealthBarBinding`, `HealthBarManager`, `UpgradeStatsFormatter`, modals, HUDs | Health display, formatting and user interaction |
-| Allies | `BarracksBuilding`, `AllySoldier`, `AllyCommand` | Squads, combat, formation and following |
+| Allies | `BarracksBuilding`, `AllySoldier`, `AllyCommand` | Player-selected melee or ranged barracks, combat, formation and following |
 
 Start reading `GameSession`, then `WaveSpawner.Start`, `StartNextWave` and `RunCombat`. Then follow
 `Damageable.TakeDamage` to `MobHealth.OnDeath` and back to the spawner's death
@@ -162,14 +255,16 @@ rather than editing generated code.
 - Entities with health bars require `HealthBarBinding`, with their own `Damageable`
   assigned. Prefab overrides, anchors and visibility on death belong on this binding.
   `HealthBarManager` requires the scene camera and supplies the default bar prefab.
-- `Prefabs/TowerLoadout.asset` lists the available buildings and their costs.
+- `Prefabs/TowerLoadout.asset` lists buildings, costs and the town hall level
+  required to show each build option. Town hall is available first; Cannon Tower
+  and Mine unlock at level 1, Pulse Tower and both Barracks choices at level 2.
 - Enemy option assets point at enemy prefabs. Each enemy prefab explicitly
   assigns its targeting, combat and navigation modules on `MobCore`.
 - `Prefabs/EnemyLoadout.asset` contains one entry per enemy with slow-ammo,
   shield and companion pickup chances and durations. One roll selects at most one
   pickup per enemy; the chances in an entry must total no more than 100%.
   Set a chance to 0% to disable that drop;
-  assign the shared pickup prefabs there. The Level scene's WaveSpawner references
+  assign the shared pickup prefabs there. The Level 1 scene's WaveSpawner references
   this asset.
 - Shooter components require a nonempty fire-point array and a prefab containing
   `Projectile`. A missing projectile is a setup error, not an instant-hit weapon.
@@ -195,7 +290,7 @@ by third-party packages. Play Mode tests temporarily enter Play mode.
 
 | Suite | What it protects |
 |---|---|
-| Edit Mode | Wallet transactions; legal session transitions and terminal outcomes; duplicate/reentrant rewards; prefab health bindings; phase/unlock restrictions; enemy/shooter configuration; upgrade calculations and action limits |
+| Edit Mode | Wallet transactions; legal session transitions and terminal outcomes; duplicate/reentrant rewards; prefab health bindings; phase/unlock restrictions; enemy/shooter configuration; upgrade calculations and action limits; skill rewards, prerequisites, save data and scene bindings |
 | Play Mode | Missing-projectile rejection; repeated firing; damage on contact; single death notification; defeat during wave startup; health-bar creation order, enable/disable, death, revival and scene teardown; build-objective lifecycle |
 
 The earlier 41-assertion architecture regression sweep is also called from the
@@ -273,7 +368,7 @@ During gameplay, Pause offers Resume, Settings, Restart and Main Menu. Audio
 settings work while paused and share the saved music/effects volumes with the
 home menu. Victory offers Next Level, Replay and Main Menu; defeat offers Main
 Menu. Set Next Level on each LevelDefinition to author progression, and leave it
-empty on the final level. The same Level scene is reused for every encounter.
+empty on the final level. The same Level 1 scene is reused for every encounter.
 
 The ultimate waits eight seconds after a short charge and ten seconds after a
 full charge: the 3–5 second charge cooldown has an additional five-second delay.

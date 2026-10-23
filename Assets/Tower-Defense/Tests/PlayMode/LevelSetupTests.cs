@@ -30,6 +30,7 @@ namespace TowerDefense.Tests
                 { enemy = option, slowAmmoDurationSeconds = 12f, shieldDurationSeconds = 12f } };
             level = ScriptableObject.CreateInstance<LevelDefinition>();
             level.displayName = "Test Level";
+            level.progressionId = "test-level";
             level.startingCoins = 17;
             level.waves = new[] { new LevelDefinition.LevelWave {
                 coinReward = 6,

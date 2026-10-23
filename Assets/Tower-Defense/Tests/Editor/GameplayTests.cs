@@ -77,6 +77,39 @@ namespace TowerDefense.Tests
         }
 
         [Test]
+        public void BuildingOptionsUnlockWithTownHallAndCannotBeBoughtEarly()
+        {
+            var loadout = ScriptableObject.CreateInstance<TowerLoadout>();
+            created.Add(loadout);
+            var cannon = new TowerOption
+            {
+                prefab = NewObject("Cannon template"), slotType = BuildSlotType.Defense,
+                cost = 10, requiredTownHallLevel = 1
+            };
+            var pulse = new TowerOption
+            {
+                prefab = NewObject("Pulse template"), slotType = BuildSlotType.Defense,
+                cost = 20, requiredTownHallLevel = 2
+            };
+            loadout.options = new[] { cannon, pulse };
+            var slot = new BuildingSlot(loadout, BuildSlotType.Defense, 1);
+            PlayerWallet wallet = Wallet();
+
+            Assert.That(slot.GetOptions(0), Is.Empty);
+            Assert.That(slot.GetOptions(1), Is.EquivalentTo(new[] { cannon }));
+            Assert.That(slot.GetOptions(2), Is.EquivalentTo(new[] { cannon, pulse }));
+            Assert.That(slot.TryBuild(pulse, wallet, true, 1, Vector3.zero,
+                Quaternion.identity, out GameObject blocked), Is.False);
+            Assert.That(blocked, Is.Null);
+            Assert.That(wallet.Coins, Is.EqualTo(100));
+
+            Assert.That(slot.TryBuild(pulse, wallet, true, 2, Vector3.zero,
+                Quaternion.identity, out GameObject built), Is.True);
+            created.Add(built);
+            Assert.That(wallet.Coins, Is.EqualTo(80));
+        }
+
+        [Test]
         public void MissingShooterSetupIsReportedInsteadOfUsingTransformOrInstantDamage()
         {
             Shooter shooter = NewObject("Unconfigured shooter").AddComponent<Shooter>();

@@ -9,6 +9,51 @@ namespace TowerDefense.Tests
     public class BalanceConfigurationTests
     {
         [Test]
+        public void BuildingOptionsUnlockAtConfiguredTownHallLevels()
+        {
+            var loadout = AssetDatabase.LoadAssetAtPath<TowerLoadout>(
+                "Assets/Tower-Defense/Prefabs/TowerLoadout.asset");
+            Assert.That(loadout, Is.Not.Null);
+            Assert.That(loadout.options.Single(option => option.displayName == "Ratusha").requiredTownHallLevel, Is.Zero);
+            Assert.That(loadout.options.Single(option => option.displayName == "Cannon Turret").requiredTownHallLevel, Is.EqualTo(1));
+            Assert.That(loadout.options.Single(option => option.displayName == "Mine").requiredTownHallLevel, Is.EqualTo(1));
+            Assert.That(loadout.options.Single(option => option.displayName == "Pulse").requiredTownHallLevel, Is.EqualTo(2));
+            Assert.That(loadout.options.Where(option => option.slotType == BuildSlotType.Barracks)
+                .Select(option => option.requiredTownHallLevel), Is.EquivalentTo(new[] { 2, 2 }));
+        }
+
+        [Test]
+        public void BarracksChoicesSpawnDifferentSquadTypesAndUnlockTogether()
+        {
+            var loadout = AssetDatabase.LoadAssetAtPath<TowerLoadout>(
+                "Assets/Tower-Defense/Prefabs/TowerLoadout.asset");
+            var barracks = new BuildingSlot(loadout, BuildSlotType.Barracks, 2);
+            Assert.That(barracks.GetOptions(1), Is.Empty);
+            var choices = barracks.GetOptions(2).ToArray();
+            Assert.That(choices.Select(option => option.displayName),
+                Is.EquivalentTo(new[] { "Barracks / Melee", "Barracks / Ranged" }));
+            Assert.That(choices.Select(option => option.prefab).Distinct().Count(), Is.EqualTo(2));
+            Assert.That(choices.Select(option => new SerializedObject(
+                    option.prefab.GetComponentInChildren<BarracksBuilding>(true))
+                    .FindProperty("squadType").enumValueIndex),
+                Is.EquivalentTo(new[] { (int)AllySoldier.CombatType.Melee,
+                    (int)AllySoldier.CombatType.Ranged }));
+            foreach (var choice in choices)
+            {
+                var model = choice.prefab.transform.Find("barrack");
+                Assert.That(model, Is.Not.Null);
+                Assert.That(Quaternion.Angle(model.localRotation, Quaternion.identity), Is.LessThan(1f));
+            }
+            Assert.That(new BuildingSlot(loadout, BuildSlotType.Defense, 1).GetOptions(1)
+                .Select(option => option.displayName), Is.EquivalentTo(new[] { "Cannon Turret" }));
+            Assert.That(new BuildingSlot(loadout, BuildSlotType.Defense, 1).GetOptions(2)
+                .Select(option => option.displayName), Is.EquivalentTo(new[] { "Cannon Turret", "Pulse" }));
+            var cannon = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/Tower-Defense/Prefabs/Buildings/CannonTower.prefab");
+            Assert.That(cannon.GetComponentInChildren<DetectionZone>(true).Radius, Is.EqualTo(14f));
+        }
+
+        [Test]
         public void EveryEnemyHasOneCentralDropSetting()
         {
             var loadout = AssetDatabase.LoadAssetAtPath<EnemyLoadout>(
@@ -98,7 +143,7 @@ namespace TowerDefense.Tests
         [Test]
         public void LevelWiresCompanionStatusIntoTheEffectRow()
         {
-            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level.unity");
+            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");
             try
             {
                 var panel = scene.GetRootGameObjects()
@@ -137,7 +182,7 @@ namespace TowerDefense.Tests
         [Test]
         public void LevelIntroducesFlightGraduallyAndIncreasesWaveHealthWithinBudget()
         {
-            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level.unity");
+            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");
             try
             {
                 var spawner = scene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<WaveSpawner>(true)).Single();

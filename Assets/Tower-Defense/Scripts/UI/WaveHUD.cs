@@ -39,7 +39,14 @@ public class WaveHUD : MonoBehaviour
     private readonly List<WaveSpawner.WavePreviewEntry> previewEntries = new();
     private readonly List<WaveDirectionIndicator> directionIndicators = new();
 
-    private void Awake() => FpsInterface.EnsureOverlay(GetComponentInParent<Canvas>().rootCanvas, waveLabel.font);
+    private void Awake()
+    {
+        Canvas canvas = GetComponentInParent<Canvas>().rootCanvas;
+        // The preview belongs to the full HUD canvas, regardless of this panel's layout.
+        if (directionPreviewRoot == null)
+            directionPreviewRoot = canvas.transform as RectTransform;
+        FpsInterface.EnsureOverlay(canvas, waveLabel.font);
+    }
 
     private void OnEnable()
     {
@@ -306,8 +313,13 @@ public class WaveHUD : MonoBehaviour
             if (previewEntries[i].spawnPoint == null)
                 continue;
 
+            int totalAtSpawn = 0;
+            for (int j = 0; j < previewEntries.Count; j++)
+                if (previewEntries[j].spawnPoint == previewEntries[i].spawnPoint)
+                    totalAtSpawn += Mathf.Max(0, previewEntries[j].count);
+
             WaveDirectionIndicator indicator = Instantiate(directionIndicatorPrefab, directionPreviewRoot);
-            indicator.Bind(previewEntries[i]);
+            indicator.Bind(previewEntries[i], totalAtSpawn);
             directionIndicators.Add(indicator);
         }
     }

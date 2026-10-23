@@ -29,4 +29,7 @@ public class TowerOption
     public Sprite icon;
 
     [Min(0)] public int cost = 50;
+
+    [Tooltip("Minimum town hall level needed to show and build this option. 0 = before the town hall is built.")]
+    [Min(0)] public int requiredTownHallLevel;
 }
