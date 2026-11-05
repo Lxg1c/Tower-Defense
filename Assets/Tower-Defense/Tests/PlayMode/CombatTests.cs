@@ -19,6 +19,8 @@ namespace TowerDefense.Tests
             // Projectiles created by this fixture are the only projectiles in the test scene.
             foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 Object.Destroy(projectile.gameObject);
+            foreach (var shell in Object.FindObjectsByType<MortarShell>(FindObjectsSortMode.None))
+                Object.Destroy(shell.gameObject);
             created.Clear();
             yield return null;
         }
@@ -36,6 +38,28 @@ namespace TowerDefense.Tests
             yield return null;
             Assert.That(shooter.enabled, Is.False);
             Assert.That(target.CurrentHealth, Is.EqualTo(target.MaxHealth));
+        }
+
+        [UnityTest]
+        public IEnumerator MortarSplashDamagesEachEnemyOnceAndIgnoresDistantTargets()
+        {
+            var center = Target(Vector3.zero);
+            center.gameObject.layer = 7;
+            center.gameObject.AddComponent<BoxCollider>();
+            var nearby = Target(Vector3.right * 1.5f);
+            nearby.gameObject.layer = 7;
+            var distant = Target(Vector3.right * 6f);
+            distant.gameObject.layer = 7;
+            var shell = NewObject("Mortar shell").AddComponent<MortarShell>();
+            shell.transform.position = Vector3.up * 3f;
+            Physics.SyncTransforms();
+            shell.Launch(Vector3.zero, 20f, 2.5f, 0.01f, 1 << 7);
+            yield return null;
+            yield return null;
+
+            Assert.That(center.CurrentHealth, Is.EqualTo(center.MaxHealth - 20f));
+            Assert.That(nearby.CurrentHealth, Is.EqualTo(nearby.MaxHealth - 20f));
+            Assert.That(distant.CurrentHealth, Is.EqualTo(distant.MaxHealth));
         }
 
         [UnityTest]
@@ -144,7 +168,10 @@ namespace TowerDefense.Tests
         [UnityTest]
         public IEnumerator MinePaysCurrentIncomeOnlyForWavesItSurvives()
         {
-            var wallet = NewObject("Wallet").AddComponent<PlayerWallet>();
+            var walletObject = NewObject("Wallet", false);
+            var wallet = walletObject.AddComponent<PlayerWallet>();
+            wallet.ConfigureStartingCoins(100);
+            walletObject.SetActive(true);
             wallet.TrySpend(wallet.Coins);
             var spawner = NewObject("Wave events").AddComponent<WaveSpawner>();
             spawner.enabled = false; // Drive phase events without starting a level.

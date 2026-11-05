@@ -19,9 +19,11 @@ public static class BuildingLevelList
         var hp = prefab.GetComponentInChildren<Damageable>(true);
         var shooter = prefab.GetComponentInChildren<Shooter>(true);
         var pulse = prefab.GetComponentInChildren<PulseTower>(true);
+        var mortar = prefab.GetComponentInChildren<MortarTower>(true);
         var mine = prefab.GetComponentInChildren<MineIncome>(true);
         float? health = hp != null ? hp.MaxHealth : (float?)null;
-        float? damage = shooter != null ? shooter.Damage : pulse != null ? pulse.Damage : (float?)null;
+        float? damage = shooter != null ? shooter.Damage : pulse != null ? pulse.Damage
+            : mortar != null ? mortar.Damage : (float?)null;
         int? income = mine != null ? mine.CoinsPerWave : (int?)null;
         var result = new List<Level> { new Level(health, damage, income) };
         var tower = prefab.GetComponentInChildren<TowerUpgrade>(true);

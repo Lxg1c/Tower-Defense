@@ -10,12 +10,16 @@ public readonly struct BuildingStats
     public float? PulseDamage { get; }
     public float? PulseRange { get; }
     public float? PulseInterval { get; }
+    public float? MortarDamage { get; }
+    public float? MortarInterval { get; }
+    public float? MortarRange { get; }
     public float? MaxHealth { get; }
     public int? Income { get; }
 
     public BuildingStats(float? shooterDamage = null, float? shooterFireRate = null,
         float? shooterRange = null, float? pulseDamage = null, float? pulseRange = null,
-        float? pulseInterval = null, float? maxHealth = null, int? income = null)
+        float? pulseInterval = null, float? maxHealth = null, int? income = null,
+        float? mortarDamage = null, float? mortarInterval = null, float? mortarRange = null)
     {
         ShooterDamage = shooterDamage;
         ShooterFireRate = shooterFireRate;
@@ -23,6 +27,9 @@ public readonly struct BuildingStats
         PulseDamage = pulseDamage;
         PulseRange = pulseRange;
         PulseInterval = pulseInterval;
+        MortarDamage = mortarDamage;
+        MortarInterval = mortarInterval;
+        MortarRange = mortarRange;
         MaxHealth = maxHealth;
         Income = income;
     }

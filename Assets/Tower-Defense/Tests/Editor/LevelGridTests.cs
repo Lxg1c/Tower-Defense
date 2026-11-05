@@ -36,6 +36,54 @@ namespace TowerDefense.Tests
         }
 
         [Test]
+        public void WallUsesOneCellAndFacesEachPossibleInteractionSide()
+        {
+            Assert.That(grid.GetFootprint(BuildSlotType.Wall), Is.EqualTo(Vector2Int.one));
+            var wall = new RectInt(6, 6, 1, 1);
+            var zones = new[]
+            {
+                new RectInt(6, 5, 1, 1), new RectInt(7, 6, 1, 1),
+                new RectInt(6, 7, 1, 1), new RectInt(5, 6, 1, 1)
+            };
+            var directions = new[] { Vector3.back, Vector3.right, Vector3.forward, Vector3.left };
+            for (int i = 0; i < zones.Length; i++)
+                Assert.That(Vector3.Angle(grid.GetBuildingRotation(wall, zones[i]) * Vector3.forward,
+                    directions[i]), Is.LessThan(0.01f));
+        }
+
+        [Test]
+        public void WallSpanFollowsDominantAxisAndOnlyOffersLongSideMarkers()
+        {
+            var start = new RectInt(6, 6, 1, 1);
+            var horizontal = LevelGrid.GetWallSpan(start, new RectInt(9, 7, 1, 1));
+            var vertical = LevelGrid.GetWallSpan(start, new RectInt(5, 2, 1, 1));
+            Assert.That(horizontal, Is.EqualTo(new RectInt(6, 6, 4, 1)));
+            Assert.That(vertical, Is.EqualTo(new RectInt(6, 2, 1, 5)));
+
+            int horizontalMarkers = 0;
+            foreach (RectInt marker in grid.GetAdjacentZoneCells(horizontal, BuildSlotType.Wall))
+            {
+                horizontalMarkers++;
+                Assert.That(marker.y == horizontal.yMin - 1 || marker.y == horizontal.yMax,
+                    Is.True);
+                Assert.That(Mathf.Abs((grid.GetBuildingRotation(horizontal, marker) * Vector3.right).z),
+                    Is.LessThan(0.01f));
+            }
+            Assert.That(horizontalMarkers, Is.EqualTo(8));
+
+            int verticalMarkers = 0;
+            foreach (RectInt marker in grid.GetAdjacentZoneCells(vertical, BuildSlotType.Wall))
+            {
+                verticalMarkers++;
+                Assert.That(marker.x == vertical.xMin - 1 || marker.x == vertical.xMax,
+                    Is.True);
+                Assert.That(Mathf.Abs((grid.GetBuildingRotation(vertical, marker) * Vector3.right).x),
+                    Is.LessThan(0.01f));
+            }
+            Assert.That(verticalMarkers, Is.EqualTo(10));
+        }
+
+        [Test]
         public void LargeBuildingCannotCrossGridEdgeOrOccupiedFootprint()
         {
             Assert.That(grid.TryGetPlacement(new Vector3(27f, 0f, 27f),

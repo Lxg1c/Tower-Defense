@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 [DisallowMultipleComponent]
 public class BarracksBuilding : MonoBehaviour
@@ -15,6 +16,7 @@ public class BarracksBuilding : MonoBehaviour
     [SerializeField] private float formationSpacing = 1.2f;
     [SerializeField] private float respawnDelay = 3f;
     [SerializeField] private float spawnInterval = 0.15f;
+    [SerializeField] private GameObject orderMarkerPrefab;
 
     private readonly List<AllySoldier> soldiers = new();
     private readonly HashSet<int> pendingRespawns = new();
@@ -22,6 +24,14 @@ public class BarracksBuilding : MonoBehaviour
     private Transform player;
     private bool combatActive;
     private bool spawning;
+    private bool hasGuardPosition;
+    private Vector3 guardPosition;
+    private GameObject orderMarker;
+
+    public bool HasGuardPosition => hasGuardPosition;
+    public Vector3 GuardPosition => guardPosition;
+    public GameObject OrderMarkerPrefab => orderMarkerPrefab;
+    public Vector3 SelectionMarkerPosition => spawnPoint.position + Vector3.up * 0.08f;
 
     private void OnEnable()
     {
@@ -32,6 +42,9 @@ public class BarracksBuilding : MonoBehaviour
             Invoke(nameof(BindSpawner), 0.1f);
 
         EnsureSquad();
+        if (hasGuardPosition)
+            ShowOrderMarker();
+        ApplyModeToSquad();
     }
 
     private void OnDisable()
@@ -40,6 +53,11 @@ public class BarracksBuilding : MonoBehaviour
         spawning = false;
         pendingRespawns.Clear();
         AllyCommand.OnFollowPlayerChanged -= OnFollowPlayerChanged;
+        if (orderMarker != null)
+        {
+            Destroy(orderMarker);
+            orderMarker = null;
+        }
 
         if (spawner != null)
         {
@@ -89,6 +107,53 @@ public class BarracksBuilding : MonoBehaviour
     private void OnFollowPlayerChanged(bool followPlayer)
     {
         ApplyModeToSquad();
+    }
+
+    public bool TryAssignGuardPosition(Vector3 requestedPosition)
+    {
+        if (!NavMesh.SamplePosition(requestedPosition, out NavMeshHit hit, 1.5f, NavMesh.AllAreas))
+            return false;
+
+        NavMeshPath path = new();
+        Vector3 origin = GetFormationCenter();
+        foreach (AllySoldier soldier in soldiers)
+        {
+            if (soldier == null || !soldier.isActiveAndEnabled)
+                continue;
+            origin = soldier.transform.position;
+            break;
+        }
+        if (!NavMesh.SamplePosition(origin, out NavMeshHit start, 2f, NavMesh.AllAreas)
+            || !NavMesh.CalculatePath(start.position, hit.position, NavMesh.AllAreas, path)
+            || path.status != NavMeshPathStatus.PathComplete)
+            return false;
+
+        guardPosition = hit.position;
+        hasGuardPosition = true;
+        AllyCommand.SetFollowPlayer(false);
+        ShowOrderMarker();
+        ApplyModeToSquad();
+        return true;
+    }
+
+    public void ClearGuardPosition()
+    {
+        hasGuardPosition = false;
+        if (orderMarker != null)
+        {
+            Destroy(orderMarker);
+            orderMarker = null;
+        }
+        ApplyModeToSquad();
+    }
+
+    private void ShowOrderMarker()
+    {
+        if (orderMarkerPrefab == null)
+            return;
+        if (orderMarker == null)
+            orderMarker = Instantiate(orderMarkerPrefab);
+        orderMarker.transform.position = guardPosition + Vector3.up * 0.08f;
     }
 
     private void EnsureSquad()
@@ -151,6 +216,7 @@ public class BarracksBuilding : MonoBehaviour
             return;
 
         soldier.Init(GetFormationCenter(), GetSlotOffset(index), ResolvePlayer());
+        soldier.AssignBarracks(this);
     }
 
     private void OnSoldierDied(AllySoldier soldier)
@@ -190,6 +256,8 @@ public class BarracksBuilding : MonoBehaviour
 
         if (AllyCommand.FollowPlayer)
             soldier.SetFollowPlayerMode();
+        else if (hasGuardPosition)
+            soldier.SetGuardPositionMode(guardPosition + GetSlotOffset(soldiers.IndexOf(soldier)), combatActive);
         else if (combatActive)
             soldier.SetAttackMode();
         else

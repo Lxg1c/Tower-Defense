@@ -16,7 +16,8 @@ public class AllySoldier : Damageable
     {
         Formation,
         Attack,
-        FollowPlayer
+        FollowPlayer,
+        GuardPosition
     }
 
     [Header("Targeting")]
@@ -46,6 +47,7 @@ public class AllySoldier : Damageable
     [SerializeField] private float destinationRefreshInterval = 0.2f;
     [SerializeField] private float playerAttackRadius = 10f;
     [SerializeField] private float playerFollowStoppingDistance = 2f;
+    [SerializeField] private float guardRadius = 10f;
 
     [Header("Animation")]
     [SerializeField] private string attackTriggerName = "Attack";
@@ -55,6 +57,9 @@ public class AllySoldier : Damageable
 
     public event Action<AllySoldier> Died;
     public CombatType Type => combatType;
+    public BarracksBuilding Barracks { get; private set; }
+    public Mode CurrentMode => mode;
+    public Vector3 GuardPoint => guardPoint;
 
     private NavMeshAgent agent;
     private Animator animator;
@@ -63,6 +68,8 @@ public class AllySoldier : Damageable
     private Collider[] targetBuffer;
     private Transform player;
     private Vector3 formationPoint;
+    private Vector3 guardPoint;
+    private bool guardCombatActive;
     private Vector3 slotOffset;
     private Mode mode;
     private Damageable currentTarget;
@@ -130,6 +137,18 @@ public class AllySoldier : Damageable
         SetFormationMode();
     }
 
+    public void AssignBarracks(BarracksBuilding barracks) => Barracks = barracks;
+
+    public void SetGuardPositionMode(Vector3 position, bool combatActive)
+    {
+        guardPoint = position;
+        guardCombatActive = combatActive;
+        mode = Mode.GuardPosition;
+        currentTarget = null;
+        refreshTimer = 0f;
+        SetDestination(guardPoint, 0f);
+    }
+
     public void SetFormationMode()
     {
         mode = Mode.Formation;
@@ -162,7 +181,8 @@ public class AllySoldier : Damageable
             RefreshDestination();
         }
 
-        if ((mode == Mode.Attack || mode == Mode.FollowPlayer) && currentTarget != null && currentTarget.IsTargetable)
+        if ((mode == Mode.Attack || mode == Mode.FollowPlayer || mode == Mode.GuardPosition)
+            && currentTarget != null && currentTarget.IsTargetable)
             TryAttackCurrentTarget();
 
         UpdateMovementAnimation();
@@ -182,6 +202,13 @@ public class AllySoldier : Damageable
                 currentTarget = FindNearestEnemy();
                 if (currentTarget != null)
                     SetDestination(GetTargetPoint(currentTarget), attackRange * 0.9f);
+                break;
+            case Mode.GuardPosition:
+                currentTarget = guardCombatActive ? FindNearestEnemy(guardPoint, guardRadius) : null;
+                if (currentTarget != null)
+                    SetDestination(GetTargetPoint(currentTarget), attackRange * 0.9f);
+                else
+                    SetDestination(guardPoint, 0f);
                 break;
         }
     }

@@ -49,6 +49,7 @@ public class TowerPlacementZone : MonoBehaviour
     [SerializeField] private Sprite defenseIcon;
     [SerializeField] private Sprite mineIcon;
     [SerializeField] private Sprite barracksIcon;
+    [SerializeField] private Sprite wallIcon;
 
     public bool IsBuilt => Slot.IsBuilt;
     public TowerUpgrade BuiltTower => Slot.BuiltTower;
@@ -65,8 +66,32 @@ public class TowerPlacementZone : MonoBehaviour
     private bool modalOpenedByMe;
     private Color currentColor;
     private BuildingSlot slot;
-    private BuildingSlot Slot => slot ??= new BuildingSlot(loadout, allowedType, requiredTownHallLevel);
+    private BuildingSlot Slot => slot ??= new BuildingSlot(loadout, allowedType,
+        requiredTownHallLevel, allowedType == BuildSlotType.Wall
+            ? GetWallLength() : 1);
     private bool IsBuildPhase => WaveSpawner.Instance == null || WaveSpawner.Instance.IsBuildPhase;
+
+    public int GetOptionCost(TowerOption option) => Slot.GetCost(option);
+
+    private int GetWallLength()
+    {
+        LevelGridPlacedZone placement = GetComponent<LevelGridPlacedZone>();
+        if (placement == null || placement.SourceGrid == null)
+            throw new System.InvalidOperationException("Wall zones must be placed with LevelGrid.");
+        return Mathf.Max(placement.BuildingCells.width, placement.BuildingCells.height);
+    }
+
+    private void Awake()
+    {
+        if (allowedType != BuildSlotType.Wall)
+            return;
+        LevelGridPlacedZone placement = GetComponent<LevelGridPlacedZone>();
+        if (placement != null && placement.SourceGrid != null
+            && placement.BuildingCells.width > 0 && placement.BuildingCells.height > 0)
+            return;
+        Debug.LogError("[TowerPlacementZone] Wall zones must be placed with LevelGrid.", this);
+        enabled = false;
+    }
 
     private void Start()
     {
@@ -285,12 +310,31 @@ public class TowerPlacementZone : MonoBehaviour
         DetectPlayer();
         if (!isActiveAndEnabled || !playerInZone) return;
 
+        LevelGridPlacedZone gridPlacement = null;
+        if (opt.slotType == BuildSlotType.Wall)
+        {
+            gridPlacement = GetComponent<LevelGridPlacedZone>();
+            if (gridPlacement == null || gridPlacement.SourceGrid == null
+                || opt.prefab.GetComponent<WallSpan>() == null)
+            {
+                Debug.LogError("[TowerPlacementZone] A wall needs a LevelGrid placement and a WallSpan prefab.", this);
+                return;
+            }
+        }
+
         Vector3 pos = spawnPoint != null ? spawnPoint.position : transform.position;
         Quaternion rot = spawnPoint != null ? spawnPoint.rotation : transform.rotation;
 
         if (!isActiveAndEnabled || !Slot.TryBuild(opt, wallet, IsBuildPhase,
                 GetTownHallLevel(), pos, rot, out GameObject building))
             return;
+
+        if (gridPlacement != null)
+        {
+            RectInt cells = gridPlacement.BuildingCells;
+            building.GetComponent<WallSpan>().Configure(Mathf.Max(cells.width, cells.height),
+                gridPlacement.SourceGrid.CellSize);
+        }
 
         PlayBuildingSpawnAnimation(building);
         SyncWithPhase();
@@ -301,6 +345,12 @@ public class TowerPlacementZone : MonoBehaviour
     {
         if (builtObject == null)
             return;
+
+        if (builtObject.TryGetComponent(out WallSpan wall))
+        {
+            wall.PlayBuildReveal();
+            return;
+        }
 
         BuildingSpawnAnimation animation = builtObject.GetComponentInChildren<BuildingSpawnAnimation>();
         if (animation == null)
@@ -328,6 +378,7 @@ public class TowerPlacementZone : MonoBehaviour
             BuildSlotType.Defense => defenseIcon,
             BuildSlotType.Mine => mineIcon,
             BuildSlotType.Barracks => barracksIcon,
+            BuildSlotType.Wall => wallIcon,
             _ => null
         };
 

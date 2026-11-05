@@ -9,6 +9,9 @@ public class MainMenu : MonoBehaviour
 {
     [SerializeField] private string gameSceneName = "Level 1";
     [SerializeField] private LevelDefinition[] levels;
+    [Header("Gameplay lab")]
+    [SerializeField] private string gameplayLabSceneName = "GameplayLab";
+    [SerializeField] private LevelDefinition gameplayLabLevel;
     [SerializeField] private UnityEngine.UI.Button levelButtonTemplate;
     [SerializeField] private Transform levelButtonContainer;
     [UnityEngine.Serialization.FormerlySerializedAs("packLabel")]
@@ -28,12 +31,13 @@ public class MainMenu : MonoBehaviour
     {
         Time.timeScale = 1f;
         RunSelection.Clear();
-        if (levels == null || levels.Length == 0 || levelButtonTemplate == null ||
+        if (levels == null || levels.Length == 0 || gameplayLabLevel == null ||
+            string.IsNullOrWhiteSpace(gameplayLabSceneName) || levelButtonTemplate == null ||
             levelButtonContainer == null || levelLabel == null || levelDescription == null ||
             wavePreview == null || startButton == null || difficultyButtons == null ||
             difficultyButtons.Length != 3 || difficultyButtons.Any(button => button == null))
         {
-            Debug.LogError("[MainMenu] Assign levels, level button template/container, labels and Start button.", this);
+            Debug.LogError("[MainMenu] Assign campaign levels, gameplay lab, level button template/container, labels and Start button.", this);
             if (startButton != null) startButton.interactable = false;
             enabled = false;
             return;
@@ -133,6 +137,14 @@ public class MainMenu : MonoBehaviour
         RunSelection.Select(levels[selectedIndex], gameSceneName, selectedDifficulty);
         Time.timeScale = 1f;
         SceneManager.LoadScene(gameSceneName);
+    }
+
+    public void StartGameplayLab()
+    {
+        if (!enabled) return;
+        RunSelection.Select(gameplayLabLevel, gameplayLabSceneName);
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(gameplayLabSceneName);
     }
 
     public void ExitGame()

@@ -36,6 +36,7 @@ public sealed class LevelGrid : MonoBehaviour
             BuildSlotType.Defense => defenseFootprint,
             BuildSlotType.Mine => mineFootprint,
             BuildSlotType.Barracks => barracksFootprint,
+            BuildSlotType.Wall => Vector2Int.one,
             _ => Vector2Int.one
         };
         return new Vector2Int(Mathf.Max(1, size.x), Mathf.Max(1, size.y));
@@ -43,7 +44,12 @@ public sealed class LevelGrid : MonoBehaviour
 
     public bool TryGetPlacement(Vector3 worldPosition, BuildSlotType type, out RectInt cells)
     {
-        Vector2Int footprint = GetFootprint(type);
+        return TryGetPlacement(worldPosition, GetFootprint(type), out cells);
+    }
+
+    public bool TryGetPlacement(Vector3 worldPosition, Vector2Int footprint, out RectInt cells)
+    {
+        footprint = new Vector2Int(Mathf.Max(1, footprint.x), Mathf.Max(1, footprint.y));
         Vector3 local = transform.InverseTransformPoint(worldPosition);
         float size = CellSize;
         float left = -Columns * size * 0.5f;
@@ -52,6 +58,16 @@ public sealed class LevelGrid : MonoBehaviour
         int y = Mathf.RoundToInt((local.z - bottom) / size - footprint.y * 0.5f);
         cells = new RectInt(x, y, footprint.x, footprint.y);
         return Contains(cells);
+    }
+
+    /// <summary>One-cell-wide wall span between two selected cells, along the dominant grid axis.</summary>
+    public static RectInt GetWallSpan(RectInt start, RectInt end)
+    {
+        int dx = end.x - start.x;
+        int dy = end.y - start.y;
+        return Mathf.Abs(dx) >= Mathf.Abs(dy)
+            ? new RectInt(Mathf.Min(start.x, end.x), start.y, Mathf.Abs(dx) + 1, 1)
+            : new RectInt(start.x, Mathf.Min(start.y, end.y), 1, Mathf.Abs(dy) + 1);
     }
 
     public bool Contains(RectInt cells) => cells.xMin >= 0 && cells.yMin >= 0
@@ -97,32 +113,42 @@ public sealed class LevelGrid : MonoBehaviour
 
     public static bool Overlaps(RectInt first, RectInt second) => first.Overlaps(second);
 
-    public IEnumerable<RectInt> GetAdjacentZoneCells(RectInt building)
+    public IEnumerable<RectInt> GetAdjacentZoneCells(RectInt building,
+        BuildSlotType type = BuildSlotType.Defense)
     {
         if (!Contains(building))
             yield break;
 
-        for (int x = building.xMin; x < building.xMax; x++)
+        bool alongX = type == BuildSlotType.Wall && building.width > 1;
+        bool alongZ = type == BuildSlotType.Wall && building.height > 1;
+        if (!alongZ)
         {
-            if (building.yMin > 0)
-                yield return new RectInt(x, building.yMin - 1, 1, 1);
-            if (building.yMax < Rows)
-                yield return new RectInt(x, building.yMax, 1, 1);
+            for (int x = building.xMin; x < building.xMax; x++)
+            {
+                if (building.yMin > 0)
+                    yield return new RectInt(x, building.yMin - 1, 1, 1);
+                if (building.yMax < Rows)
+                    yield return new RectInt(x, building.yMax, 1, 1);
+            }
         }
-        for (int y = building.yMin; y < building.yMax; y++)
+        if (!alongX)
         {
-            if (building.xMin > 0)
-                yield return new RectInt(building.xMin - 1, y, 1, 1);
-            if (building.xMax < Columns)
-                yield return new RectInt(building.xMax, y, 1, 1);
+            for (int y = building.yMin; y < building.yMax; y++)
+            {
+                if (building.xMin > 0)
+                    yield return new RectInt(building.xMin - 1, y, 1, 1);
+                if (building.xMax < Columns)
+                    yield return new RectInt(building.xMax, y, 1, 1);
+            }
         }
     }
 
-    public bool TryGetAdjacentZoneCell(RectInt building, Vector3 worldPointer, out RectInt cell)
+    public bool TryGetAdjacentZoneCell(RectInt building, Vector3 worldPointer, out RectInt cell,
+        BuildSlotType type = BuildSlotType.Defense)
     {
         cell = default;
         float nearestSquared = float.PositiveInfinity;
-        foreach (RectInt candidate in GetAdjacentZoneCells(building))
+        foreach (RectInt candidate in GetAdjacentZoneCells(building, type))
         {
             float distanceSquared = (GetPlacementCenter(candidate) - worldPointer).sqrMagnitude;
             if (distanceSquared >= nearestSquared)

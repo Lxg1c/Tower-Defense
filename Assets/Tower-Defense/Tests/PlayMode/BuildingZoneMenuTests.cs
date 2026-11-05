@@ -52,6 +52,7 @@ namespace TowerDefense.Tests
             var collider = player.AddComponent<SphereCollider>();
             collider.radius = .2f;
             wallet = player.AddComponent<PlayerWallet>();
+            wallet.ConfigureStartingCoins(100);
             movement = player.AddComponent<PlayerMovement>();
             player.SetActive(true);
 

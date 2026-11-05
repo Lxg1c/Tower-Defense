@@ -97,6 +97,7 @@ namespace TowerDefense.Tests
             Object.DestroyImmediate(root.GetComponent<LevelSetup>());
             var spawner = root.GetComponentInChildren<WaveSpawner>(true);
             var wallet = root.GetComponentInChildren<PlayerWallet>(true);
+            wallet.ConfigureStartingCoins(0);
             int victories = 0;
             spawner.onAllWavesCompleted.AddListener(() => victories++);
             LogAssert.Expect(LogType.Error, "[WaveSpawner] Configure a LevelDefinition through LevelSetup before starting the session.");
@@ -114,6 +115,7 @@ namespace TowerDefense.Tests
         {
             level.waves[0].spawnGroups[0].spawnPointIndex = 1;
             CreateSceneObjects();
+            root.GetComponentInChildren<PlayerWallet>(true).ConfigureStartingCoins(0);
             LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("\\[LevelSetup\\].*invalid spawn point"));
             root.SetActive(true);
             yield return null;

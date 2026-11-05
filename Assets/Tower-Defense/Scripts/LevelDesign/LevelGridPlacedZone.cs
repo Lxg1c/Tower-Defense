@@ -1,6 +1,6 @@
 using UnityEngine;
 
-/// <summary>Authoring data for a zone placed with LevelGrid; has no runtime behavior.</summary>
+/// <summary>Grid authoring data; runtime reads the footprint to size a built wall.</summary>
 [DisallowMultipleComponent]
 [AddComponentMenu("")]
 public sealed class LevelGridPlacedZone : MonoBehaviour

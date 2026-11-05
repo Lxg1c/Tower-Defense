@@ -11,6 +11,7 @@ public sealed class BuildingSlot
     private readonly TowerLoadout loadout;
     private readonly BuildSlotType allowedType;
     private readonly int requiredTownHallLevel;
+    private readonly int costMultiplier;
     private readonly List<TowerOption> options = new();
 
     public bool IsBuilt { get; private set; }
@@ -19,12 +20,18 @@ public sealed class BuildingSlot
     public BaseUpgrade BuiltBase { get; private set; }
     public TowerOption BuiltOption { get; private set; }
 
-    public BuildingSlot(TowerLoadout loadout, BuildSlotType allowedType, int requiredTownHallLevel)
+    public BuildingSlot(TowerLoadout loadout, BuildSlotType allowedType, int requiredTownHallLevel,
+        int costMultiplier = 1)
     {
+        if (costMultiplier < 1)
+            throw new System.ArgumentOutOfRangeException(nameof(costMultiplier));
         this.loadout = loadout;
         this.allowedType = allowedType;
         this.requiredTownHallLevel = requiredTownHallLevel;
+        this.costMultiplier = costMultiplier;
     }
+
+    public int GetCost(TowerOption option) => checked(option.cost * costMultiplier);
 
     public void BeginBuildPhase() => UsedThisPhase = false;
 
@@ -46,7 +53,12 @@ public sealed class BuildingSlot
             foreach (TowerOption option in loadout.options)
                 if (option != null && option.prefab != null && option.slotType == allowedType
                     && townHallLevel >= option.requiredTownHallLevel)
-                    options.Add(option);
+                {
+                    int index = options.Count;
+                    while (index > 0 && options[index - 1].cost > option.cost)
+                        index--;
+                    options.Insert(index, option);
+                }
         return options;
     }
 
@@ -60,7 +72,7 @@ public sealed class BuildingSlot
             || option.cost < 0 || !IsAvailableOption(option) || wallet == null)
             return false;
 
-        if (!wallet.TrySpend(option.cost))
+        if (!wallet.TrySpend(GetCost(option)))
             return false;
 
         building = Object.Instantiate(option.prefab, position, rotation);

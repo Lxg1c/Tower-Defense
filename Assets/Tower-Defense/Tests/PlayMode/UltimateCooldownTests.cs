@@ -84,6 +84,34 @@ namespace TowerDefense.Tests
             Assert.That(ultimate.CanReceiveInput, Is.True);
         }
 
+        [UnityTest]
+        public IEnumerator AutomaticUltimateIgnoresReleaseAndFiresAtConfiguredCharge()
+        {
+            PlayerUltimate ultimate = CreatePlayer();
+            Set(ultimate, "manualCharge", false);
+            Set(ultimate, "maxChargeTime", 0.2f);
+            Set(ultimate, "autoChargeLevel", 0.6f);
+
+            GameObject buttonObject = new GameObject("Automatic ultimate button", typeof(RectTransform),
+                typeof(Image), typeof(UltimateButton));
+            created.Add(buttonObject);
+            var button = buttonObject.GetComponent<UltimateButton>();
+            Set(button, "ultimate", ultimate);
+
+            button.OnPointerDown(null);
+            button.OnPointerUp(null);
+            Assert.That(ultimate.IsCharging, Is.True,
+                "Releasing a tap must not fire an uncharged orb in automatic mode.");
+
+            yield return new WaitForSeconds(0.2f);
+            Assert.That(ultimate.IsCharging, Is.False);
+            Assert.That(ultimate.IsOnCooldown, Is.True);
+            Assert.That(ultimate.CooldownProgress, Is.InRange(0.5f, 0.61f),
+                "The automatic shot should use the configured charge level.");
+            Assert.That(ultimate.CanReceiveInput, Is.False,
+                "Automatic firing must retain the normal cooldown.");
+        }
+
         private PlayerUltimate CreatePlayer()
         {
             GameObject bullet = NewObject("Bullet template", false);
@@ -96,6 +124,7 @@ namespace TowerDefense.Tests
             Set(shooter, "projectilePrefab", bullet);
             PlayerUltimate ultimate = player.AddComponent<PlayerUltimate>();
             Set(ultimate, "chargeOrbPrefab", orb);
+            Set(ultimate, "manualCharge", true);
             player.SetActive(true);
             return ultimate;
         }

@@ -112,6 +112,7 @@ namespace TowerDefense.Tests
         public IEnumerator BaseDeathStopsAnInFlightWaveWithoutReward()
         {
             var wallet = New("Wallet").AddComponent<PlayerWallet>();
+            wallet.ConfigureStartingCoins(0);
             wallet.gameObject.SetActive(true);
             var townHall = New("Base").AddComponent<Base>();
             townHall.gameObject.SetActive(true);
@@ -140,6 +141,7 @@ namespace TowerDefense.Tests
         public IEnumerator BuildGuideTracksBaseAndHidesOnCombatAndDefeat()
         {
             var wallet = New("Wallet").AddComponent<PlayerWallet>();
+            wallet.ConfigureStartingCoins(0);
             wallet.gameObject.SetActive(true);
             var spawner = New("Spawner").AddComponent<WaveSpawner>();
             Set(spawner, "wallet", wallet);
@@ -262,6 +264,51 @@ namespace TowerDefense.Tests
             yield return null;
             Assert.That(labels[0].text, Is.EqualTo("x3"));
             Assert.That(indicators[1].GetComponent<CanvasGroup>().alpha, Is.EqualTo(1f));
+        }
+
+        [UnityTest]
+        public IEnumerator DesktopPreviewHidesJoystickAndMobilePreviewRestoresLayout()
+        {
+            var root = New("Gameplay HUD");
+            root.AddComponent<RectTransform>();
+            var layout = root.AddComponent<ResponsiveGameplayHud>();
+
+            RectTransform Child(string name)
+            {
+                var child = New(name).AddComponent<RectTransform>();
+                child.SetParent(root.transform, false);
+                return child;
+            }
+
+            var joystick = Child("Floating Joystick");
+            joystick.gameObject.SetActive(true);
+            var rightSide = Child("Right Side");
+            rightSide.sizeDelta = new Vector2(800f, 600f);
+            Set(layout, "floatingJoystick", joystick);
+            Set(layout, "rightSide", rightSide);
+            Set(layout, "ultimateButton", Child("Ultimate"));
+            Set(layout, "homeButton", Child("Home"));
+            Set(layout, "rallyButton", Child("Rally"));
+            Set(layout, "effectStatusRow", Child("Effects"));
+            Set(layout, "desktopHint", Child("Desktop Hint").gameObject);
+            Set(layout, "editorPreview", ResponsiveGameplayHud.EditorPreviewMode.Desktop);
+
+            root.SetActive(true);
+            yield return null;
+            Assert.That(layout.IsDesktopLayout, Is.True);
+            Assert.That(joystick.gameObject.activeSelf, Is.False);
+            Assert.That(rightSide.sizeDelta, Is.EqualTo(new Vector2(420f, 420f)));
+
+            joystick.gameObject.SetActive(true);
+            yield return null;
+            Assert.That(joystick.gameObject.activeSelf, Is.False,
+                "Desktop layout must keep the touch joystick hidden.");
+
+            Set(layout, "editorPreview", ResponsiveGameplayHud.EditorPreviewMode.Mobile);
+            yield return null;
+            Assert.That(layout.IsDesktopLayout, Is.False);
+            Assert.That(joystick.gameObject.activeSelf, Is.True);
+            Assert.That(rightSide.sizeDelta, Is.EqualTo(new Vector2(800f, 600f)));
         }
 
         private GameObject New(string name)

@@ -16,6 +16,8 @@ public sealed class LevelGridEditor : Editor
     private Material ghostMaterial;
     private readonly Dictionary<LevelGridPlacedZone, PlacedPreview> placedPreviews = new();
     private bool choosingZone;
+    private bool stretchingWall;
+    private RectInt wallStartCell;
     private bool movingBuilding;
     private LevelGridPlacedZone selectedPlacement;
     private LevelGridPlacedZone editingPlacement;
@@ -40,9 +42,11 @@ public sealed class LevelGridEditor : Editor
         EditorGUILayout.HelpBox(
             choosingZone
                 ? "Click a highlighted adjacent cell for the interaction zone. Esc cancels the move."
+                : stretchingWall
+                    ? "Move to the wall's end cell and click. The span follows the dominant grid axis; Esc cancels."
                 : movingBuilding
                     ? "Click a free footprint for the selected building, then choose its interaction zone. Esc cancels."
-                    : "Click a building or its interaction zone to edit the pair. Click a free footprint to add a zone. 1-4 choose building type; Delete/Backspace removes the zone under the pointer; Ctrl+Z undoes edits.",
+                    : "Click a building or its interaction zone to edit the pair. For a wall, click its first and last cells, then choose an interaction cell on a long side. 1-5 choose building type; Delete/Backspace removes the zone under the pointer; Ctrl+Z undoes edits.",
             MessageType.Info);
         EditorGUILayout.LabelField("Cyan models: placed previews. Red cells: occupied building space; orange cells: occupied interaction zones.",
             EditorStyles.wordWrappedMiniLabel);
@@ -64,15 +68,17 @@ public sealed class LevelGridEditor : Editor
                 if (!painting)
                 {
                     choosingZone = false;
+                    stretchingWall = false;
                     movingBuilding = false;
                     editingPlacement = null;
                     DestroyGhost();
                 }
                 SceneView.RepaintAll();
             }
-        if ((choosingZone || movingBuilding) && GUILayout.Button("Cancel move"))
+        if ((choosingZone || stretchingWall || movingBuilding) && GUILayout.Button("Cancel placement"))
         {
             choosingZone = false;
+            stretchingWall = false;
             movingBuilding = false;
             editingPlacement = null;
             SceneView.RepaintAll();
@@ -105,6 +111,7 @@ public sealed class LevelGridEditor : Editor
         if (!painting || grid.ZonePrefab == null)
         {
             choosingZone = false;
+            stretchingWall = false;
             movingBuilding = false;
             editingPlacement = null;
             DestroyGhost();
@@ -116,6 +123,7 @@ public sealed class LevelGridEditor : Editor
                              || !grid.Contains(chosenBuilding)))
         {
             choosingZone = false;
+            stretchingWall = false;
             editingPlacement = null;
         }
         if (current.type == EventType.KeyDown && !current.alt && !current.control && !current.command
@@ -126,6 +134,7 @@ public sealed class LevelGridEditor : Editor
             serializedGrid.ApplyModifiedProperties();
             PrefabUtility.RecordPrefabInstancePropertyModifications(grid);
             choosingZone = false;
+            stretchingWall = false;
             movingBuilding = false;
             editingPlacement = null;
             DestroyGhost();
@@ -137,6 +146,7 @@ public sealed class LevelGridEditor : Editor
         if (current.type == EventType.KeyDown && current.keyCode == KeyCode.Escape)
         {
             choosingZone = false;
+            stretchingWall = false;
             movingBuilding = false;
             editingPlacement = null;
             selectedPlacement = null;
@@ -155,7 +165,7 @@ public sealed class LevelGridEditor : Editor
             return;
         }
 
-        LevelGridPlacedZone hoveredZone = !choosingZone && !movingBuilding
+        LevelGridPlacedZone hoveredZone = !choosingZone && !stretchingWall && !movingBuilding
             ? FindPlacedZoneAt(grid, point) : null;
         if (hoveredZone != null && current.type == EventType.KeyDown
             && (current.keyCode == KeyCode.Delete || current.keyCode == KeyCode.Backspace))
@@ -174,8 +184,9 @@ public sealed class LevelGridEditor : Editor
             TowerPlacementZone ignored = editingPlacement != null
                 ? editingPlacement.GetComponent<TowerPlacementZone>() : null;
             DrawFootprint(grid, chosenBuilding, true, chosenType);
-            DrawAdjacentZones(grid, chosenBuilding, ignored);
-            bool near = grid.TryGetAdjacentZoneCell(chosenBuilding, point, out RectInt zoneCell);
+            DrawAdjacentZones(grid, chosenBuilding, ignored, chosenType);
+            bool near = grid.TryGetAdjacentZoneCell(chosenBuilding, point, out RectInt zoneCell,
+                chosenType);
             bool free = near && IsZoneCellFree(grid, zoneCell, ignored);
             if (near)
                 DrawZoneCell(grid, zoneCell, free, true);
@@ -202,6 +213,34 @@ public sealed class LevelGridEditor : Editor
                 }
             }
         }
+        else if (stretchingWall)
+        {
+            bool inBounds = grid.TryGetPlacement(point, BuildSlotType.Wall, out RectInt endCell);
+            RectInt cells = inBounds ? LevelGrid.GetWallSpan(wallStartCell, endCell) : default;
+            TowerPlacementZone ignored = editingPlacement != null
+                ? editingPlacement.GetComponent<TowerPlacementZone>() : null;
+            bool free = inBounds && IsBuildingFootprintFree(grid, cells, ignored, BuildSlotType.Wall);
+            if (inBounds)
+                DrawFootprint(grid, cells, free, BuildSlotType.Wall);
+            Quaternion rotation = inBounds && cells.height > 1
+                ? grid.transform.rotation * Quaternion.Euler(0f, 90f, 0f)
+                : grid.transform.rotation;
+            UpdateGhost(grid, cells, inBounds, free,
+                editingPlacement != null ? GetEditingPreview(grid)
+                    : GetDefaultPreview(grid, BuildSlotType.Wall), rotation);
+            if (current.type == EventType.MouseDown && current.button == 0)
+            {
+                current.Use();
+                if (free)
+                {
+                    chosenBuilding = cells;
+                    chosenType = BuildSlotType.Wall;
+                    stretchingWall = false;
+                    choosingZone = true;
+                    Repaint();
+                }
+            }
+        }
         else
         {
             if (hoveredZone != null)
@@ -212,15 +251,21 @@ public sealed class LevelGridEditor : Editor
                     + grid.transform.up * 0.5f, "CLICK TO EDIT", ReadableLabelStyle);
             }
             BuildSlotType type = movingBuilding ? GetPlacementType(selectedPlacement) : grid.SelectedType;
-            bool inBounds = grid.TryGetPlacement(point, type, out RectInt cells);
+            RectInt cells;
+            bool inBounds = movingBuilding && selectedPlacement != null
+                ? grid.TryGetPlacement(point, selectedPlacement.BuildingCells.size, out cells)
+                : grid.TryGetPlacement(point, type, out cells);
             TowerPlacementZone ignored = movingBuilding && selectedPlacement != null
                 ? selectedPlacement.GetComponent<TowerPlacementZone>() : null;
-            bool free = inBounds && IsBuildingFootprintFree(grid, cells, ignored);
+            bool free = inBounds && IsBuildingFootprintFree(grid, cells, ignored, type);
             if (inBounds && (hoveredZone == null || movingBuilding))
                 DrawFootprint(grid, cells, free, type);
+            Quaternion previewRotation = type == BuildSlotType.Wall && cells.height > 1
+                ? grid.transform.rotation * Quaternion.Euler(0f, 90f, 0f)
+                : grid.transform.rotation;
             UpdateGhost(grid, inBounds ? cells : default, inBounds && (hoveredZone == null || movingBuilding),
                 free, movingBuilding ? GetEditingPreview(grid)
-                    : GetDefaultPreview(grid, grid.SelectedType), grid.transform.rotation);
+                    : GetDefaultPreview(grid, grid.SelectedType), previewRotation);
 
             if (current.type == EventType.MouseDown && current.button == 0)
             {
@@ -234,13 +279,21 @@ public sealed class LevelGridEditor : Editor
                 {
                     if (!movingBuilding)
                         selectedPlacement = null;
-                    chosenBuilding = cells;
-                    chosenType = type;
-                    choosingZone = true;
-                    if (movingBuilding)
+                    if (type == BuildSlotType.Wall && !movingBuilding)
                     {
-                        editingPlacement = selectedPlacement;
-                        movingBuilding = false;
+                        wallStartCell = cells;
+                        stretchingWall = true;
+                    }
+                    else
+                    {
+                        chosenBuilding = cells;
+                        chosenType = type;
+                        choosingZone = true;
+                        if (movingBuilding)
+                        {
+                            editingPlacement = selectedPlacement;
+                            movingBuilding = false;
+                        }
                     }
                 }
             }
@@ -266,6 +319,8 @@ public sealed class LevelGridEditor : Editor
             return;
 
         ghost.transform.SetPositionAndRotation(grid.GetPlacementCenter(cells), rotation);
+        if (ghost.TryGetComponent(out WallSpan wall))
+            wall.Configure(Mathf.Max(cells.width, cells.height), grid.CellSize);
         ghost.SetActive(true);
         Color color = free ? new Color(1f, 0.12f, 0.8f, 0.86f)
             : new Color(1f, 0.16f, 0.12f, 0.86f);
@@ -371,13 +426,17 @@ public sealed class LevelGridEditor : Editor
             var serialized = new SerializedObject(zone);
             var spawn = serialized.FindProperty("spawnPoint").objectReferenceValue as Transform;
             BuildSlotType type = (BuildSlotType)serialized.FindProperty("allowedType").enumValueIndex;
-            if (spawn != null && grid.TryGetPlacement(spawn.position, type, out RectInt building))
+            LevelGridPlacedZone placement = zone.GetComponent<LevelGridPlacedZone>();
+            RectInt building = placement != null && placement.SourceGrid == grid
+                ? placement.BuildingCells : default;
+            bool hasBuilding = placement != null && placement.SourceGrid == grid
+                || spawn != null && grid.TryGetPlacement(spawn.position, type, out building);
+            if (hasBuilding)
                 DrawOccupiedArea(grid, building, new Color(1f, 0.22f, 0.24f), "BLOCKED");
             if (grid.TryGetPlacement(zone.transform.position, BuildSlotType.Defense,
                     out RectInt interaction))
                 DrawOccupiedArea(grid, interaction, new Color(1f, 0.62f, 0.12f), "ZONE");
 
-            LevelGridPlacedZone placement = zone.GetComponent<LevelGridPlacedZone>();
             if (placement == null || placement.SourceGrid != grid || spawn == null)
                 continue;
             visiblePlacements.Add(placement);
@@ -422,6 +481,10 @@ public sealed class LevelGridEditor : Editor
 
         preview.instance.transform.SetPositionAndRotation(spawn.position,
             placement.SourceGrid.GetBuildingRotation(placement.BuildingCells, placement.ZoneCell));
+        if (preview.instance.TryGetComponent(out WallSpan wall))
+            wall.Configure(Mathf.Max(placement.BuildingCells.width, placement.BuildingCells.height),
+                placement.SourceGrid.CellSize);
+        TintGhost(preview.instance, PlacedGhostColor);
         preview.instance.SetActive(true);
     }
 
@@ -547,9 +610,9 @@ public sealed class LevelGridEditor : Editor
     }
 
     private static void DrawAdjacentZones(LevelGrid grid, RectInt building,
-        TowerPlacementZone ignored)
+        TowerPlacementZone ignored, BuildSlotType type)
     {
-        foreach (RectInt cell in grid.GetAdjacentZoneCells(building))
+        foreach (RectInt cell in grid.GetAdjacentZoneCells(building, type))
             DrawZoneCell(grid, cell, IsAreaFree(grid, cell, ignored), false);
     }
 
@@ -578,14 +641,14 @@ public sealed class LevelGridEditor : Editor
     }
 
     private static bool IsBuildingFootprintFree(LevelGrid grid, RectInt footprint,
-        TowerPlacementZone ignored = null)
+        TowerPlacementZone ignored = null, BuildSlotType type = BuildSlotType.Defense)
         => IsAreaFree(grid, footprint, ignored)
-            && HasAdjacentFreeZoneCell(grid, footprint, ignored);
+            && HasAdjacentFreeZoneCell(grid, footprint, ignored, type);
 
     private static bool HasAdjacentFreeZoneCell(LevelGrid grid, RectInt footprint,
-        TowerPlacementZone ignored)
+        TowerPlacementZone ignored, BuildSlotType type)
     {
-        foreach (RectInt cell in grid.GetAdjacentZoneCells(footprint))
+        foreach (RectInt cell in grid.GetAdjacentZoneCells(footprint, type))
             if (IsAreaFree(grid, cell, ignored))
                 return true;
         return false;
@@ -607,7 +670,12 @@ public sealed class LevelGridEditor : Editor
             var serialized = new SerializedObject(zone);
             var spawn = serialized.FindProperty("spawnPoint").objectReferenceValue as Transform;
             BuildSlotType type = (BuildSlotType)serialized.FindProperty("allowedType").enumValueIndex;
-            if (spawn != null && grid.TryGetPlacement(spawn.position, type, out RectInt occupied)
+            LevelGridPlacedZone placement = zone.GetComponent<LevelGridPlacedZone>();
+            RectInt occupied = placement != null && placement.SourceGrid == grid
+                ? placement.BuildingCells : default;
+            bool hasBuilding = placement != null && placement.SourceGrid == grid
+                || spawn != null && grid.TryGetPlacement(spawn.position, type, out occupied);
+            if (hasBuilding
                 && LevelGrid.Overlaps(candidate, occupied))
                 return false;
             if (grid.TryGetPlacement(zone.transform.position, BuildSlotType.Defense,
@@ -625,6 +693,7 @@ public sealed class LevelGridEditor : Editor
             KeyCode.Alpha2 or KeyCode.Keypad2 => BuildSlotType.Defense,
             KeyCode.Alpha3 or KeyCode.Keypad3 => BuildSlotType.Mine,
             KeyCode.Alpha4 or KeyCode.Keypad4 => BuildSlotType.Barracks,
+            KeyCode.Alpha5 or KeyCode.Keypad5 => BuildSlotType.Wall,
             _ => (BuildSlotType)(-1)
         };
         return (int)type >= 0;
@@ -645,13 +714,28 @@ public sealed class LevelGridEditor : Editor
             if (GUILayout.Button("Move building"))
             {
                 choosingZone = false;
+                stretchingWall = false;
                 movingBuilding = true;
                 editingPlacement = selectedPlacement;
                 DestroyGhost();
                 SceneView.RepaintAll();
             }
+            if (GetPlacementType(selectedPlacement) == BuildSlotType.Wall
+                && GUILayout.Button("Resize wall"))
+            {
+                RectInt cells = selectedPlacement.BuildingCells;
+                wallStartCell = new RectInt(cells.xMin, cells.yMin, 1, 1);
+                editingPlacement = selectedPlacement;
+                chosenType = BuildSlotType.Wall;
+                choosingZone = false;
+                movingBuilding = false;
+                stretchingWall = true;
+                DestroyGhost();
+                SceneView.RepaintAll();
+            }
             if (GUILayout.Button("Move interaction zone"))
             {
+                stretchingWall = false;
                 movingBuilding = false;
                 editingPlacement = selectedPlacement;
                 chosenBuilding = selectedPlacement.BuildingCells;
@@ -666,6 +750,7 @@ public sealed class LevelGridEditor : Editor
                 selectedPlacement = null;
                 editingPlacement = null;
                 choosingZone = false;
+                stretchingWall = false;
                 movingBuilding = false;
                 DestroyGhost();
                 SceneView.RepaintAll();
@@ -787,6 +872,7 @@ public sealed class LevelGridEditor : Editor
         {
             BuildSlotType.TownHall => 0,
             BuildSlotType.Defense => 1,
+            BuildSlotType.Mine => 1,
             _ => 2
         };
         Transform spawn = serialized.FindProperty("spawnPoint").objectReferenceValue as Transform;

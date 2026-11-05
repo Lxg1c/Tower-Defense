@@ -129,6 +129,44 @@ namespace TowerDefense.Tests
         }
 
         [Test]
+        public void GameplayLabEntryPointsToConfiguredBuildScene()
+        {
+            var menuScene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/MainMenu.unity");
+            try
+            {
+                var menu = menuScene.GetRootGameObjects()
+                    .SelectMany(r => r.GetComponentsInChildren<MainMenu>(true)).Single();
+                var menuData = new SerializedObject(menu);
+                var level = menuData.FindProperty("gameplayLabLevel").objectReferenceValue as LevelDefinition;
+                string sceneName = menuData.FindProperty("gameplayLabSceneName").stringValue;
+                Assert.That(level, Is.Not.Null);
+                Assert.That(level.progressionId, Is.EqualTo("gameplay-lab"));
+                Assert.That(level.moneyReward, Is.Zero);
+                level.Validate(4);
+
+                var button = menuScene.GetRootGameObjects()
+                    .SelectMany(r => r.GetComponentsInChildren<UnityEngine.UI.Button>(true))
+                    .Single(b => b.name == "TestLevel");
+                Assert.That(Enumerable.Range(0, button.onClick.GetPersistentEventCount()).Any(i =>
+                    button.onClick.GetPersistentTarget(i) == menu &&
+                    button.onClick.GetPersistentMethodName(i) == nameof(MainMenu.StartGameplayLab)), Is.True);
+
+                string path = $"Assets/Tower-Defense/Scenes/{sceneName}.unity";
+                Assert.That(EditorBuildSettings.scenes.Any(s => s.enabled && s.path == path), Is.True);
+                var labScene = EditorSceneManager.OpenPreviewScene(path);
+                try
+                {
+                    var setup = labScene.GetRootGameObjects()
+                        .SelectMany(r => r.GetComponentsInChildren<LevelSetup>(true)).Single();
+                    Assert.That(new SerializedObject(setup).FindProperty("directPlayLevel").objectReferenceValue,
+                        Is.SameAs(level));
+                }
+                finally { EditorSceneManager.ClosePreviewScene(labScene); }
+            }
+            finally { EditorSceneManager.ClosePreviewScene(menuScene); }
+        }
+
+        [Test]
         public void UltimateProgressIsWiredToTheButton()
         {
             var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");

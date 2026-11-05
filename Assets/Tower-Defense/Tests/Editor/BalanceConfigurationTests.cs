@@ -18,18 +18,48 @@ namespace TowerDefense.Tests
             Assert.That(loadout.options.Single(option => option.displayName == "Cannon Turret").requiredTownHallLevel, Is.EqualTo(1));
             Assert.That(loadout.options.Single(option => option.displayName == "Mine").requiredTownHallLevel, Is.EqualTo(1));
             Assert.That(loadout.options.Single(option => option.displayName == "Pulse").requiredTownHallLevel, Is.EqualTo(2));
+            Assert.That(loadout.options.Single(option => option.displayName == "Mortar").requiredTownHallLevel, Is.EqualTo(3));
+            Assert.That(loadout.options.Single(option => option.displayName == "Wall").requiredTownHallLevel, Is.EqualTo(2));
             Assert.That(loadout.options.Where(option => option.slotType == BuildSlotType.Barracks)
-                .Select(option => option.requiredTownHallLevel), Is.EquivalentTo(new[] { 2, 2 }));
+                .Select(option => option.requiredTownHallLevel), Is.EquivalentTo(new[] { 2, 3 }));
         }
 
         [Test]
-        public void BarracksChoicesSpawnDifferentSquadTypesAndUnlockTogether()
+        public void LevelOnePlacementZonesOpenAsTheTownHallGrows()
+        {
+            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");
+            try
+            {
+                var zones = scene.GetRootGameObjects()
+                    .SelectMany(root => root.GetComponentsInChildren<TowerPlacementZone>(true))
+                    .Select(zone => new SerializedObject(zone))
+                    .Select(data => (
+                        Type: (BuildSlotType)data.FindProperty("allowedType").enumValueIndex,
+                        Level: data.FindProperty("requiredTownHallLevel").intValue))
+                    .ToArray();
+                Assert.That(zones.Count(zone => zone.Level <= 1 && zone.Type == BuildSlotType.Mine), Is.EqualTo(2));
+                Assert.That(zones.Count(zone => zone.Level <= 1 && zone.Type == BuildSlotType.Defense), Is.EqualTo(1));
+                Assert.That(zones.Count(zone => zone.Level <= 1 && zone.Type == BuildSlotType.Barracks), Is.Zero);
+                Assert.That(zones.Count(zone => zone.Level <= 1 && zone.Type == BuildSlotType.Wall), Is.Zero);
+                Assert.That(zones.Count(zone => zone.Level <= 2 && zone.Type == BuildSlotType.Mine), Is.EqualTo(4));
+                Assert.That(zones.Count(zone => zone.Level <= 2 && zone.Type == BuildSlotType.Defense), Is.EqualTo(4));
+                Assert.That(zones.Count(zone => zone.Level <= 2 && zone.Type == BuildSlotType.Barracks), Is.EqualTo(1));
+                Assert.That(zones.Count(zone => zone.Level <= 2 && zone.Type == BuildSlotType.Wall), Is.EqualTo(1));
+            }
+            finally { EditorSceneManager.ClosePreviewScene(scene); }
+        }
+
+        [Test]
+        public void BarracksChoicesSpawnDifferentSquadTypesAndUnlockInSequence()
         {
             var loadout = AssetDatabase.LoadAssetAtPath<TowerLoadout>(
                 "Assets/Tower-Defense/Prefabs/TowerLoadout.asset");
             var barracks = new BuildingSlot(loadout, BuildSlotType.Barracks, 2);
             Assert.That(barracks.GetOptions(1), Is.Empty);
             var choices = barracks.GetOptions(2).ToArray();
+            Assert.That(choices.Select(option => option.displayName),
+                Is.EquivalentTo(new[] { "Barracks / Melee" }));
+            choices = barracks.GetOptions(3).ToArray();
             Assert.That(choices.Select(option => option.displayName),
                 Is.EquivalentTo(new[] { "Barracks / Melee", "Barracks / Ranged" }));
             Assert.That(choices.Select(option => option.prefab).Distinct().Count(), Is.EqualTo(2));
@@ -47,10 +77,67 @@ namespace TowerDefense.Tests
             Assert.That(new BuildingSlot(loadout, BuildSlotType.Defense, 1).GetOptions(1)
                 .Select(option => option.displayName), Is.EquivalentTo(new[] { "Cannon Turret" }));
             Assert.That(new BuildingSlot(loadout, BuildSlotType.Defense, 1).GetOptions(2)
-                .Select(option => option.displayName), Is.EquivalentTo(new[] { "Cannon Turret", "Pulse" }));
+                .Select(option => option.displayName), Is.EqualTo(new[] { "Cannon Turret", "Pulse" }));
+            Assert.That(new BuildingSlot(loadout, BuildSlotType.Defense, 1).GetOptions(3)
+                .Select(option => option.displayName), Is.EqualTo(new[] { "Cannon Turret", "Pulse", "Mortar" }));
+            var mortar = loadout.options.Single(option => option.displayName == "Mortar");
+            Assert.That(mortar.cost, Is.GreaterThan(loadout.options
+                .Where(option => option.slotType == BuildSlotType.Defense && option != mortar)
+                .Max(option => option.cost)));
+            Assert.That(mortar.prefab.GetComponent<MortarTower>(), Is.Not.Null);
+            Assert.That(mortar.prefab.GetComponent<MortarTower>().enabled, Is.True);
+            Assert.That(mortar.prefab.GetComponent<DetectionZone>().Radius, Is.GreaterThan(24f));
+            var wall = loadout.options.Single(option => option.displayName == "Wall");
+            Assert.That(wall.slotType, Is.EqualTo(BuildSlotType.Wall));
+            Assert.That(wall.prefab.GetComponent<WallCollision>(), Is.Not.Null);
+            var wallSpan = wall.prefab.GetComponent<WallSpan>();
+            Assert.That(wallSpan, Is.Not.Null);
+            var wallSettings = new SerializedObject(wallSpan);
+            foreach (string field in new[] { "model", "body", "obstacle" })
+                Assert.That(wallSettings.FindProperty(field).objectReferenceValue, Is.Not.Null, field);
+            Assert.That(wall.prefab.GetComponent<UnityEngine.AI.NavMeshObstacle>().carving, Is.True);
             var cannon = AssetDatabase.LoadAssetAtPath<GameObject>(
                 "Assets/Tower-Defense/Prefabs/Buildings/CannonTower.prefab");
-            Assert.That(cannon.GetComponentInChildren<DetectionZone>(true).Radius, Is.EqualTo(14f));
+            Assert.That(cannon.GetComponentInChildren<DetectionZone>(true).Radius, Is.EqualTo(24f));
+        }
+
+        [Test]
+        public void LongerWallFitsItsCollisionAndNavMeshObstacleToReservedCells()
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/Tower-Defense/Prefabs/Buildings/Wall.prefab");
+            GameObject instance = Object.Instantiate(prefab);
+            try
+            {
+                var span = instance.GetComponent<WallSpan>();
+                span.Configure(4, 3f);
+                float width = instance.GetComponent<BoxCollider>().size.x;
+                Assert.That(width, Is.EqualTo(12f).Within(0.001f));
+                Assert.That(instance.GetComponent<UnityEngine.AI.NavMeshObstacle>().size.x,
+                    Is.EqualTo(width).Within(0.001f));
+                Assert.That(span.LengthCells, Is.EqualTo(4));
+
+                var model = (Transform)new SerializedObject(span).FindProperty("model").objectReferenceValue;
+                Assert.That(model.localScale.x * 2.66f / 2.2f, Is.EqualTo(3f).Within(0.001f));
+                Assert.That(model.localScale.y, Is.GreaterThan(2.2f));
+                Assert.That(instance.GetComponent<BoxCollider>().size.y, Is.GreaterThan(1.55f));
+                Assert.That(instance.GetComponent<UnityEngine.AI.NavMeshObstacle>().size.y,
+                    Is.EqualTo(instance.GetComponent<BoxCollider>().size.y).Within(0.001f));
+                for (int i = 0; i < 4; i++)
+                {
+                    Transform segment = i == 0 ? model : instance.transform.Find($"Wall segment {i + 1}");
+                    Assert.That(segment, Is.Not.Null, $"Missing section for cell {i}.");
+                    Assert.That(segment.localPosition.x, Is.EqualTo((i - 1.5f) * 3f).Within(0.001f));
+                    Assert.That(segment.localScale, Is.EqualTo(model.localScale));
+                }
+
+                span.Configure(2, 3f);
+                span.Configure(2, 3f);
+                Assert.That(instance.transform.Find("Wall segment 3"), Is.Null);
+                Assert.That(instance.transform.Find("Wall segment 2"), Is.Not.Null);
+                Assert.That(span.LengthCells, Is.EqualTo(2));
+            }
+            finally { Object.DestroyImmediate(instance); }
         }
 
         [Test]

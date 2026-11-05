@@ -2,13 +2,12 @@ using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// Charge-and-release ultimate.
+/// Ultimate with automatic tap-to-fire or manual hold-to-charge input.
 ///
-/// Press (BeginCharge) → small <see cref="startDelay"/> → spawn a charge orb at
-/// <see cref="firePoint"/>. While held, the orb scales from <see cref="minScale"/>
-/// to <see cref="maxScale"/> over <see cref="maxChargeTime"/>; damage scales the
-/// same way. Release → orb detaches and flies forward as a projectile that
-/// pierces through targets (first target = full damage, the rest = percentage).
+/// BeginCharge spawns an orb at <see cref="firePoint"/>. It grows from
+/// <see cref="minScale"/> to <see cref="maxScale"/> over <see cref="maxChargeTime"/>,
+/// with damage scaling the same way. Automatic mode fires at the configured
+/// charge level; manual mode fires on release or at full charge.
 /// </summary>
 [DisallowMultipleComponent]
 public class PlayerUltimate : MonoBehaviour
@@ -29,6 +28,12 @@ public class PlayerUltimate : MonoBehaviour
     [SerializeField] private float maxChargeTime = 5f;
     [SerializeField] private float minScale = 1f;
     [SerializeField] private float maxScale = 5f;
+
+    [Header("Input mode")]
+    [Tooltip("Off: one press charges to Auto Charge Level and fires. On: hold to choose the charge level, then release to fire.")]
+    [SerializeField] private bool manualCharge;
+    [Tooltip("Automatic mode: fraction of the full charge reached before firing.")]
+    [SerializeField, Range(0.1f, 1f)] private float autoChargeLevel = 0.65f;
 
     [Header("Projectile")]
     [Tooltip("Speed of the launched orb (units/second).")]
@@ -65,6 +70,7 @@ public class PlayerUltimate : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float minChargeForFireAudio = 0.05f;
 
     public bool IsCharging { get; private set; }
+    public bool IsAutomaticCharge => !manualCharge;
     public bool IsOnCooldown => Time.time < nextReadyTime;
     public float CooldownRemaining => Mathf.Max(0f, nextReadyTime - Time.time);
     public bool CanReceiveInput => isActiveAndEnabled
@@ -83,6 +89,7 @@ public class PlayerUltimate : MonoBehaviour
     }
 
     private bool released;
+    private bool activeChargeIsAutomatic;
     private float nextReadyTime;
     private float lastCooldownDuration;
     private float lastChargeProgress;
@@ -115,6 +122,7 @@ public class PlayerUltimate : MonoBehaviour
             || playerHealth != null && playerHealth.IsGhost) return;
         
         IsCharging = true;
+        activeChargeIsAutomatic = !manualCharge;
         released = false;
         ChargeProgress = 0f;
         PlayChargeAudio();
@@ -124,7 +132,7 @@ public class PlayerUltimate : MonoBehaviour
 
     public void Release()
     {
-        if (!IsCharging) return;
+        if (!IsCharging || activeChargeIsAutomatic) return;
         released = true;
     } 
     
@@ -143,9 +151,12 @@ public class PlayerUltimate : MonoBehaviour
         }
         
         float charge = 0f;
-        while (charge < maxChargeTime && !released)
+        float targetChargeTime = activeChargeIsAutomatic
+            ? maxChargeTime * autoChargeLevel
+            : maxChargeTime;
+        while (charge < targetChargeTime && !released)
         {
-            charge += Time.deltaTime;
+            charge = Mathf.Min(charge + Time.deltaTime, targetChargeTime);
             ChargeProgress = Mathf.Clamp01(charge / maxChargeTime);
             float s = Mathf.Lerp(minScale, maxScale, ChargeProgress);
             if (activeOrb != null) activeOrb.transform.localScale = Vector3.one * s;

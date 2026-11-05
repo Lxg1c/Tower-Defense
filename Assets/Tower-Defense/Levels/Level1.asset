@@ -18,7 +18,7 @@ MonoBehaviour:
   progressionId: level-1
   moneyReward: 100
   nextLevel: {fileID: 11400000, guid: 08356835dcd40d449ac51205d131c9c5, type: 2}
-  startingCoins: 12
+  startingCoins: 1000
   waves:
   - coinReward: 4
     spawnGroups:
@@ -47,7 +47,7 @@ MonoBehaviour:
         count: 4
         spawnInterval: 1.05
   additionalDifficulties:
-  - startingCoins: 12
+  - startingCoins: 1000
     moneyReward: 150
     waves:
     - coinReward: 4
@@ -76,7 +76,7 @@ MonoBehaviour:
         - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
           count: 7
           spawnInterval: 0.8925
-  - startingCoins: 12
+  - startingCoins: 1000
     moneyReward: 225
     waves:
     - coinReward: 4

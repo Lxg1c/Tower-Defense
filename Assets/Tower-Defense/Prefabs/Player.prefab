@@ -369,7 +369,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 223e64a2a5aeb7e4e88106978584b839, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingCoins: 10
   onCoinsChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -411,6 +410,8 @@ MonoBehaviour:
   maxChargeTime: 2
   minScale: 0.5
   maxScale: 1.5
+  manualCharge: 0
+  autoChargeLevel: 0.65
   projectileSpeed: 30
   projectileLifetime: 4
   hitRadius: 1

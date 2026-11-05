@@ -44,6 +44,12 @@ public static class UpgradeStatsFormatter
             text.AppendLine($"Range: {stats.PulseRange.Value:0.##}");
         if (stats.PulseInterval.HasValue)
             text.AppendLine($"Interval: {stats.PulseInterval.Value:0.##}s");
+        if (stats.MortarDamage.HasValue)
+            text.AppendLine($"Damage: {stats.MortarDamage.Value:0.##}");
+        if (stats.MortarInterval.HasValue)
+            text.AppendLine($"Interval: {stats.MortarInterval.Value:0.##}s");
+        if (stats.MortarRange.HasValue)
+            text.AppendLine($"Range: {stats.MortarRange.Value:0.##}");
         if (stats.ShooterRange.HasValue)
             text.AppendLine($"Range: {stats.ShooterRange.Value:0.##}");
         if (stats.MaxHealth.HasValue)

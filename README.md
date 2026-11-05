@@ -18,17 +18,64 @@ results and the next gameplay balance experiments.
 3. Open `Assets/Tower-Defense/Scenes/MainMenu.unity` and press Play, then Start.
    Open `Assets/Tower-Defense/Scenes/Level 1.unity` directly when iterating on gameplay.
 
-The build scenes are **MainMenu**, then **Level 1**. The obsolete `GameScene.unity`
+The build scenes are **MainMenu**, **Level 1**, then **GameplayLab**. The obsolete `GameScene.unity`
 has been removed. Keep unused scenes out of Build Settings: the installed Test
 Framework includes disabled entries when building a test Player.
 
-Use the on-screen joystick to move (drag it with the mouse in the Editor).
-The hero aims and shoots automatically. Hold the ultimate button to charge an
-orb and release to fire it. Stand in a building zone until its progress circle
-fills to choose a building or upgrade. Use Start Wave to begin combat after the
-town hall exists. At town hall level 2, the barracks card offers melee and ranged
-variants; the chosen type stays with that barracks. The ally command button switches
-soldiers to following the hero.
+For a gameplay-only playtest, choose **TEST LEVEL** on the Main Menu Home screen,
+or open `Assets/Tower-Defense/Scenes/GameplayLab.unity` directly and press Play.
+This separate scene keeps the hero, HUD, build zones, squads and
+combat rules, but uses one plain floor instead of Level 1's environment. Its
+four waves test a single approach, ranged pressure from another direction,
+then a stronger mixed attack. The lab has its own level asset and NavMesh; it
+is separate from campaign level selection and awards no campaign money. Changes
+to its waves or placements do not change Level 1.
+
+For a useful first playtest, complete one run without adjusting values. Note
+when you first make a meaningful building choice, when you feel you are only
+waiting, whether you use the ultimate and squad orders, where the defense
+breaks, and whether you want to retry after the result. Then change one thing
+at a time in `Assets/Tower-Defense/Levels/GameplayLab.asset` and replay. This
+tests the gameplay loop without art and layout changes masking the result.
+
+On Android and iOS, use the on-screen joystick to move. By default, one tap on
+the ultimate button charges the orb to 65% and fires it automatically; releasing
+the button does not change the shot. Desktop builds use a compact HUD without
+the joystick: move with WASD or the arrow keys and press Space once for the
+ultimate. Use the remaining action buttons with the mouse. The hero aims and
+shoots automatically on both platforms. The `Manual Charge` checkbox on
+`PlayerUltimate` restores hold-to-charge input; `Auto Charge Level` sets the
+automatic shot strength. The existing cooldown applies in either mode.
+`ResponsiveGameplayHud` selects the layout from the build target. In the Editor,
+`Automatic` previews the active build target; the `Editor Preview` field on
+`MainCanvas` can force Mobile or Desktop during Play Mode and updates the HUD
+immediately. This is not a player setting. Stand in a building zone until its
+progress circle fills to choose a building or upgrade. Use Start Wave to begin
+combat after the town hall exists. The melee barracks opens at town hall level 2
+and the ranged barracks at level 3; the chosen type stays with that barracks.
+To order a squad, tap the
+lower body of its completed barracks (or one of its soldiers), not the build tile.
+Then tap a reachable point on the floor. You can move the point during preparation
+or combat. A cyan ring appears at the barracks entrance when selected, then at
+the assigned position. Tap the selected barracks again to clear its station
+order. Repeat for other squads.
+**Rally** temporarily recalls all squads to the hero; turning it off restores
+each squad's station order (or its default barracks behavior). Station orders
+remain in force between waves and after soldiers respawn.
+
+Defense build choices appear from cheapest to most expensive. The Mortar unlocks
+at town hall level 3 and fires an arcing shell at an enemy's position; its impact
+damages nearby enemies once each. A Wall is a separate build-zone type and blocks
+movement while intact. It opens the path when destroyed and is repaired after a
+wave like other buildings. To author a Wall point, select a `LevelGrid`, start
+placing zones, press **5**, click the first and last wall cells, then click a
+highlighted cell along one of its long sides for the interaction marker. The
+span follows the horizontal or vertical grid axis, and the chosen side sets
+the wall's facing. The built wall reveals one section per cell from left to right; its
+Height Multiplier is adjustable on the Wall prefab. The card costs 3 build
+coins per reserved cell. Select a
+placed wall and use **Resize wall** to change its length later. Level 1 has one
+Wall point at town hall level 2 and another at level 3.
 
 Spiders can drop cyan slowing pickups. Walk over one to activate slowing shots
 for 12 seconds (up to 24 seconds can be stored). While active, every normal
@@ -249,7 +296,7 @@ rather than editing generated code.
 
 ## Configuration belongs in assets
 
-- Level assets define waves, timings, rewards and starting coins. The scene WaveSpawner owns spawn transforms; LevelSetup assigns the selected level.
+- Level assets define waves, timings, rewards and starting coins. The scene WaveSpawner owns spawn transforms; LevelSetup assigns the selected level and passes its starting coins to PlayerWallet before play. PlayerWallet has no Inspector override for this balance.
 - Game-over and victory screens require an assigned spawner; they observe session
   outcomes. The game-over screen does not decide whether the session is defeated.
 - Entities with health bars require `HealthBarBinding`, with their own `Damageable`
@@ -257,7 +304,12 @@ rather than editing generated code.
   `HealthBarManager` requires the scene camera and supplies the default bar prefab.
 - `Prefabs/TowerLoadout.asset` lists buildings, costs and the town hall level
   required to show each build option. Town hall is available first; Cannon Tower
-  and Mine unlock at level 1, Pulse Tower and both Barracks choices at level 2.
+  and Mine unlock at level 1; Pulse Tower, a melee Barracks and Wall unlock at
+  level 2; Mortar and a ranged Barracks unlock at level 3. Level 1 exposes two
+  Mine points and one Defense point at level 1, then more points as the town hall
+  grows. New grid points default to the first tier for Mine/Defense and the
+  second tier for Wall/Barracks; adjust each point's Required Town Hall Level in
+  the Inspector to place it in a later tier.
 - Enemy option assets point at enemy prefabs. Each enemy prefab explicitly
   assigns its targeting, combat and navigation modules on `MobCore`.
 - `Prefabs/EnemyLoadout.asset` contains one entry per enemy with slow-ammo,

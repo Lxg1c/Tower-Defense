@@ -74,7 +74,8 @@ public class TowerSelectionModal : MonoBehaviour
 
             var captured = opt;
             int cardRevision = revision;
-            card.Bind(opt, coins >= opt.cost, () =>
+            int cost = owner != null ? owner.GetOptionCost(opt) : opt.cost;
+            card.Bind(opt, 0, cost, "BUILD", coins >= cost, () =>
             {
                 if (IsOpen && revision == cardRevision) HandlePick(captured);
             });

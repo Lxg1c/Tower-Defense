@@ -33,7 +33,7 @@ public static class ArchitectureRefactorChecks
         try
         {
             var wallet = CreateObject("Test wallet").AddComponent<PlayerWallet>();
-            Set(wallet, "startingCoins", 1000);
+            wallet.ConfigureStartingCoins(1000);
             Awake(wallet);
 
             var townHallObject = CreateObject("Test town hall");

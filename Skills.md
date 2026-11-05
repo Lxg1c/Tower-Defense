@@ -48,9 +48,9 @@ project guidance, not an installed Codex skill package.
   changes. Do not stage, revert or commit the entire repository as a shortcut.
 - Keep `.meta` files with assets. Keep generated Input Actions code generated.
 - `.vscode`, `.claude`, `Library`, `Temp` and local test reports stay out of Git.
-- The supported build sequence is MainMenu then Level. Keep obsolete scenes out
-  of Build Settings: the installed Test Framework also includes disabled entries
-  in Player test builds.
+- The supported build sequence is MainMenu, Level 1, then GameplayLab (the
+  optional gameplay playtest entry). Keep obsolete scenes out of Build Settings:
+  the installed Test Framework also includes disabled entries in Player test builds.
 
 ## Tests and verification
 

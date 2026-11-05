@@ -110,6 +110,42 @@ namespace TowerDefense.Tests
         }
 
         [Test]
+        public void DefenseChoicesAreSortedByPriceWithStableTies()
+        {
+            var loadout = ScriptableObject.CreateInstance<TowerLoadout>();
+            created.Add(loadout);
+            GameObject template = NewObject("Building template");
+            var expensive = new TowerOption { prefab = template, slotType = BuildSlotType.Defense, cost = 9 };
+            var firstTie = new TowerOption { prefab = template, slotType = BuildSlotType.Defense, cost = 5 };
+            var cheap = new TowerOption { prefab = template, slotType = BuildSlotType.Defense, cost = 3 };
+            var secondTie = new TowerOption { prefab = template, slotType = BuildSlotType.Defense, cost = 5 };
+            loadout.options = new[] { expensive, firstTie, cheap, secondTie };
+
+            var slot = new BuildingSlot(loadout, BuildSlotType.Defense, 0);
+            Assert.That(slot.GetOptions(2), Is.EqualTo(new[] { cheap, firstTie, secondTie, expensive }));
+        }
+
+        [Test]
+        public void LongWallChargesForEveryReservedCell()
+        {
+            var loadout = ScriptableObject.CreateInstance<TowerLoadout>();
+            created.Add(loadout);
+            var wall = new TowerOption
+            {
+                prefab = NewObject("Wall template"), slotType = BuildSlotType.Wall, cost = 3
+            };
+            loadout.options = new[] { wall };
+            var slot = new BuildingSlot(loadout, BuildSlotType.Wall, 1, costMultiplier: 4);
+            PlayerWallet wallet = Wallet();
+
+            Assert.That(slot.GetCost(wall), Is.EqualTo(12));
+            Assert.That(slot.TryBuild(wall, wallet, true, 1, Vector3.zero,
+                Quaternion.identity, out GameObject building), Is.True);
+            created.Add(building);
+            Assert.That(wallet.Coins, Is.EqualTo(88));
+        }
+
+        [Test]
         public void MissingShooterSetupIsReportedInsteadOfUsingTransformOrInstantDamage()
         {
             Shooter shooter = NewObject("Unconfigured shooter").AddComponent<Shooter>();
@@ -182,6 +218,7 @@ namespace TowerDefense.Tests
         private PlayerWallet Wallet()
         {
             var wallet = NewObject("Wallet").AddComponent<PlayerWallet>();
+            wallet.ConfigureStartingCoins(100);
             typeof(PlayerWallet).GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(wallet, null);
             return wallet;
         }

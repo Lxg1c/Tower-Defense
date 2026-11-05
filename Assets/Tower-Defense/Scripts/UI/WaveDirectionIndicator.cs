@@ -124,6 +124,17 @@ public class WaveDirectionIndicator : MonoBehaviour
             : ClampToScreenEdge(rawScreenPoint, screenCenter, edgeX, edgeY);
         // Visible spawn cards avoid touch controls; edge badges stay at the screen edge.
         Rect safe = Screen.safeArea;
+        if (!spawnPointVisible)
+        {
+            var layout = GetComponentInParent<ResponsiveGameplayHud>();
+            if (layout != null && layout.IsDesktopLayout)
+            {
+                Vector2 actions = layout.DesktopActionAreaPixels;
+                if (markerScreenPoint.y < safe.yMin + actions.y + edgeY)
+                    markerScreenPoint.x = Mathf.Min(markerScreenPoint.x,
+                        safe.xMax - actions.x - edgeX);
+            }
+        }
         markerScreenPoint.x = Mathf.Clamp(markerScreenPoint.x,
             safe.xMin + edgeX, safe.xMax - edgeX);
         float bottom = safe.yMin + edgeY;

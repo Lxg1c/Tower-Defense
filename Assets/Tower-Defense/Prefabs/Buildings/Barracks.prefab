@@ -177,6 +177,7 @@ MonoBehaviour:
   formationSpacing: 1.2
   respawnDelay: 3
   spawnInterval: 0.15
+  orderMarkerPrefab: {fileID: 7682425960517319793, guid: 6bf1007adb7281e4db45f9ff42cc0a9e, type: 3}
 --- !u!114 &644430562202995675
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -248,7 +249,7 @@ Transform:
   m_GameObject: {fileID: 5821875736584100574}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.96, y: 0, z: 0.168}
+  m_LocalPosition: {x: -0.115, y: 0, z: 1.549}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

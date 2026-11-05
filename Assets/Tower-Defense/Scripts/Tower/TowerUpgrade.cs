@@ -6,13 +6,13 @@ public class TowerUpgradeLevel
 {
     [Min(0)] public int upgradeCost = 100;
 
-    [Tooltip("Multiplier applied to the BASE damage of Shooter / PulseTower.")]
+    [Tooltip("Multiplier applied to the BASE damage of Shooter / PulseTower / MortarTower.")]
     [Min(0f)] public float damageMul = 1f;
 
     [Tooltip("Multiplier applied to the BASE attack range / detection radius.")]
     [Min(0f)] public float rangeMul = 1f;
 
-    [Tooltip("Multiplier applied to the BASE fire rate. For PulseTower this divides the attack interval.")]
+    [Tooltip("Multiplier applied to the BASE fire rate. For PulseTower and MortarTower this divides the attack interval.")]
     [Min(0f)] public float fireRateMul = 1f;
 
     [Tooltip("Multiplier applied to the BASE max health.")]
@@ -59,12 +59,15 @@ public class TowerUpgrade : MonoBehaviour
     private float basePulseDamage;
     private float basePulseRange;
     private float basePulseAttackInterval;
+    private float baseMortarDamage;
+    private float baseMortarAttackInterval;
     private float baseMaxHealth;
     private int baseMineIncome;
 
     private Shooter shooter;
     private DetectionZone detection;
     private PulseTower pulse;
+    private MortarTower mortar;
     private Damageable hp;
     private MineIncome mineIncome;
 
@@ -73,6 +76,7 @@ public class TowerUpgrade : MonoBehaviour
         shooter = GetComponent<Shooter>();
         detection = GetComponentInChildren<DetectionZone>();
         pulse = GetComponent<PulseTower>();
+        mortar = GetComponent<MortarTower>();
         hp = GetComponent<Damageable>();
         mineIncome = GetComponent<MineIncome>();
 
@@ -90,6 +94,12 @@ public class TowerUpgrade : MonoBehaviour
             basePulseDamage = pulse.Damage;
             basePulseRange = pulse.Range;
             basePulseAttackInterval = pulse.AttackInterval;
+        }
+
+        if (mortar != null)
+        {
+            baseMortarDamage = mortar.Damage;
+            baseMortarAttackInterval = mortar.AttackInterval;
         }
 
         if (hp != null)
@@ -134,6 +144,9 @@ public class TowerUpgrade : MonoBehaviour
             pulseDamage: pulse != null ? pulse.Damage : (float?)null,
             pulseRange: pulse != null ? pulse.Range : (float?)null,
             pulseInterval: pulse != null ? pulse.AttackInterval : (float?)null,
+            mortarDamage: mortar != null ? mortar.Damage : (float?)null,
+            mortarInterval: mortar != null ? mortar.AttackInterval : (float?)null,
+            mortarRange: detection != null && mortar != null ? detection.Radius : (float?)null,
             maxHealth: hp != null ? hp.MaxHealth : (float?)null,
             income: mineIncome != null ? mineIncome.CoinsPerWave : (int?)null);
     }
@@ -158,6 +171,9 @@ public class TowerUpgrade : MonoBehaviour
             pulseDamage: pulse != null ? basePulseDamage * dMul : (float?)null,
             pulseRange: pulse != null ? basePulseRange * rMul : (float?)null,
             pulseInterval: pulse != null ? basePulseAttackInterval / Mathf.Max(0.0001f, fMul) : (float?)null,
+            mortarDamage: mortar != null ? baseMortarDamage * dMul : (float?)null,
+            mortarInterval: mortar != null ? baseMortarAttackInterval / Mathf.Max(0.0001f, fMul) : (float?)null,
+            mortarRange: detection != null && mortar != null ? baseDetectionRadius * rMul : (float?)null,
             maxHealth: hp != null ? baseMaxHealth * hMul : (float?)null,
             income: mineIncome != null ? Mathf.RoundToInt(baseMineIncome * iMul) : (int?)null);
     }
@@ -184,6 +200,12 @@ public class TowerUpgrade : MonoBehaviour
             pulse.Damage = stats.PulseDamage.Value;
             pulse.Range = stats.PulseRange.Value;
             pulse.AttackInterval = stats.PulseInterval.Value;
+        }
+
+        if (mortar != null)
+        {
+            mortar.Damage = stats.MortarDamage.Value;
+            mortar.AttackInterval = stats.MortarInterval.Value;
         }
 
         if (hp != null)

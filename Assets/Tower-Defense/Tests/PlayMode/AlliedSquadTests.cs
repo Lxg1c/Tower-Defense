@@ -19,6 +19,7 @@ namespace TowerDefense.Tests
         [UnitySetUp]
         public IEnumerator SetUp()
         {
+            AllyCommand.SetFollowPlayer(false);
             var sources = new List<NavMeshBuildSource>
             {
                 new()
@@ -40,6 +41,7 @@ namespace TowerDefense.Tests
         [UnityTearDown]
         public IEnumerator TearDown()
         {
+            AllyCommand.SetFollowPlayer(false);
             foreach (AllySoldier ally in Object.FindObjectsByType<AllySoldier>(
                          FindObjectsInactive.Include, FindObjectsSortMode.None))
                 if (ally != null && ally.name.StartsWith(Prefix))
@@ -63,6 +65,93 @@ namespace TowerDefense.Tests
         [UnityTest]
         public IEnumerator RangedBarracksSpawnsAndRespawnsOnlyRanged() =>
             VerifySingleTypeSquad(AllySoldier.CombatType.Ranged);
+
+        [UnityTest]
+        public IEnumerator BarracksKeepIndependentGuardOrdersThroughRecallAndRespawn()
+        {
+            Projectile bullet = CreateBullet();
+            AllySoldier template = CreateSoldierTemplate(AllySoldier.CombatType.Melee, -30f, bullet);
+            BarracksBuilding left = CreateBarracks("Left", new Vector3(-6f, 0f, 0f), template);
+            BarracksBuilding right = CreateBarracks("Right", new Vector3(6f, 0f, 0f), template);
+            yield return null;
+
+            Assert.That(left.TryAssignGuardPosition(new Vector3(-12f, 0f, 8f)), Is.True);
+            Assert.That(right.TryAssignGuardPosition(new Vector3(12f, 0f, -8f)), Is.True);
+            Assert.That(left.GuardPosition, Is.Not.EqualTo(right.GuardPosition));
+
+            AllySoldier[] squad = SpawnedSoldiers();
+            Assert.That(squad, Has.Length.EqualTo(2));
+            Assert.That(squad.All(s => s.CurrentMode == AllySoldier.Mode.GuardPosition), Is.True);
+            Assert.That(squad.Single(s => s.Barracks == left).GuardPoint.x, Is.LessThan(0f));
+            Assert.That(squad.Single(s => s.Barracks == right).GuardPoint.x, Is.GreaterThan(0f));
+
+            AllyCommand.SetFollowPlayer(true);
+            Assert.That(squad.All(s => s.CurrentMode == AllySoldier.Mode.FollowPlayer), Is.True);
+            AllyCommand.SetFollowPlayer(false);
+            Assert.That(squad.All(s => s.CurrentMode == AllySoldier.Mode.GuardPosition), Is.True);
+
+            squad.Single(s => s.Barracks == left).TakeDamage(1000f);
+            yield return new WaitForSeconds(0.25f);
+            Assert.That(SpawnedSoldiers().Single(s => s.Barracks == left).CurrentMode,
+                Is.EqualTo(AllySoldier.Mode.GuardPosition));
+            Assert.That(right.HasGuardPosition, Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator UnreachableGuardPointDoesNotReplacePreviousOrder()
+        {
+            Projectile bullet = CreateBullet();
+            AllySoldier template = CreateSoldierTemplate(AllySoldier.CombatType.Melee, -30f, bullet);
+            BarracksBuilding barracks = CreateBarracks("Guard", Vector3.zero, template);
+            yield return null;
+
+            Assert.That(barracks.TryAssignGuardPosition(new Vector3(5f, 0f, 5f)), Is.True);
+            Vector3 original = barracks.GuardPosition;
+            Assert.That(barracks.TryAssignGuardPosition(new Vector3(500f, 0f, 500f)), Is.False);
+            Assert.That(barracks.GuardPosition, Is.EqualTo(original));
+            Assert.That(SpawnedSoldiers().Single().CurrentMode,
+                Is.EqualTo(AllySoldier.Mode.GuardPosition));
+        }
+
+        [UnityTest]
+        public IEnumerator BarracksCanReassignGuardPointInBuildAndCombatPhases()
+        {
+            Projectile bullet = CreateBullet();
+            AllySoldier template = CreateSoldierTemplate(AllySoldier.CombatType.Melee, -30f, bullet);
+            BarracksBuilding barracks = CreateBarracks("Reposition", Vector3.zero, template);
+            yield return null;
+
+            Assert.That(barracks.TryAssignGuardPosition(new Vector3(-8f, 0f, 6f)), Is.True);
+            AllySoldier soldier = SpawnedSoldiers().Single();
+            Assert.That(soldier.CurrentMode, Is.EqualTo(AllySoldier.Mode.GuardPosition));
+            Assert.That(soldier.GuardPoint.x, Is.LessThan(0f));
+
+            typeof(BarracksBuilding).GetMethod("OnCombatPhaseStarted",
+                    BindingFlags.Instance | BindingFlags.NonPublic)!
+                .Invoke(barracks, new object[] { 1, 4, 0 });
+            Assert.That(barracks.TryAssignGuardPosition(new Vector3(8f, 0f, 6f)), Is.True);
+            Assert.That(soldier.CurrentMode, Is.EqualTo(AllySoldier.Mode.GuardPosition));
+            Assert.That(soldier.GuardPoint.x, Is.GreaterThan(0f));
+
+            typeof(BarracksBuilding).GetMethod("OnBuildPhaseStarted",
+                    BindingFlags.Instance | BindingFlags.NonPublic)!
+                .Invoke(barracks, new object[] { 2, 4, 0 });
+            Assert.That(barracks.TryAssignGuardPosition(new Vector3(-6f, 0f, -6f)), Is.True);
+            Assert.That(soldier.GuardPoint.x, Is.LessThan(0f));
+        }
+
+        private BarracksBuilding CreateBarracks(string name, Vector3 position, AllySoldier template)
+        {
+            GameObject building = New(name, false);
+            building.transform.position = position;
+            BarracksBuilding barracks = building.AddComponent<BarracksBuilding>();
+            Set(barracks, "allyPrefab", template);
+            Set(barracks, "squadSize", 1);
+            Set(barracks, "spawnInterval", 0f);
+            Set(barracks, "respawnDelay", 0.1f);
+            building.SetActive(true);
+            return barracks;
+        }
 
         private IEnumerator VerifySingleTypeSquad(AllySoldier.CombatType type)
         {

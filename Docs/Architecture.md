@@ -82,8 +82,8 @@ their footprint or marker selects the pair. A line shows their relationship,
 and the LevelGrid Inspector can move either the building with its marker or
 just the marker, or delete the pair. Placement checks ignore the selected
 zone's old cells during a move, while all other occupied cells still block it.
-Unity Undo handles creation, movement, deletion and type changes; this metadata
-has no runtime logic.
+Unity Undo handles creation, movement, deletion and type changes; at runtime
+the wall uses only the saved footprint to determine its length and price.
 Each grid is independent; the Scene view painter checks zones across the scene
 for occupied cells. A temporary purple model follows the pointer. Each
 grid-created zone stores an automatically chosen representative preview prefab
@@ -92,6 +92,17 @@ cyan editor-only ghosts for its placed zones and red/orange occupancy marks for
 all building footprints and interaction cells. Preview objects have no active
 behaviors or colliders and are destroyed when the grid is deselected. Existing
 zones without a saved model use the first matching option in their loadout.
+The grid's Wall tool takes a first and last cell to reserve a one-cell-wide
+horizontal or vertical span. Only interaction cells along the long sides are
+offered, so `LevelGrid.GetBuildingRotation` keeps the wall model aligned with
+its occupied cells. `LevelGridPlacedZone.BuildingCells` retains each wall's
+individual length; the selected zone can be resized without changing the grid's
+other buildings. `WallSpan` repeats the model once per reserved cell at the
+cell pitch, reveals sections from left to right, and sizes one shared collider and carved NavMesh
+obstacle to the full span. `BuildingSlot` multiplies the Wall option's
+cost by its reserved cell count, and `TowerSelectionModal` shows that same amount
+before purchase. Wall locations remain authored through the
+grid rather than being created automatically on every available cell.
 `LevelGridTileSurface` is an optional visual floor for the same grid: it builds
 one mesh with a separate 0–1 UV island per cell and can use one shared collider.
 The existing Level 1 terrain stays in place unless the surface is explicitly
@@ -108,6 +119,11 @@ opening cannot submit a transaction after the panel is closed or repopulated.
 objects. `BuildingLevelRow` displays the one-based level, health, and damage (or
 mine income); a missing attack capability is shown as a dash. The current level
 is highlighted and the next level is brighter. The level list scrolls if needed.
+`MortarTower` uses `DetectionZone` to choose a target position, while
+`MortarShell` owns the arc and one-hit-per-enemy splash at that position.
+`WallCollision` keeps the wall's collider and carved NavMesh obstacle active only
+while its `TowerHealth` is alive. `BuildingSlot` sorts available choices by cost,
+preserving loadout order for equal prices.
 `BuildingSlot.CanInteract` hides built-building points unless a next upgrade is
 unlocked; Town Hall points need only a remaining level. Town Hall changes refresh
 zone visibility immediately. Insufficient funds disable purchasing in the panel.
@@ -118,14 +134,23 @@ block input, stay full while the modal is open, and clear on exit, purchase, pha
 
 ## Allied squads
 
-`TowerLoadout` offers melee and ranged barracks cards when the town hall reaches
-level 2. The ranged card builds `BarracksRanged`, a variant of the melee Barracks
+`TowerLoadout` offers the melee barracks card at town hall level 2 and the ranged
+card at level 3. The ranged card builds `BarracksRanged`, a variant of the melee Barracks
 prefab with `squadType` set to Ranged. Each barracks trains its entire `squadSize`
 from its selected ally prefab; the squad type stays fixed after construction.
 When an ally dies, its slot respawns with the same selected type. Both types
 obey the existing formation, attack and follow commands. A ranged `AllySoldier`
 requires an assigned `Projectile` prefab and fire point; its shot deals damage
 only on projectile impact. The `Ally Ranged` prefab is a variant of `Ally Soldier`.
+`SquadOrderController` handles touch/mouse orders directly in both gameplay
+scenes: select a barracks or one of its soldiers, then tap the assigned terrain
+collider during preparation or combat. Each
+`BarracksBuilding` validates the NavMesh destination and owns one independent
+guard point for its squad. Soldiers hold their assigned formation and acquire
+enemies near that point during combat; replacements inherit the order. The
+Rally button temporarily switches all squads to following the hero and restores
+their own guard/default modes when switched off. A lightweight world ring shows
+the selected barracks and each assigned guard point.
 
 ## Timed slowing bonus
 
@@ -178,6 +203,17 @@ The player placed directly in `Level` creates this visual from
 `HealthBarManager` listens to shield changes only for the player and updates the
 blue shield row in `HealthBarPlayer.prefab` above the existing HP fill.
 
+`ResponsiveGameplayHud` on the gameplay canvases keeps their authored touch
+layout for Android/iOS builds and applies a compact action layout for desktop
+builds. Editor `Automatic` previews the active build target; the Inspector
+override can switch layouts during Play Mode and restores the authored mobile
+positions when switching back. `PlayerMovement` accepts WASD/arrow input as well
+as the joystick. `PlayerUltimate` owns the input mode: by default, one press
+charges to the configured fraction and fires automatically; `Manual Charge`
+restores press-and-release control. `UltimateButton` routes touch and desktop
+Space input to that same rule. `WaveDirectionIndicator` keeps
+offscreen badges clear of the compact desktop action area.
+
 ## Upgrade data and display
 
 `TowerUpgrade.GetCurrentStats` reads current component values. `GetNextStats`
@@ -224,7 +260,9 @@ vertical reach is configured separately. See `Docs/Balance.md` for tuning target
 ### Authored levels
 
 LevelDefinition is a ScriptableObject containing presentation metadata, starting
-coins and waves. Its dedicated wave/group/entry types expose only the supported
+coins and waves. It is the only authored source of the initial wallet balance;
+PlayerWallet requires LevelSetup to pass that balance before its Awake. The
+dedicated wave/group/entry types expose only the supported
 authoring fields, without the spawner's legacy prefab or icon alternatives.
 Validation rejects missing enemies, invalid counts/timings/rewards and invalid
 spawn-point indices. CreateWaves copies data into fresh runtime arrays.
@@ -241,6 +279,17 @@ level card. Short or vertical gestures snap back without changing the selection;
 page bounds are clamped, and settling uses unscaled time.
 
 Main Menu and Play Mode subsystem initialization clear the static selection.
+
+`GameplayLab.unity` is a separate Editor playtest scene copied from the shared
+Level 1 setup. It retains the player, HUD, 21 authored build zones and four
+spawn references, while its environment is one neutral plane with a separate
+baked NavMesh. `GameplayLab.asset` supplies four authored waves through the
+same `LevelSetup` and `WaveSpawner` path as the campaign. Its distinct
+progression ID and zero victory money keep lab outcomes separate from campaign
+levels. The Main Menu's Home screen has a separate TEST LEVEL action wired to
+`MainMenu.StartGameplayLab`, which selects the lab definition and loads the lab
+scene. GameplayLab is the third enabled build scene so game UI navigation and
+Restart work in Player builds; it is not included in campaign level selection.
 
 The seeded-wave prototype and inline scene waves have been removed. WaveSpawner
 holds only a runtime copy of the selected level's waves. Missing level setup

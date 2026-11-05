@@ -1,9 +1,10 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
-/// Hold-to-charge UI button for the ultimate. Wires PointerDown → BeginCharge,
+/// Starts the ultimate on press; release matters only in manual charge mode.
 /// </summary>
 [RequireComponent(typeof(RectTransform))]
 public class UltimateButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler
@@ -13,7 +14,7 @@ public class UltimateButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
     [Header("Optional radial fill (0..1)")]
     [Tooltip("Single Image used both for charge and cooldown. " +
-             "Charging → fills 0→1. Cooldown → drains 1→0. Empty otherwise.")]
+             "Charging fills to the chosen charge level; cooldown drains from that level to zero.")]
     [SerializeField] private Image fill;
     [SerializeField] private bool configureAsRadial360 = true;
     [SerializeField] private Image.Origin360 radialOrigin = Image.Origin360.Top;
@@ -21,6 +22,7 @@ public class UltimateButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     [SerializeField] private Button button;
  
     private bool _isPressed;
+    private bool keyboardPressed;
 
     private void Awake()
     {
@@ -37,10 +39,10 @@ public class UltimateButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (ultimate == null || !ultimate.CanReceiveInput)
+        if (ultimate == null || !ultimate.CanReceiveInput || ultimate.IsCharging || keyboardPressed)
             return;
 
-        _isPressed = true;
+        _isPressed = !ultimate.IsAutomaticCharge;
         ultimate.BeginCharge();
     }
 
@@ -62,6 +64,22 @@ public class UltimateButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     {
         if (ultimate == null) return;
 
+        if (!Application.isMobilePlatform && Keyboard.current != null)
+        {
+            var space = Keyboard.current.spaceKey;
+            if (space.wasPressedThisFrame && !keyboardPressed && !_isPressed &&
+                !ultimate.IsCharging && ultimate.CanReceiveInput)
+            {
+                keyboardPressed = !ultimate.IsAutomaticCharge;
+                ultimate.BeginCharge();
+            }
+            else if (space.wasReleasedThisFrame && keyboardPressed)
+            {
+                keyboardPressed = false;
+                ultimate.Release();
+            }
+        }
+
         if (fill != null)
         {
             if (ultimate.IsCharging)        fill.fillAmount = ultimate.ChargeProgress;
@@ -70,10 +88,20 @@ public class UltimateButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
         }
 
         if (button != null)
-            button.interactable = ultimate.CanReceiveInput || ultimate.IsCharging;
+            button.interactable = ultimate.IsAutomaticCharge
+                ? ultimate.CanReceiveInput && !ultimate.IsCharging
+                : ultimate.CanReceiveInput || ultimate.IsCharging;
         
         if (!ultimate.CanReceiveInput && !ultimate.IsCharging)
             _isPressed = false;
+    }
+
+    private void OnDisable()
+    {
+        if (!_isPressed && !keyboardPressed) return;
+        _isPressed = false;
+        keyboardPressed = false;
+        if (ultimate != null) ultimate.Release();
     }
 
     private void ConfigureFillImage()

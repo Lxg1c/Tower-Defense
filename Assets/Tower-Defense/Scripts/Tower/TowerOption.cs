@@ -5,7 +5,8 @@ public enum BuildSlotType
     TownHall,
     Defense,
     Mine,
-    Barracks
+    Barracks,
+    Wall
 }
 
 /// <summary>
