@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -111,6 +112,12 @@ public class BarracksBuilding : MonoBehaviour
 
     public bool TryAssignGuardPosition(Vector3 requestedPosition)
     {
+        return TryAssignGuardPosition(requestedPosition, out _);
+    }
+
+    public bool TryAssignGuardPosition(Vector3 requestedPosition, out Vector3[] pathCorners)
+    {
+        pathCorners = Array.Empty<Vector3>();
         if (!NavMesh.SamplePosition(requestedPosition, out NavMeshHit hit, 1.5f, NavMesh.AllAreas))
             return false;
 
@@ -130,6 +137,7 @@ public class BarracksBuilding : MonoBehaviour
 
         guardPosition = hit.position;
         hasGuardPosition = true;
+        pathCorners = path.corners;
         AllyCommand.SetFollowPlayer(false);
         ShowOrderMarker();
         ApplyModeToSquad();

@@ -189,17 +189,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8891642737687387763}
     m_Modifications:
+    - target: {fileID: 4685104434142100489, guid: 84893b7f7691ad442b19ca4cb15ebfeb, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 3dc21662ad1e1234db5f8920b6417754, type: 2}
     - target: {fileID: 5859175918198212454, guid: 84893b7f7691ad442b19ca4cb15ebfeb, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1.5
+      value: 1.2
       objectReference: {fileID: 0}
     - target: {fileID: 5859175918198212454, guid: 84893b7f7691ad442b19ca4cb15ebfeb, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.5
+      value: 1.2
       objectReference: {fileID: 0}
     - target: {fileID: 5859175918198212454, guid: 84893b7f7691ad442b19ca4cb15ebfeb, type: 3}
       propertyPath: m_LocalScale.z
-      value: 1.5
+      value: 1.2
       objectReference: {fileID: 0}
     - target: {fileID: 5859175918198212454, guid: 84893b7f7691ad442b19ca4cb15ebfeb, type: 3}
       propertyPath: m_LocalPosition.x
@@ -249,6 +253,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7412963336795801795, guid: 84893b7f7691ad442b19ca4cb15ebfeb, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: -5495902117074765545, guid: cb7715aee6326064d9478da71ebe81d7, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -286,7 +294,7 @@ MonoBehaviour:
   scaleSteps:
   - {x: 0.5, y: 0.5, z: 0.5}
   - {x: 0.75, y: 0.75, z: 0.75}
-  - {x: 1.5, y: 1.5, z: 1.5}
+  - {x: 1.2, y: 1.2, z: 1.2}
   shadowTransform: {fileID: 6269990697330934372}
   shadowScaleSteps:
   - {x: 2.5, y: 2.5, z: 2.5}

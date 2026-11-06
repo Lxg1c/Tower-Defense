@@ -9,6 +9,28 @@ and the remaining visual priorities.
 See [Docs/Balance.md](Docs/Balance.md) for the economy review, measured wave
 results and the next gameplay balance experiments.
 
+## Where things live
+
+All game-owned assets are under `Assets/Tower-Defense`. The other folders
+directly under `Assets` hold imported packages and vendor art; `Packages`
+contains Unity packages. The main project folders follow responsibility:
+
+| Folder | Responsibility |
+| --- | --- |
+| `Scripts` | Runtime behavior, split by gameplay system |
+| `Data` and `Levels` | Enemy definitions, loadouts and authored wave settings |
+| `Prefabs` | Reusable gameplay objects, UI, effects and level-design helpers |
+| `Scenes` | Main menu, shared campaign scene and gameplay test scene |
+| `Art/Buildings` | Current models and older models still referenced by prefabs or animations |
+| `Art/Characters` | Player, ally and enemy visual sources |
+| `Art/Environment` | Level 1 scenery, tiles, trees, rocks and spawn portal |
+| `Art/Materials`, `Art/Shaders`, `Art/Animations`, `Art/UI` | Rendering, animation and UI artwork |
+| `Audio`, `Resources`, `Settings` | Game audio, runtime-loaded assets and render/build settings |
+| `Editor`, `Tests` | Authoring tools and Unity Test Framework suites |
+
+See [Docs/Architecture.md](Docs/Architecture.md) for code ownership and
+asset references. Unity GUIDs were retained during the asset reorganization.
+
 ## Open and play
 
 1. Install **Unity 6000.0.72f1** through Unity Hub. This is the version recorded in
@@ -53,12 +75,14 @@ immediately. This is not a player setting. Stand in a building zone until its
 progress circle fills to choose a building or upgrade. Use Start Wave to begin
 combat after the town hall exists. The melee barracks opens at town hall level 2
 and the ranged barracks at level 3; the chosen type stays with that barracks.
-To order a squad, tap the
-lower body of its completed barracks (or one of its soldiers), not the build tile.
-Then tap a reachable point on the floor. You can move the point during preparation
-or combat. A cyan ring appears at the barracks entrance when selected, then at
-the assigned position. Tap the selected barracks again to clear its station
-order. Repeat for other squads.
+To order a squad, tap the flag icon above its completed barracks. The HUD hides,
+the camera pulls back from the hero at its usual angle, and only **Cancel**
+stays on screen. Tap a
+reachable floor position to send that barracks' soldiers there. A cyan line
+briefly shows their NavMesh route, and the HUD and player camera return.
+Tap **Cancel** to leave without changing the order, or tap the same flag again
+in map view to clear that barracks' station order. You can issue orders during
+preparation or combat; each barracks keeps its own position.
 **Rally** temporarily recalls all squads to the hero; turning it off restores
 each squad's station order (or its default barracks behavior). Station orders
 remain in force between waves and after soldiers respawn.
@@ -164,7 +188,7 @@ rebake that NavMeshSurface and check that all four spawn points remain on it.
 The five buildable prefabs were reduced to fit this map; keep their model scale
 and placement zones in sync when changing the environment.
 
-To lay out more building spots, drag `Prefabs/level/LevelGrid.prefab` into the
+To lay out more building spots, drag `Prefabs/LevelDesign/LevelGrid.prefab` into the
 scene and select it. The Scene view shows a 20 × 20 grid with 3-unit cells;
 adjust its dimensions, cell size and position in the Inspector to match the
 buildable floor. Optionally assign the scene's `TowerBuildZones` as Zones Parent
@@ -202,7 +226,7 @@ it does not choose the tower for the player. The grid is an Editor authoring aid
 runtime building system; existing spots are left where they were.
 
 For an optional tiled floor, use the grid's `LevelGridTileSurface`. Enable
-**Show Tiles** to display `Materials/LevelGridTile.mat`, made from the imported
+**Show Tiles** to display `Art/Materials/LevelGridTile.mat`, made from the imported
 tile base and normal maps. The supplied mask map has constant channels, so its
 metallic, occlusion and smoothness values are stored as material constants
 instead of an extra mobile texture sample. The material is assigned to the LevelGrid
@@ -302,7 +326,7 @@ rather than editing generated code.
 - Entities with health bars require `HealthBarBinding`, with their own `Damageable`
   assigned. Prefab overrides, anchors and visibility on death belong on this binding.
   `HealthBarManager` requires the scene camera and supplies the default bar prefab.
-- `Prefabs/TowerLoadout.asset` lists buildings, costs and the town hall level
+- `Data/Loadouts/TowerLoadout.asset` lists buildings, costs and the town hall level
   required to show each build option. Town hall is available first; Cannon Tower
   and Mine unlock at level 1; Pulse Tower, a melee Barracks and Wall unlock at
   level 2; Mortar and a ranged Barracks unlock at level 3. Level 1 exposes two
@@ -312,7 +336,7 @@ rather than editing generated code.
   the Inspector to place it in a later tier.
 - Enemy option assets point at enemy prefabs. Each enemy prefab explicitly
   assigns its targeting, combat and navigation modules on `MobCore`.
-- `Prefabs/EnemyLoadout.asset` contains one entry per enemy with slow-ammo,
+- `Data/Loadouts/EnemyLoadout.asset` contains one entry per enemy with slow-ammo,
   shield and companion pickup chances and durations. One roll selects at most one
   pickup per enemy; the chances in an entry must total no more than 100%.
   Set a chance to 0% to disable that drop;

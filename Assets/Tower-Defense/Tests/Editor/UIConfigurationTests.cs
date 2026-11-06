@@ -9,6 +9,53 @@ namespace TowerDefense.Tests
     public class UIConfigurationTests
     {
         [Test]
+        public void BarracksOrdersHaveAnIconAndBothGameplayScenesHaveACompleteMapMode()
+        {
+            foreach (string prefabPath in new[]
+                     {
+                         "Assets/Tower-Defense/Prefabs/Buildings/Barracks.prefab",
+                         "Assets/Tower-Defense/Prefabs/Buildings/BarracksRanged.prefab"
+                     })
+            {
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+                Assert.That(prefab, Is.Not.Null, prefabPath);
+                var icon = prefab.GetComponentInChildren<BarracksOrderIcon>(true);
+                Assert.That(icon, Is.Not.Null, prefabPath);
+                Assert.That(icon.GetComponent<BoxCollider>().enabled, Is.True, prefabPath);
+                Assert.That(icon.GetComponent<SpriteRenderer>().sprite, Is.Not.Null, prefabPath);
+            }
+
+            foreach (string scenePath in new[]
+                     {
+                         "Assets/Tower-Defense/Scenes/Level 1.unity",
+                         "Assets/Tower-Defense/Scenes/GameplayLab.unity"
+                     })
+            {
+                var scene = EditorSceneManager.OpenPreviewScene(scenePath);
+                try
+                {
+                    var controller = scene.GetRootGameObjects()
+                        .SelectMany(r => r.GetComponentsInChildren<SquadOrderController>(true)).Single();
+                    var data = new SerializedObject(controller);
+                    foreach (string field in new[]
+                             {
+                                 "gameplayCamera", "cameraBrain", "playerTarget", "orderSurface", "mapGrid",
+                                 "orderCanvas", "cancelButton", "routeLine"
+                             })
+                        Assert.That(data.FindProperty(field).objectReferenceValue, Is.Not.Null,
+                            scenePath + ": " + field);
+                    var canvas = (Canvas)data.FindProperty("orderCanvas").objectReferenceValue;
+                    var route = (LineRenderer)data.FindProperty("routeLine").objectReferenceValue;
+                    Assert.That(canvas.enabled, Is.False, scenePath);
+                    Assert.That(route.enabled, Is.False, scenePath);
+                    Assert.That(canvas.GetComponentInChildren<UnityEngine.UI.Button>(true),
+                        Is.SameAs(data.FindProperty("cancelButton").objectReferenceValue), scenePath);
+                }
+                finally { EditorSceneManager.ClosePreviewScene(scene); }
+            }
+        }
+
+        [Test]
         public void GameplayPlayerUsesTheVisibleJoystick()
         {
             var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");

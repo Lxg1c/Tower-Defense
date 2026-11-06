@@ -12,7 +12,7 @@ namespace TowerDefense.Tests
         public void BuildingOptionsUnlockAtConfiguredTownHallLevels()
         {
             var loadout = AssetDatabase.LoadAssetAtPath<TowerLoadout>(
-                "Assets/Tower-Defense/Prefabs/TowerLoadout.asset");
+                "Assets/Tower-Defense/Data/Loadouts/TowerLoadout.asset");
             Assert.That(loadout, Is.Not.Null);
             Assert.That(loadout.options.Single(option => option.displayName == "Ratusha").requiredTownHallLevel, Is.Zero);
             Assert.That(loadout.options.Single(option => option.displayName == "Cannon Turret").requiredTownHallLevel, Is.EqualTo(1));
@@ -53,7 +53,7 @@ namespace TowerDefense.Tests
         public void BarracksChoicesSpawnDifferentSquadTypesAndUnlockInSequence()
         {
             var loadout = AssetDatabase.LoadAssetAtPath<TowerLoadout>(
-                "Assets/Tower-Defense/Prefabs/TowerLoadout.asset");
+                "Assets/Tower-Defense/Data/Loadouts/TowerLoadout.asset");
             var barracks = new BuildingSlot(loadout, BuildSlotType.Barracks, 2);
             Assert.That(barracks.GetOptions(1), Is.Empty);
             var choices = barracks.GetOptions(2).ToArray();
@@ -144,7 +144,7 @@ namespace TowerDefense.Tests
         public void EveryEnemyHasOneCentralDropSetting()
         {
             var loadout = AssetDatabase.LoadAssetAtPath<EnemyLoadout>(
-                "Assets/Tower-Defense/Prefabs/EnemyLoadout.asset");
+                "Assets/Tower-Defense/Data/Loadouts/EnemyLoadout.asset");
             Assert.That(loadout, Is.Not.Null);
             Assert.DoesNotThrow(loadout.Validate);
             Assert.That(loadout.enemies.Length, Is.EqualTo(4));
@@ -203,7 +203,7 @@ namespace TowerDefense.Tests
         public void DropChancesAboveOneHundredPercentAreRejected()
         {
             var source = AssetDatabase.LoadAssetAtPath<EnemyLoadout>(
-                "Assets/Tower-Defense/Prefabs/EnemyLoadout.asset");
+                "Assets/Tower-Defense/Data/Loadouts/EnemyLoadout.asset");
             var copy = Object.Instantiate(source);
             try
             {
@@ -248,7 +248,7 @@ namespace TowerDefense.Tests
         public void MineUpgradesRepayTheirCostAfterOneSurvivingWave()
         {
             var loadout = AssetDatabase.LoadAssetAtPath<TowerLoadout>(
-                "Assets/Tower-Defense/Prefabs/TowerLoadout.asset");
+                "Assets/Tower-Defense/Data/Loadouts/TowerLoadout.asset");
             var mine = loadout.options.Single(o => o.slotType == BuildSlotType.Mine).prefab;
             int baseIncome = mine.GetComponent<MineIncome>().CoinsPerWave;
             int previousIncome = baseIncome;

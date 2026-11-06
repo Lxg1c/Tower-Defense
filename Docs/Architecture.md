@@ -3,6 +3,18 @@
 This describes the incremental refactors for building transactions, session state
 and health presentation. Enemy AI and entity death/respawn remain component-based.
 
+## Asset ownership
+
+`Assets/Tower-Defense` owns game code and content. Runtime components live in
+`Scripts` by system; `Data/Enemies`, `Data/Loadouts` and `Levels` hold
+authored configuration; `Prefabs` holds reusable scene objects. `Art` owns
+visual source files: current and still-referenced legacy building models,
+character models, environment assets, materials, shaders, animations and UI
+images. `Settings` contains this game's render and build profiles. Imported
+vendor packages stay in their original folders under `Assets` or `Packages`.
+`Resources/PlayerShieldSphere.prefab` stays in `Resources` because
+`PlayerShieldVisual` loads it by name at runtime.
+
 ## Start reading here
 
 1. `GameSession`, then `WaveSpawner.Start`, `StartNextWave` and `RunCombat`: the session rules and build/combat loop.
@@ -143,9 +155,13 @@ obey the existing formation, attack and follow commands. A ranged `AllySoldier`
 requires an assigned `Projectile` prefab and fire point; its shot deals damage
 only on projectile impact. The `Ally Ranged` prefab is a variant of `Ally Soldier`.
 `SquadOrderController` handles touch/mouse orders directly in both gameplay
-scenes: select a barracks or one of its soldiers, then tap the assigned terrain
-collider during preparation or combat. Each
-`BarracksBuilding` validates the NavMesh destination and owns one independent
+scenes: tap the flag icon above a built barracks, then tap the assigned terrain
+collider in the temporary map view during preparation or combat. The map view
+hides gameplay canvases, leaves a separate Cancel button, and pulls the camera
+back from the player without changing its angle. It restores the Cinemachine
+player camera after an order or cancellation. Each
+`BarracksBuilding` validates the NavMesh destination, returns the route corners
+for brief line feedback, and owns one independent
 guard point for its squad. Soldiers hold their assigned formation and acquire
 enemies near that point during combat; replacements inherit the order. The
 Rally button temporarily switches all squads to following the hero and restores

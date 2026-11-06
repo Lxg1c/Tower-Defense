@@ -27,9 +27,9 @@ namespace TowerDefense.Tests
             {
                 var spawner = holder.AddComponent<WaveSpawner>();
                 var spider = AssetDatabase.LoadAssetAtPath<EnemyOption>(
-                    "Assets/Tower-Defense/Prefabs/Mobs/Spider.asset");
+                    "Assets/Tower-Defense/Data/Enemies/Spider.asset");
                 var shooter = AssetDatabase.LoadAssetAtPath<EnemyOption>(
-                    "Assets/Tower-Defense/Prefabs/Mobs/Shooter.asset");
+                    "Assets/Tower-Defense/Data/Enemies/Shooter.asset");
                 Assert.That(spider, Is.Not.Null);
                 Assert.That(shooter, Is.Not.Null);
                 var wave = new WaveSpawner.Wave

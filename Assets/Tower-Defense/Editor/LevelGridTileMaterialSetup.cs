@@ -4,9 +4,9 @@ using UnityEngine;
 /// <summary>Connects the imported tile texture set to the optional level-grid floor.</summary>
 public static class LevelGridTileMaterialSetup
 {
-    private const string TextureFolder = "Assets/Tower-Defense/Prefabs/";
-    private const string MaterialPath = "Assets/Tower-Defense/Materials/LevelGridTile.mat";
-    private const string GridPrefabPath = "Assets/Tower-Defense/Prefabs/level/LevelGrid.prefab";
+    private const string TextureFolder = "Assets/Tower-Defense/Art/Environment/Tiles/";
+    private const string MaterialPath = "Assets/Tower-Defense/Art/Materials/LevelGridTile.mat";
+    private const string GridPrefabPath = "Assets/Tower-Defense/Prefabs/LevelDesign/LevelGrid.prefab";
 
     [InitializeOnLoadMethod]
     private static void ConfigureNewMaterial()
