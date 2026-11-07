@@ -5,7 +5,8 @@
 The sections below preserve earlier measurements and configurations as history.
 The current `Level1.asset` has five waves per difficulty and 8 starting coins.
 After the 5-coin town hall, the player can choose an early 2-coin mine or a
-3-coin cannon; neither opening has yet been validated in a complete playthrough.
+3-coin cannon. Automated moving-hero runs completed all five Normal waves
+with either opening, without permanent skills or enemy/base-health cheats.
 One spawn point is used by every Level 1 wave. The first location offers only
 the mine and cannon initially; three new defense points offer Pulse after town
 hall level 2. Later-location points remain available on Levels 2 and 3 because
@@ -19,24 +20,34 @@ all three levels share one scene.
 | 4 | 13 Spider, 3 Bat, 2 Shooter | 1,710 |
 | 5 | 15 Spider, 4 Bat, 3 Shooter, 1 Destroyer | 2,460 |
 
-The first-wave Spider counts are 5, 7 and 9 for Normal, Hard and Nightmare.
-This was reduced from 8, 10 and 13 after the first automated opening check.
-Hard and Nightmare have more enemies and apply 1.25x and 1.5625x health and
-damage per enemy. These are initial hypotheses, not measured win rates. Complete
-Normal, Hard and Nightmare playthroughs are needed to check the intended 1–2
-attempt Normal target and whether both openings are viable. The Editor startup
-and automated test passes establish configuration and basic behavior only.
-In one idle-hero smoke, the cannon opening cleared wave 1; the mine opening lost.
-Even placing the hero on the main route before starting did not establish a
-hands-free win with a mine. That is consistent with the intended need for active
-hero play, but the mine opening needs a moving-player playtest before claiming
-it is viable. A technical run completed all five Normal waves by removing
-spawned enemies; it checked phase transitions, not balance. The current Bat
-selector prioritizes surviving mines before the base; Destroyer
-rushes the base. Pulse damage and slow apply to ground enemies, with a PlayMode
-check for 40 simultaneous colliders. The existing NavMesh reports a complete
-path from the first spawn to the town hall point, so no bake was needed after
-these data and AI changes. Full moving-player runs remain necessary.
+| Wave | Hard composition | Nightmare composition |
+| --- | --- | --- |
+| 1 | 6 Spider | 7 Spider |
+| 2 | 9 Spider, 2 Bat | 9 Spider, 2 Bat |
+| 3 | 11 Spider, 3 Bat | 12 Spider, 3 Bat |
+| 4 | 13 Spider, 3 Bat, 2 Shooter | 14 Spider, 3 Bat, 2 Shooter |
+| 5 | 16 Spider, 4 Bat, 3 Shooter, 1 Destroyer | 17 Spider, 4 Bat, 3 Shooter, 1 Destroyer |
+
+All three difficulties use 1.05-second spawn intervals. Hard multiplies enemy
+health and damage by 1.25; Nightmare multiplies both by 1.30. The Nightmare
+increase is smaller than the original +25% per step hypothesis: the original
+1.5625 multiplier plus a 0.735-second spawn interval defeated an automated
+no-skill run in wave 2. These are provisional balance values, not human win rates.
+
+Automated five-wave runs with a moving, shooting R-07 and purchased buildings
+cleared Normal with both mine-first and cannon-first openings. Hard mine-first
+cleared all five waves with 391 base HP remaining; the victory panel showed a
+150-money reward. The same script reached Nightmare wave 5 and lost there;
+other purchase orders also lost. The script's simple targeting and ultimate
+timing do not prove that a skilled player cannot win. Human playtests must
+measure the intended Normal 1–2-attempt win rate and Nightmare viability.
+
+An earlier idle-hero smoke showed cannon surviving wave 1 and mine losing,
+which makes active hero play matter. Bat prioritizes surviving mines before
+the base; Destroyer rushes the base. Pulse damage and slow apply to ground
+enemies, with a PlayMode check for 40 simultaneous colliders. The unchanged
+Level 1 NavMesh has a complete five-corner path from spawn to town hall; no
+rebake was needed after these data-only edits.
 
 Baseline inspected and the first corrective pass implemented on 2026-09-20.
 The initial measurements below are retained for comparison. These changes are

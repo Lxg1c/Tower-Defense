@@ -78,6 +78,36 @@ namespace TowerDefense.Tests
         }
 
         [UnityTest]
+        public IEnumerator DestroyedWallOpensItsPhysicalAndNavigationBlockersUntilNextWave()
+        {
+            GameObject wall = NewObject("Wall", false);
+            var collider = wall.AddComponent<BoxCollider>();
+            var obstacle = wall.AddComponent<NavMeshObstacle>();
+            obstacle.carving = true;
+            var trigger = wall.AddComponent<SphereCollider>();
+            trigger.isTrigger = true;
+            var health = wall.AddComponent<TowerHealth>();
+            health.onRespawned = new UnityEngine.Events.UnityEvent();
+            wall.AddComponent<WallCollision>();
+            wall.SetActive(true);
+            yield return null;
+
+            health.TakeDamage(health.MaxHealth);
+            Assert.That(health.IsDestroyed, Is.True);
+            Assert.That(collider.enabled, Is.False, "A broken wall must be passable.");
+            Assert.That(obstacle.enabled, Is.False, "The carved NavMesh hole must close.");
+            Assert.That(trigger.enabled, Is.True, "Non-blocking triggers keep their own state.");
+
+            typeof(TowerHealth).GetMethod("OnWaveCompleted",
+                BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(health, new object[] { 0, 0 });
+            Assert.That(health.IsDestroyed, Is.False);
+            Assert.That(collider.enabled, Is.True);
+            Assert.That(obstacle.enabled, Is.True);
+            yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator PrewarmedBaseRaiderAcquiresBaseBuiltLater()
         {
             var selector = NewObject("Base raider").AddComponent<BaseOnlySelector>();

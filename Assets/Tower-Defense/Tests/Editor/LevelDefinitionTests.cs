@@ -189,7 +189,7 @@ namespace TowerDefense.Tests
                     .Any(e => e.enemy.displayName == "Destroyer"), Is.True);
                 Assert.That(Level(1).GetStartingCoins(difficulty), Is.EqualTo(8));
                 float expectedMultiplier = difficulty == 1 ? 1f :
-                    difficulty == 2 ? 1.25f : 1.5625f;
+                    difficulty == 2 ? 1.25f : 1.30f;
                 Assert.That(Level(1).GetEnemyHealthMultiplier(difficulty),
                     Is.EqualTo(expectedMultiplier).Within(0.0001f));
                 Assert.That(Level(1).GetEnemyDamageMultiplier(difficulty),
