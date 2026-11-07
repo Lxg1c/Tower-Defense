@@ -80,9 +80,30 @@ namespace TowerDefense.Tests
         [UnityTest]
         public IEnumerator DestroyedWallOpensItsPhysicalAndNavigationBlockersUntilNextWave()
         {
+            Vector3 origin = new(1000f, 0f, 1000f);
+            var sources = new List<NavMeshBuildSource>
+            {
+                new()
+                {
+                    shape = NavMeshBuildSourceShape.Box,
+                    size = new Vector3(4f, 1f, 20f),
+                    transform = Matrix4x4.TRS(Vector3.down * 0.5f,
+                        Quaternion.identity, Vector3.one),
+                    area = 0
+                }
+            };
+            NavMeshData data = NavMeshBuilder.BuildNavMeshData(
+                NavMesh.GetSettingsByID(0), sources,
+                new Bounds(Vector3.zero, new Vector3(8f, 6f, 24f)),
+                Vector3.zero, Quaternion.identity);
+            Assert.That(data, Is.Not.Null);
+            NavMeshDataInstance instance = NavMesh.AddNavMeshData(data, origin, Quaternion.identity);
             GameObject wall = NewObject("Wall", false);
+            wall.transform.position = origin;
             var collider = wall.AddComponent<BoxCollider>();
+            collider.size = new Vector3(5f, 2f, 1.5f);
             var obstacle = wall.AddComponent<NavMeshObstacle>();
+            obstacle.size = collider.size;
             obstacle.carving = true;
             var trigger = wall.AddComponent<SphereCollider>();
             trigger.isTrigger = true;
@@ -90,21 +111,44 @@ namespace TowerDefense.Tests
             health.onRespawned = new UnityEngine.Events.UnityEvent();
             wall.AddComponent<WallCollision>();
             wall.SetActive(true);
-            yield return null;
+            Vector3 start = origin + Vector3.back * 8f;
+            Vector3 end = origin + Vector3.forward * 8f;
+            var path = new NavMeshPath();
+            try
+            {
+                yield return new WaitForSeconds(0.8f);
+                Assert.That(NavMesh.SamplePosition(start, out _, 1f, NavMesh.AllAreas), Is.True);
+                Assert.That(NavMesh.SamplePosition(end, out _, 1f, NavMesh.AllAreas), Is.True);
+                NavMesh.CalculatePath(start, end, NavMesh.AllAreas, path);
+                Assert.That(path.status, Is.Not.EqualTo(NavMeshPathStatus.PathComplete),
+                    "An intact wall should divide the narrow corridor.");
 
-            health.TakeDamage(health.MaxHealth);
-            Assert.That(health.IsDestroyed, Is.True);
-            Assert.That(collider.enabled, Is.False, "A broken wall must be passable.");
-            Assert.That(obstacle.enabled, Is.False, "The carved NavMesh hole must close.");
-            Assert.That(trigger.enabled, Is.True, "Non-blocking triggers keep their own state.");
+                health.TakeDamage(health.MaxHealth);
+                Assert.That(health.IsDestroyed, Is.True);
+                Assert.That(collider.enabled, Is.False, "A broken wall must be passable.");
+                Assert.That(obstacle.enabled, Is.False, "The carved NavMesh hole must close.");
+                Assert.That(trigger.enabled, Is.True, "Non-blocking triggers keep their own state.");
+                yield return null;
+                NavMesh.CalculatePath(start, end, NavMesh.AllAreas, path);
+                Assert.That(path.status, Is.EqualTo(NavMeshPathStatus.PathComplete),
+                    "The route must reopen after the wall is destroyed.");
 
-            typeof(TowerHealth).GetMethod("OnWaveCompleted",
-                BindingFlags.Instance | BindingFlags.NonPublic)
-                .Invoke(health, new object[] { 0, 0 });
-            Assert.That(health.IsDestroyed, Is.False);
-            Assert.That(collider.enabled, Is.True);
-            Assert.That(obstacle.enabled, Is.True);
-            yield return null;
+                typeof(TowerHealth).GetMethod("OnWaveCompleted",
+                    BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Invoke(health, new object[] { 0, 0 });
+                Assert.That(health.IsDestroyed, Is.False);
+                Assert.That(collider.enabled, Is.True);
+                Assert.That(obstacle.enabled, Is.True);
+                yield return new WaitForSeconds(0.8f);
+                NavMesh.CalculatePath(start, end, NavMesh.AllAreas, path);
+                Assert.That(path.status, Is.Not.EqualTo(NavMeshPathStatus.PathComplete),
+                    "The revived wall must block the corridor again.");
+            }
+            finally
+            {
+                instance.Remove();
+                Object.Destroy(data);
+            }
         }
 
         [UnityTest]
