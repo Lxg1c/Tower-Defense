@@ -5,6 +5,8 @@ using UnityEngine.UI;
 /// <summary>Home, level selection and audio settings within the MainMenu scene.</summary>
 public sealed class MainMenuScreens : MonoBehaviour
 {
+    public enum Screen { Home, Levels, Settings, Skills }
+    public Screen CurrentScreen { get; private set; }
     [SerializeField] private GameObject home;
     [SerializeField] private GameObject levels;
     [SerializeField] private GameObject settings;
@@ -61,6 +63,8 @@ public sealed class MainMenuScreens : MonoBehaviour
     private void Show(GameObject screen)
     {
         GameAudioSettings.Save();
+        CurrentScreen = screen == levels ? Screen.Levels : screen == settings ? Screen.Settings :
+            screen == skills ? Screen.Skills : Screen.Home;
         home.SetActive(screen == home);
         levels.SetActive(screen == levels);
         settings.SetActive(screen == settings);

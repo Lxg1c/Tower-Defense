@@ -3,6 +3,7 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace TowerDefense.Tests
 {
@@ -54,10 +55,16 @@ namespace TowerDefense.Tests
             {
                 var victory = levelScene.GetRootGameObjects().SelectMany(root =>
                     root.GetComponentsInChildren<VictoryScreen>(true)).Single();
-                Assert.That(new SerializedObject(victory).FindProperty("skillRewardLabel").objectReferenceValue,
-                    Is.Not.Null);
-                Assert.That(new SerializedObject(victory).FindProperty("skillTreeButton").objectReferenceValue,
-                    Is.Not.Null);
+                var document = levelScene.GetRootGameObjects().SelectMany(root =>
+                    root.GetComponentsInChildren<UIDocument>(true)).Single();
+                var view = document.GetComponent<GameplayToolkitView>();
+                Assert.That(view, Is.Not.Null);
+                Assert.That(new SerializedObject(view).FindProperty("victory").objectReferenceValue,
+                    Is.SameAs(victory));
+                Assert.That(document.visualTreeAsset, Is.Not.Null);
+                var tree = document.visualTreeAsset.CloneTree();
+                Assert.That(tree.Q<Label>("victoryReward"), Is.Not.Null);
+                Assert.That(tree.Q<Button>("victorySkills"), Is.Not.Null);
             }
             finally { EditorSceneManager.ClosePreviewScene(levelScene); }
         }

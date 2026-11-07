@@ -57,8 +57,24 @@ Only retain wider shader adoption if that measurement fits the frame budget.
 
 Keep the overgrown ruins, saturated vegetation and cyan/pink sci-fi accents.
 Use quieter surfaces behind units, dark UI panels, near-white functional text,
-and cyan for important actions. Deltha remains a display font for large headings;
-Liberation Sans is used for functional labels and numbers.
+and cyan for important actions. The UI Toolkit pass uses Oswald Bold for display
+headings and Liberation Sans for functional labels and numbers; legacy screens
+retain their authored fonts.
+
+## UI Toolkit composition
+
+The menu keeps the original full-screen neon background, central title and
+vertical capsule actions. Level selection and settings use compact central
+cards, leaving the environment artwork visible. Building cards show each level
+on its own row and shrink to their content when only one option is offered.
+The gameplay HUD presents wave, time and enemy count as small independent badges,
+with supplies at the opposite edge; offscreen
+spawn badges clear the lower touch controls. The pause panel follows the
+original centered composition. Review these screens in a device build before
+removing the legacy Canvas presentation.
+The Equipment screen uses the existing player portrait as its focus, with two
+weapon modules beside it. Buttons use deeper rims, distinct icon plates and
+pressed states while preserving the game's cyan and violet palette.
 
 ## Implemented in Level
 

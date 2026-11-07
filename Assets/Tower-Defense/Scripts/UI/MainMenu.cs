@@ -25,7 +25,11 @@ public class MainMenu : MonoBehaviour
     private int selectedDifficulty = 1;
     private UnityEngine.UI.Button[] buttons;
     public int SelectedIndex => selectedIndex;
+    public int SelectedDifficulty => selectedDifficulty;
+    public bool CanStartSelected => startButton != null && startButton.interactable;
     public int LevelCount => levels?.Length ?? 0;
+    public LevelDefinition GetLevel(int index) =>
+        levels != null && index >= 0 && index < levels.Length ? levels[index] : null;
 
     private void Awake()
     {

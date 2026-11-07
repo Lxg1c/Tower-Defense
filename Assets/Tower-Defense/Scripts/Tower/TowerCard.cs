@@ -10,6 +10,13 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public class TowerCard : MonoBehaviour
 {
+    public TowerOption Option { get; private set; }
+    public int CurrentLevel { get; private set; }
+    public int? Cost { get; private set; }
+    public string ActionText { get; private set; }
+    public bool Available => button != null && button.interactable;
+
+    public void Activate() { if (Available) button.onClick.Invoke(); }
     [SerializeField] private Image    iconImage;
     [SerializeField] private TMP_Text nameLabel;
     [SerializeField] private TMP_Text costLabel;
@@ -30,6 +37,10 @@ public class TowerCard : MonoBehaviour
     public void Bind(TowerOption option, int currentLevel, int? cost, string action,
         bool available, Action onClick)
     {
+        Option = option;
+        CurrentLevel = currentLevel;
+        Cost = cost;
+        ActionText = action;
         if (iconImage != null)
         {
             iconImage.sprite  = option.icon;

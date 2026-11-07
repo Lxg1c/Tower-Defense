@@ -93,6 +93,8 @@ public class WaveSpawner : MonoBehaviour
     private int nextWaveIndex => session?.NextWaveIndex ?? 0;
     private Coroutine combatRoutine;
     private bool completingWave;
+    private float enemyHealthMultiplier = 1f;
+    private float enemyDamageMultiplier = 1f;
 
     public Phase CurrentPhase => session == null ? Phase.Build : (Phase)session.CurrentPhase;
     public int   WaveCount    => waves != null ? waves.Length : 0;
@@ -100,6 +102,12 @@ public class WaveSpawner : MonoBehaviour
     public bool  IsBuildPhase  => CurrentPhase == Phase.Build;
     public bool  IsCombatPhase => CurrentPhase == Phase.Combat;
     public int   AliveMobCount => aliveMobs.Count;
+
+    public int CalculateDefeatReward(int fullReward)
+    {
+        if (session == null) throw new System.InvalidOperationException("Session has not started.");
+        return session.CalculateDefeatReward(fullReward);
+    }
 
     public Wave NextWave =>
         (waves != null && nextWaveIndex >= 0 && nextWaveIndex < waves.Length) ? waves[nextWaveIndex] : null;
@@ -204,6 +212,8 @@ public class WaveSpawner : MonoBehaviour
                     if (!enemyLoadout.TryGetEntry(entry.enemy, out _))
                         throw new System.ArgumentException($"{enemyLoadout.name}: {entry.enemy.name} has no enemy entry.");
         waves = configuredWaves;
+        enemyHealthMultiplier = level.GetEnemyHealthMultiplier(difficulty);
+        enemyDamageMultiplier = level.GetEnemyDamageMultiplier(difficulty);
     }
 
     /// <summary>
@@ -363,6 +373,8 @@ public class WaveSpawner : MonoBehaviour
 
         var pool = GetOrCreatePool(prefab);
         var mob  = pool.Get(pos, point.rotation);
+        mob.ConfigureDifficulty(prefab.GetComponent<MobHealth>().MaxHealth * enemyHealthMultiplier,
+            enemyDamageMultiplier);
 
         if (option != null)
         {

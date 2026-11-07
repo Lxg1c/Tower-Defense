@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.TestTools;
 
 namespace TowerDefense.Tests
@@ -14,6 +15,7 @@ namespace TowerDefense.Tests
         [UnityTearDown]
         public IEnumerator TearDown()
         {
+            Time.timeScale = 1f;
             foreach (GameObject go in created)
                 if (go != null) Object.Destroy(go);
             // Projectiles created by this fixture are the only projectiles in the test scene.
@@ -23,6 +25,132 @@ namespace TowerDefense.Tests
                 Object.Destroy(shell.gameObject);
             created.Clear();
             yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator DifficultyScalingRaisesMobHealthAndMeleeDamage()
+        {
+            GameObject enemy = NewObject("Scaled enemy", false);
+            var health = enemy.AddComponent<MobHealth>();
+            var selector = enemy.AddComponent<NearestThreatSelector>();
+            var attack = enemy.AddComponent<StandardAttack>();
+            var navigation = enemy.AddComponent<DefaultNav>();
+            var mob = enemy.AddComponent<MobCore>();
+            Set(mob, "targetSelectorRef", selector);
+            Set(mob, "combatBehaviorRef", attack);
+            Set(mob, "navigationModifierRef", navigation);
+            enemy.SetActive(true);
+            mob.enabled = false;
+            mob.ConfigureDifficulty(125f, 1.25f);
+            var target = Target(Vector3.forward);
+            Set(attack, "damage", 8f);
+
+            attack.Tick(mob, target);
+            Assert.That(health.MaxHealth, Is.EqualTo(125f));
+            Assert.That(health.CurrentHealth, Is.EqualTo(125f));
+            Assert.That(target.CurrentHealth, Is.EqualTo(target.MaxHealth - 10f));
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator FlyingRaiderSwitchesFromMinesToTheBase()
+        {
+            GameObject enemy = NewObject("Flying raider", false);
+            enemy.AddComponent<MobHealth>();
+            var selector = enemy.AddComponent<MineFirstSelector>();
+            var attack = enemy.AddComponent<StandardAttack>();
+            var navigation = enemy.AddComponent<DefaultNav>();
+            var mob = enemy.AddComponent<MobCore>();
+            Set(mob, "targetSelectorRef", selector);
+            Set(mob, "combatBehaviorRef", attack);
+            Set(mob, "navigationModifierRef", navigation);
+            enemy.SetActive(true);
+            mob.enabled = false;
+
+            var baseObject = NewObject("Base").AddComponent<Base>();
+            var mine = Target(Vector3.right * 3f);
+            mine.gameObject.AddComponent<MineIncome>();
+            Assert.That(selector.GetTarget(mob), Is.SameAs(mine));
+
+            mine.TakeDamage(mine.MaxHealth);
+            Assert.That(selector.GetTarget(mob), Is.SameAs(baseObject));
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator PrewarmedBaseRaiderAcquiresBaseBuiltLater()
+        {
+            var selector = NewObject("Base raider").AddComponent<BaseOnlySelector>();
+            Assert.That(selector.GetTarget(null), Is.Null);
+            var baseObject = NewObject("Built base").AddComponent<Base>();
+            Assert.That(selector.GetTarget(null), Is.SameAs(baseObject));
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator PulseHitsDenseGroundGroupOncePerEnemy()
+        {
+            GameObject towerObject = NewObject("Pulse", false);
+            var pulse = towerObject.AddComponent<PulseTower>();
+            Set(pulse, "targetMask", (LayerMask)(1 << 7));
+            Set(pulse, "ignoreTag", string.Empty);
+            Set(pulse, "damage", 10f);
+            var targets = new List<CombatTestTarget>();
+            for (int i = 0; i < 40; i++)
+            {
+                var target = Target(new Vector3(i % 8 * 0.35f, 0f, i / 8 * 0.35f));
+                target.gameObject.layer = 7;
+                targets.Add(target);
+            }
+            targets[0].gameObject.AddComponent<BoxCollider>();
+            towerObject.SetActive(true);
+            Physics.SyncTransforms();
+            yield return null;
+            foreach (var target in targets)
+                Assert.That(target.CurrentHealth, Is.EqualTo(target.MaxHealth - 10f));
+        }
+
+        [UnityTest]
+        public IEnumerator PulseSlowsGroundEnemiesAndLeavesFlyingEnemiesUntouched()
+        {
+            GameObject ground = NewObject("Ground enemy", false);
+            ground.layer = 7;
+            ground.transform.position = Vector3.right;
+            ground.AddComponent<SphereCollider>();
+            var groundAgent = ground.AddComponent<NavMeshAgent>();
+            var groundHealth = ground.AddComponent<MobHealth>();
+            var selector = ground.AddComponent<NearestThreatSelector>();
+            var attack = ground.AddComponent<StandardAttack>();
+            var navigation = ground.AddComponent<DefaultNav>();
+            var groundMob = ground.AddComponent<MobCore>();
+            Set(groundMob, "targetSelectorRef", selector);
+            Set(groundMob, "combatBehaviorRef", attack);
+            Set(groundMob, "navigationModifierRef", navigation);
+
+            GameObject flying = NewObject("Flying enemy", false);
+            flying.layer = 7;
+            flying.tag = "Flying";
+            flying.transform.position = Vector3.left;
+            flying.AddComponent<SphereCollider>();
+            var flyingHealth = flying.AddComponent<MobHealth>();
+
+            GameObject tower = NewObject("Pulse", false);
+            var pulse = tower.AddComponent<PulseTower>();
+            Set(pulse, "targetMask", (LayerMask)(1 << 7));
+            Set(pulse, "ignoreTag", "Flying");
+            Set(pulse, "damage", 10f);
+            ground.SetActive(true);
+            flying.SetActive(true);
+            float originalSpeed = groundAgent.speed;
+            tower.SetActive(true);
+            Physics.SyncTransforms();
+            yield return null;
+
+            Assert.That(groundHealth.CurrentHealth, Is.EqualTo(groundHealth.MaxHealth - 10f));
+            Assert.That(groundAgent.speed, Is.LessThan(originalSpeed));
+            Assert.That(flyingHealth.CurrentHealth, Is.EqualTo(flyingHealth.MaxHealth));
+            Assert.That(flying.GetComponent<NavMeshAgent>(), Is.Null,
+                "A flying target must not receive a ground NavMeshAgent from slow effects.");
         }
 
         [UnityTest]
@@ -43,6 +171,7 @@ namespace TowerDefense.Tests
         [UnityTest]
         public IEnumerator MortarSplashDamagesEachEnemyOnceAndIgnoresDistantTargets()
         {
+            Time.timeScale = 1f;
             var center = Target(Vector3.zero);
             center.gameObject.layer = 7;
             center.gameObject.AddComponent<BoxCollider>();
@@ -54,8 +183,10 @@ namespace TowerDefense.Tests
             shell.transform.position = Vector3.up * 3f;
             Physics.SyncTransforms();
             shell.Launch(Vector3.zero, 20f, 2.5f, 0.01f, 1 << 7);
-            yield return null;
-            yield return null;
+            float deadline = Time.realtimeSinceStartup + 1f;
+            while (shell != null && Time.realtimeSinceStartup < deadline)
+                yield return null;
+            Assert.That(shell == null, Is.True, "The shell should explode before checking splash damage.");
 
             Assert.That(center.CurrentHealth, Is.EqualTo(center.MaxHealth - 20f));
             Assert.That(nearby.CurrentHealth, Is.EqualTo(nearby.MaxHealth - 20f));

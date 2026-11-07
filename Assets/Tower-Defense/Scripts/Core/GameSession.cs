@@ -46,4 +46,11 @@ public sealed class GameSession
         CurrentPhase = Phase.Defeated;
         return true;
     }
+
+    public int CalculateDefeatReward(int fullReward)
+    {
+        if (fullReward < 0) throw new ArgumentOutOfRangeException(nameof(fullReward));
+        if (CurrentPhase != Phase.Defeated || _rewards.Length == 0) return 0;
+        return (int)((long)fullReward * NextWaveIndex / _rewards.Length);
+    }
 }

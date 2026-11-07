@@ -29,6 +29,17 @@ public class TowerSelectionModal : MonoBehaviour
     private int revision;
 
     public bool IsOpen => modalRoot != null && modalRoot.activeSelf;
+    public int Revision => revision;
+    public string Heading => heading != null ? heading.text : "CHOOSE A BUILDING";
+    public IEnumerable<TowerCard> ActiveCards
+    {
+        get
+        {
+            foreach (GameObject entry in spawnedEntries)
+                if (entry != null && entry.TryGetComponent(out TowerCard card))
+                    yield return card;
+        }
+    }
     public TowerPlacementZone Owner { get; private set; }
 
     private void Awake()

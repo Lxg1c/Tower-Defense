@@ -56,6 +56,8 @@ public class PlayerHomeTeleportButton : MonoBehaviour
         Transform target = ResolvePlayer();
         if (target == null)
             return;
+        if (target.GetComponent<PlayerHealth>() is { IsGhost: true })
+            return;
 
         if (playerRigidbody == null)
             playerRigidbody = target.GetComponent<Rigidbody>();

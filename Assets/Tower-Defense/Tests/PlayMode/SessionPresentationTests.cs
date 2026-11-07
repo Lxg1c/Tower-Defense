@@ -201,7 +201,9 @@ namespace TowerDefense.Tests
                 indicator.Bind(new WaveSpawner.WavePreviewEntry { spawnPoint = spawn, count = 10 });
                 yield return null;
                 Vector2 screen = RectTransformUtility.WorldToScreenPoint(null, rect.position);
-                Assert.That(screen.y, Is.LessThan(Screen.safeArea.yMin + Screen.safeArea.height * 0.25f));
+                // At short Game View heights the badge and arrow need more than a quarter
+                // of the screen to remain fully visible.
+                Assert.That(screen.y, Is.LessThan(Screen.safeArea.yMin + Screen.safeArea.height * 0.30f));
                 Vector2 desired = (Vector2)camera.WorldToScreenPoint(position) - screen;
                 Assert.That(Vector2.Dot(arrow.up, desired.normalized), Is.GreaterThan(0.99f));
             }

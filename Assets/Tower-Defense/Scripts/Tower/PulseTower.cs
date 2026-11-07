@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Events;
@@ -40,7 +42,19 @@ public class PulseTower : MonoBehaviour
     public float SlowDuration   { get => slowDuration;   set => slowDuration   = Mathf.Max(0.01f, value); }
 
     private float    nextAttackTime;
-    private static readonly Collider[] buffer = new Collider[32];
+    private static Collider[] buffer = new Collider[32];
+    private readonly HashSet<Damageable> hitThisPulse = new();
+
+    private int FindCollidersInRange()
+    {
+        while (true)
+        {
+            int count = Physics.OverlapSphereNonAlloc(transform.position, range, buffer,
+                targetMask, QueryTriggerInteraction.Collide);
+            if (count < buffer.Length) return count;
+            Array.Resize(ref buffer, buffer.Length * 2);
+        }
+    }
 
     private void OnDisable()
     {
@@ -60,7 +74,7 @@ public class PulseTower : MonoBehaviour
     /// <summary>True if there's at least one Damageable in range that is NOT tagged ignoreTag.</summary>
     private bool HasValidTargetInRange()
     {
-        int count = Physics.OverlapSphereNonAlloc(transform.position, range, buffer, targetMask, QueryTriggerInteraction.Collide);
+        int count = FindCollidersInRange();
         for (int i = 0; i < count; i++)
         {
             if (IsIgnoredByTag(buffer[i].gameObject)) continue;
@@ -72,13 +86,14 @@ public class PulseTower : MonoBehaviour
 
     private void Pulse()
     {
-        int count = Physics.OverlapSphereNonAlloc(transform.position, range, buffer, targetMask, QueryTriggerInteraction.Collide);
+        int count = FindCollidersInRange();
+        hitThisPulse.Clear();
         for (int i = 0; i < count; i++)
         {
             if (IsIgnoredByTag(buffer[i].gameObject)) continue;
 
             var d = buffer[i].GetComponentInParent<Damageable>();
-            if (d == null || !d.IsTargetable) continue;
+            if (d == null || !d.IsTargetable || !hitThisPulse.Add(d)) continue;
 
             d.TakeDamage(damage);
             ApplySlow(d.transform);

@@ -28,6 +28,13 @@ public class MobCore : MonoBehaviour
     // Runtime
     public NavMeshAgent Agent   { get; private set; }
     public MobHealth    Health  { get; private set; }
+    public float DamageMultiplier { get; private set; } = 1f;
+
+    public void ConfigureDifficulty(float maxHealth, float damageMultiplier)
+    {
+        Health.SetMaxHealth(maxHealth);
+        DamageMultiplier = damageMultiplier;
+    }
 
     public ITargetSelector     TargetSelector     { get; private set; }
     public ICombatBehavior     CombatBehavior     { get; private set; }

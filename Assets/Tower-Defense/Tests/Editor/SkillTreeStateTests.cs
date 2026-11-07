@@ -76,6 +76,19 @@ namespace TowerDefense.Tests
         }
 
         [Test]
+        public void DefeatRewardPersistsWithoutUnlockingDifficulty()
+        {
+            var state = new SkillTreeState();
+            state.RecordDefeatReward(33);
+            state.RecordDefeatReward(33);
+            var loaded = UnityEngine.JsonUtility.FromJson<SkillTreeState>(UnityEngine.JsonUtility.ToJson(state));
+            Assert.DoesNotThrow(loaded.Validate);
+            Assert.That(loaded.Money, Is.EqualTo(66));
+            Assert.That(loaded.HighestClearedDifficulty("level-1"), Is.Zero);
+            Assert.That(loaded.IsDifficultyUnlocked("level-1", 2), Is.False);
+        }
+
+        [Test]
         public void LegacySavePreservesPurchasesAndConvertsPoints()
         {
             const string json = "{\"version\":1,\"points\":2,\"vitalityRank\":1,\"firepowerRank\":1,\"rapidFireRank\":0,\"claimedLevels\":[\"level-1\"]}";
@@ -102,6 +115,38 @@ namespace TowerDefense.Tests
             PlayerProgression.RequestSkillsScreen();
             Assert.That(PlayerProgression.ConsumeSkillsScreenRequest(), Is.True);
             Assert.That(PlayerProgression.ConsumeSkillsScreenRequest(), Is.False);
+        }
+
+        [Test]
+        public void WeaponModulePurchaseAndSelectionSurviveSave()
+        {
+            var state = new SkillTreeState();
+            Assert.That(state.TryEquipWeaponModule(PlayerWeaponModule.Overdrive), Is.False);
+            Assert.That(state.TryPurchaseOverdrive(), Is.False);
+            state.RecordVictory("level-1", 1, 350);
+            Assert.That(state.TryPurchaseOverdrive(), Is.True);
+            Assert.That(state.Money, Is.EqualTo(50));
+            Assert.That(state.TryPurchaseOverdrive(), Is.False);
+            Assert.That(state.TryEquipWeaponModule(PlayerWeaponModule.Overdrive), Is.True);
+            Assert.That(state.WeaponDamageMultiplier, Is.EqualTo(.85f));
+            Assert.That(state.WeaponFireRateMultiplier, Is.EqualTo(1.4f));
+
+            var loaded = UnityEngine.JsonUtility.FromJson<SkillTreeState>(UnityEngine.JsonUtility.ToJson(state));
+            Assert.DoesNotThrow(loaded.Validate);
+            Assert.That(loaded.EquippedWeaponModule, Is.EqualTo(PlayerWeaponModule.Overdrive));
+            Assert.That(loaded.Money, Is.EqualTo(50));
+            Assert.That(loaded.TryEquipWeaponModule(PlayerWeaponModule.Standard), Is.True);
+            Assert.That(loaded.WeaponDamageMultiplier, Is.EqualTo(1f));
+        }
+
+        [Test]
+        public void ExistingSaveDefaultsToStandardWeaponModule()
+        {
+            const string json = "{\"version\":2,\"money\":100,\"clearedLevels\":[]}";
+            var state = UnityEngine.JsonUtility.FromJson<SkillTreeState>(json);
+            Assert.DoesNotThrow(state.Validate);
+            Assert.That(state.EquippedWeaponModule, Is.EqualTo(PlayerWeaponModule.Standard));
+            Assert.That(state.IsWeaponModuleUnlocked(PlayerWeaponModule.Overdrive), Is.False);
         }
     }
 }

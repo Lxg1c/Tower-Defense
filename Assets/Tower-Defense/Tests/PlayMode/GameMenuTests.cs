@@ -63,6 +63,28 @@ namespace TowerDefense.Tests
         }
 
         [UnityTest]
+        public IEnumerator RestartAndMenuRequestsWaitForExplicitConfirmation()
+        {
+            pause.Restart();
+            Assert.That(pause.IsPaused, Is.True);
+            Assert.That(Time.timeScale, Is.Zero);
+            Assert.That(pause.PendingExitAction, Is.EqualTo(PauseMenu.ExitAction.Restart));
+            Assert.That(spawner.CurrentPhase, Is.EqualTo(WaveSpawner.Phase.Build));
+
+            pause.CancelExit();
+            Assert.That(pause.PendingExitAction, Is.EqualTo(PauseMenu.ExitAction.None));
+            Assert.That(pause.IsPaused, Is.True);
+
+            pause.GoToMainMenu();
+            Assert.That(pause.PendingExitAction, Is.EqualTo(PauseMenu.ExitAction.MainMenu));
+            pause.Resume();
+            Assert.That(pause.IsPaused, Is.False);
+            Assert.That(pause.PendingExitAction, Is.EqualTo(PauseMenu.ExitAction.None));
+            Assert.That(Time.timeScale, Is.EqualTo(1f));
+            yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator AudioControlsWorkAtZeroTimeScaleAndRefreshOnReopen()
         {
             fixture.AddComponent<Canvas>();

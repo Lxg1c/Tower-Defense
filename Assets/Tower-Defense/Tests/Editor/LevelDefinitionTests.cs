@@ -177,8 +177,76 @@ namespace TowerDefense.Tests
             int Count(LevelDefinition l) => l.waves.Sum(w => w.spawnGroups.Sum(g => g.entries.Sum(e => e.count)));
             Assert.That(Count(Level(2)), Is.GreaterThan(Count(Level(1))));
             Assert.That(Count(Level(3)), Is.GreaterThan(Count(Level(2))));
-            Assert.That(Level(1).waves.SelectMany(w => w.spawnGroups).SelectMany(g => g.entries)
-                .All(e => e.enemy.prefab.GetComponent<FlyingNav>() == null), Is.True);
+            foreach (int difficulty in new[] { 1, 2, 3 })
+            {
+                var waves = Level(1).GetWaves(difficulty);
+                Assert.That(waves, Has.Length.EqualTo(5));
+                Assert.That(waves[0].spawnGroups.SelectMany(g => g.entries)
+                    .All(e => e.enemy.displayName == "Spider"), Is.True);
+                Assert.That(waves[1].spawnGroups.SelectMany(g => g.entries)
+                    .Any(e => e.enemy.displayName == "Bat"), Is.True);
+                Assert.That(waves[4].spawnGroups.SelectMany(g => g.entries)
+                    .Any(e => e.enemy.displayName == "Destroyer"), Is.True);
+                Assert.That(Level(1).GetStartingCoins(difficulty), Is.EqualTo(8));
+                float expectedMultiplier = difficulty == 1 ? 1f :
+                    difficulty == 2 ? 1.25f : 1.5625f;
+                Assert.That(Level(1).GetEnemyHealthMultiplier(difficulty),
+                    Is.EqualTo(expectedMultiplier).Within(0.0001f));
+                Assert.That(Level(1).GetEnemyDamageMultiplier(difficulty),
+                    Is.EqualTo(expectedMultiplier).Within(0.0001f));
+            }
+        }
+
+        [Test]
+        public void DifficultyRejectsInvalidEnemyScaling()
+        {
+            var copy = UnityEngine.Object.Instantiate(Level(1));
+            try
+            {
+                copy.additionalDifficulties[0].enemyDamageMultiplier = 0f;
+                Assert.Throws<ArgumentException>(() => copy.Validate(difficulty: 2));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(copy); }
+        }
+
+        [Test]
+        public void FirstLocationPointsDoNotRestrictLaterLocations()
+        {
+            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");
+            try
+            {
+                var zones = scene.GetRootGameObjects()
+                    .SelectMany(root => root.GetComponentsInChildren<TowerPlacementZone>(true))
+                    .Select(zone => new SerializedObject(zone))
+                    .ToArray();
+                Assert.That(zones.Count(zone => zone.FindProperty("unavailableOnFirstLocation").boolValue),
+                    Is.EqualTo(14));
+                Assert.That(zones.Count(zone => zone.FindProperty("firstLocationLoadout").objectReferenceValue != null),
+                    Is.EqualTo(4));
+                Assert.That(zones.Any(zone => zone.FindProperty("requiredTownHallLevel").intValue >= 4),
+                    Is.False);
+            }
+            finally { EditorSceneManager.ClosePreviewScene(scene); }
+        }
+
+        [Test]
+        public void SpecialEnemiesKeepTheirAuthoredTargetRoles()
+        {
+            foreach (var expected in new[]
+            {
+                (name: "Bat", selector: typeof(MineFirstSelector)),
+                (name: "Destroyer", selector: typeof(BaseOnlySelector))
+            })
+            {
+                var enemy = AssetDatabase.FindAssets("t:EnemyOption",
+                    new[] { "Assets/Tower-Defense/Data/Enemies" })
+                    .Select(guid => AssetDatabase.LoadAssetAtPath<EnemyOption>(
+                        AssetDatabase.GUIDToAssetPath(guid)))
+                    .Single(option => option.displayName == expected.name);
+                var component = new SerializedObject(enemy.prefab)
+                    .FindProperty("targetSelectorRef").objectReferenceValue;
+                Assert.That(component, Is.InstanceOf(expected.selector));
+            }
         }
 
         [TestCase(1)]

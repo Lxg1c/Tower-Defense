@@ -1,0 +1,293 @@
+.game-document-root { height: 100%; }
+.game-root {
+  height: 100%; flex-grow: 1; color: #ecfaff;
+  -unity-font-definition: url("project://database/Assets/TextMesh Pro/Fonts/LiberationSans.ttf");
+}
+.is-hidden { display: none; }
+.top-bar {
+  position: absolute; top: 18px; left: 22px; right: 22px;
+  height: 72px; flex-direction: row; align-items: center;
+}
+.icon-button, .economy-status, .guide-label, .effect-chip,
+.start-wave-button, .side-panel, .screen-panel, .order-instruction {
+  background-color: rgba(4, 18, 31, 0.90);
+  border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-right-width: 1px;
+  border-top-color: #3a7889; border-bottom-color: #3a7889;
+  border-left-color: #3a7889; border-right-color: #3a7889;
+  border-top-left-radius: 6px; border-top-right-radius: 6px;
+  border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;
+}
+.icon-button {
+  width: 60px; height: 60px; background-color: rgba(11, 39, 57, 0.96);
+  border-top-width: 3px; border-bottom-width: 5px; border-left-width: 3px; border-right-width: 3px;
+  border-top-color: #9cf7f3; border-bottom-color: #175b70;
+  border-left-color: #5db7ca; border-right-color: #5db7ca;
+  border-top-left-radius: 19px; border-top-right-radius: 19px;
+  border-bottom-left-radius: 19px; border-bottom-right-radius: 19px;
+  align-items: center; justify-content: center;
+}
+.icon-button:hover { background-color: #14566a; }
+.pause-glyph {
+  width: 25px; height: 34px;
+  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/UI/Pause.png");
+  -unity-background-scale-mode: scale-to-fit;
+}
+.top-status {
+  height: 60px; flex-direction: row; margin-left: 9px;
+}
+.wave-block, .time-block, .enemy-block {
+  height: 60px; margin-right: 7px; padding: 5px 13px; justify-content: center;
+  background-color: rgba(3, 23, 38, 0.90);
+  border-top-width: 2px; border-bottom-width: 4px; border-left-width: 2px; border-right-width: 2px;
+  border-top-color: #71e8e4; border-bottom-color: #1b5267;
+  border-left-color: #337b91; border-right-color: #337b91;
+  border-top-left-radius: 14px; border-top-right-radius: 14px;
+  border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;
+}
+.wave-block { width: 154px; }
+.time-block, .enemy-block {
+  width: 96px;
+}
+.enemy-block { width: 128px; }
+.status-caption {
+  color: #8bb9c9; font-size: 10px; letter-spacing: 2px;
+  -unity-font-style: bold; margin-bottom: 2px;
+}
+.wave-label {
+  color: #79f5ed; font-size: 22px;
+  -unity-font-definition: url("project://database/Assets/TextMesh Pro/Examples & Extras/Fonts/Oswald-Bold.ttf");
+}
+.top-value {
+  color: #ffffff; font-size: 18px;
+  -unity-font-definition: url("project://database/Assets/TextMesh Pro/Examples & Extras/Fonts/Oswald-Bold.ttf");
+}
+.economy-status {
+  width: 142px; height: 60px; margin-left: auto; padding-left: 13px; justify-content: center;
+  background-color: rgba(24, 23, 49, 0.94);
+  border-top-width: 2px; border-bottom-width: 4px; border-left-width: 2px; border-right-width: 2px;
+  border-top-color: #d5aff8; border-bottom-color: #665287;
+  border-left-color: #9a76bb; border-right-color: #9a76bb;
+  border-top-left-radius: 14px; border-top-right-radius: 14px;
+  border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;
+}
+.coins-label {
+  color: #ffffff; font-size: 20px;
+  -unity-font-definition: url("project://database/Assets/TextMesh Pro/Examples & Extras/Fonts/Oswald-Bold.ttf");
+}
+.income-label { color: #8df1ec; font-size: 12px; }
+.guide-label {
+  position: absolute; top: 105px; left: 50%; width: 450px; margin-left: -225px;
+  padding: 10px 16px; color: #e5f7fb; font-size: 14px; white-space: normal;
+  -unity-text-align: middle-center; border-left-width: 4px; border-left-color: #b98cf3;
+}
+.fps-label {
+  position: absolute; top: 104px; right: 24px; padding: 5px 9px;
+  color: #c8f5f5; background-color: rgba(5, 28, 43, 0.90); font-size: 12px;
+}
+.effect-row { position: absolute; top: 105px; left: 24px; flex-direction: row; }
+.effect-chip {
+  min-width: 110px; height: 36px; padding: 7px 12px; margin-right: 7px;
+  color: #b7f5f1; font-size: 14px; -unity-font-style: bold;
+  border-left-width: 3px; border-left-color: #b88cf0;
+}
+.spawn-preview { position: absolute; top: 152px; left: 0; right: 0; height: 42px; }
+.spawn-badge {
+  position: absolute; min-width: 42px; height: 38px; padding: 7px 10px;
+  color: #ffffff; background-color: #11384a;
+  border-top-width: 2px; border-top-color: #66e9e7;
+  border-top-left-radius: 19px; border-top-right-radius: 19px;
+  border-bottom-left-radius: 19px; border-bottom-right-radius: 19px;
+  -unity-font-style: bold; -unity-text-align: middle-center;
+}
+.start-wave-button {
+  position: absolute; bottom: 25px; left: 50%; width: 270px; height: 60px; margin-left: -135px;
+  background-color: #38cfda; flex-direction: row; align-items: center; justify-content: center;
+  border-top-width: 3px; border-bottom-width: 7px; border-left-width: 3px; border-right-width: 3px;
+  border-top-color: #c4fffa; border-bottom-color: #146987;
+  border-left-color: #6ee8e9; border-right-color: #6ee8e9;
+  border-top-left-radius: 23px; border-top-right-radius: 23px;
+  border-bottom-left-radius: 23px; border-bottom-right-radius: 23px;
+}
+.start-wave-button:hover, .primary-button:hover { background-color: #92f9f4; }
+.start-wave-button:active { background-color: #2baab8; border-bottom-width: 3px; }
+.start-wave-icon {
+  width: 38px; height: 38px; margin-right: 11px;
+  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Icons/SwordIcon.png");
+  -unity-background-scale-mode: scale-to-fit;
+}
+.start-wave-text {
+  color: #072e3a; font-size: 19px; -unity-font-style: bold;
+  -unity-font-definition: url("project://database/Assets/TextMesh Pro/Examples & Extras/Fonts/Oswald-Bold.ttf");
+}
+.touch-controls { position: absolute; left: 0; right: 0; bottom: 0; height: 240px; }
+.joystick {
+  position: absolute; left: 32px; bottom: 28px; width: 178px; height: 178px;
+  background-color: rgba(4, 29, 43, 0.52);
+  border-top-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-right-width: 2px;
+  border-top-color: #5be7e5; border-bottom-color: #5be7e5;
+  border-left-color: #5be7e5; border-right-color: #5be7e5;
+  border-top-left-radius: 89px; border-top-right-radius: 89px;
+  border-bottom-left-radius: 89px; border-bottom-right-radius: 89px;
+  align-items: center; justify-content: center;
+}
+.joystick-track {
+  position: absolute; width: 112px; height: 112px;
+  border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-right-width: 1px;
+  border-top-color: rgba(101, 238, 235, 0.35); border-bottom-color: rgba(101, 238, 235, 0.35);
+  border-left-color: rgba(101, 238, 235, 0.35); border-right-color: rgba(101, 238, 235, 0.35);
+  border-top-left-radius: 56px; border-top-right-radius: 56px;
+  border-bottom-left-radius: 56px; border-bottom-right-radius: 56px;
+}
+.joystick-knob {
+  width: 70px; height: 70px; background-color: #43e6e4;
+  border-top-width: 5px; border-bottom-width: 5px; border-left-width: 5px; border-right-width: 5px;
+  border-top-color: #b7fffc; border-bottom-color: #b7fffc;
+  border-left-color: #b7fffc; border-right-color: #b7fffc;
+  border-top-left-radius: 35px; border-top-right-radius: 35px;
+  border-bottom-left-radius: 35px; border-bottom-right-radius: 35px;
+}
+.action-stack { position: absolute; right: 28px; bottom: 24px; flex-direction: row; align-items: flex-end; }
+.small-action, .ultimate-button, .desktop-action, .screen-button, .primary-button, .order-cancel, .build-action {
+  color: #eaffff; background-color: rgba(5, 39, 56, 0.95);
+  border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-right-width: 1px;
+  border-top-color: #67d8da; border-bottom-color: #327f8e;
+  border-left-color: #327f8e; border-right-color: #327f8e;
+  border-top-left-radius: 7px; border-top-right-radius: 7px;
+  border-bottom-left-radius: 7px; border-bottom-right-radius: 7px;
+  -unity-font-style: bold; -unity-text-align: middle-center;
+}
+.small-action {
+  width: 94px; height: 94px; margin-right: 10px;
+  background-color: rgba(9, 48, 66, 0.96);
+  border-top-width: 4px; border-bottom-width: 6px; border-left-width: 3px; border-right-width: 3px;
+  border-top-color: #b9fffa; border-bottom-color: #145e75;
+  border-left-color: #64d6df; border-right-color: #64d6df;
+  border-top-left-radius: 27px; border-top-right-radius: 27px;
+  border-bottom-left-radius: 27px; border-bottom-right-radius: 27px;
+}
+.small-action:hover, .desktop-action:hover, .screen-button:hover, .build-action:hover { background-color: #1b596e; }
+.small-action:active { background-color: #42aeb9; border-bottom-width: 3px; }
+.action-icon { width: 47px; height: 47px; align-self: center; margin-top: 7px; -unity-background-scale-mode: scale-to-fit; }
+.rally-icon { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/UI/FlagIcon.png"); }
+.home-icon { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/UI/homeIcon.png"); }
+.action-label { width: 100%; height: 24px; -unity-text-align: middle-center; color: #efffff; font-size: 12px; letter-spacing: 1px; -unity-font-style: bold; }
+.ultimate-wrap { width: 150px; }
+.ultimate-button {
+  width: 148px; height: 148px; background-color: rgba(39, 27, 73, 0.96);
+  border-top-width: 5px; border-bottom-width: 8px; border-left-width: 5px; border-right-width: 5px;
+  border-top-color: #edc8ff; border-bottom-color: #554078;
+  border-left-color: #9e7acb; border-right-color: #9e7acb;
+  border-top-left-radius: 74px; border-top-right-radius: 74px;
+  border-bottom-left-radius: 74px; border-bottom-right-radius: 74px;
+}
+.ultimate-button:hover { background-color: #36265e; }
+.ultimate-button:active { background-color: #8758b2; border-bottom-width: 4px; }
+.ultimate-icon {
+  width: 56px; height: 60px; align-self: center; margin-top: 24px; margin-bottom: 9px;
+  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/UI/lightningIcon.png");
+  -unity-background-scale-mode: scale-to-fit;
+}
+.ultimate-progress { height: 10px; margin-top: 8px; }
+.ultimate-progress .unity-progress-bar__progress { background-color: #b98cf0; }
+.cooldown-label {
+  position: absolute; top: 7px; right: 7px; padding: 4px 8px;
+  color: #ffffff; background-color: #563773;
+  border-top-left-radius: 8px; border-top-right-radius: 8px;
+  border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;
+}
+.desktop-actions { position: absolute; right: 24px; bottom: 24px; flex-direction: row; align-items: flex-end; }
+.desktop-action {
+  width: 116px; height: 54px; margin-left: 8px; font-size: 14px;
+  border-top-width: 3px; border-bottom-width: 5px;
+  border-top-left-radius: 16px; border-top-right-radius: 16px;
+  border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;
+}
+.desktop-action:active { border-bottom-width: 2px; background-color: #2d94a0; }
+.desktop-hint { position: absolute; bottom: 66px; right: 0; color: #d3eff1; font-size: 12px; }
+.side-panel {
+  position: absolute; right: 24px; top: 108px; width: 390px; height: 500px; max-height: 72%;
+  padding: 18px; overflow: hidden;
+  background-color: rgba(5, 21, 36, 0.97);
+  border-top-width: 4px; border-top-color: #bb8df2;
+}
+.side-panel.panel-left { right: auto; left: 24px; }
+.side-panel.single-card-panel { height: 356px; }
+.panel-overline { color: #b995e4; font-size: 11px; letter-spacing: 2px; -unity-font-style: bold; margin-bottom: 4px; }
+.panel-heading {
+  color: #ffffff; font-size: 27px; margin-bottom: 14px;
+  -unity-font-definition: url("project://database/Assets/TextMesh Pro/Examples & Extras/Fonts/Oswald-Bold.ttf");
+}
+.build-cards { flex-grow: 1; overflow: hidden; }
+.build-card {
+  height: 240px; flex-shrink: 0; padding: 13px; margin-bottom: 10px;
+  background-color: rgba(17, 50, 68, 0.96);
+  border-left-width: 4px; border-left-color: #63e9e5;
+  border-bottom-width: 1px; border-bottom-color: #476b7a;
+}
+.build-card-header { height: 52px; flex-direction: row; align-items: center; margin-bottom: 5px; }
+.build-card-icon {
+  width: 48px; height: 48px; margin-right: 12px;
+  background-color: rgba(8, 29, 47, 0.94);
+  -unity-background-scale-mode: scale-to-fit;
+}
+.build-card-title {
+  height: 34px; color: #ffffff; font-size: 22px;
+  -unity-font-definition: url("project://database/Assets/TextMesh Pro/Examples & Extras/Fonts/Oswald-Bold.ttf");
+}
+.build-levels { flex-grow: 1; margin-bottom: 6px; }
+.build-level-row { height: 25px; flex-direction: row; align-items: center; padding-left: 5px; }
+.build-level-target {
+  background-color: rgba(69, 193, 197, 0.18);
+  border-left-width: 3px; border-left-color: #a8f7ef;
+}
+.build-level-number { width: 55px; color: #7df0ea; font-size: 13px; -unity-font-style: bold; }
+.build-level-values { color: #d2e7ea; font-size: 13px; }
+.build-action {
+  height: 44px; flex-shrink: 0; font-size: 14px; -unity-text-align: middle-center;
+  background-color: #3bdcdd; color: #072935;
+  border-top-color: #9afff9; border-bottom-color: #1b959f;
+}
+.build-action:disabled, .primary-button:disabled { opacity: 0.45; }
+.primary-button { height: 56px; font-size: 18px; color: #06232b; background-color: #4ae5e5; }
+.order-layer { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
+.order-instruction {
+  position: absolute; top: 22px; left: 50%; width: 460px; margin-left: -230px;
+  padding: 14px; color: #eaffff; -unity-text-align: middle-center;
+  border-left-width: 4px; border-left-color: #b98cf0;
+}
+.order-cancel { position: absolute; top: 22px; right: 24px; width: 144px; height: 54px; }
+.screen-overlay {
+  position: absolute; top: 0; bottom: 0; left: 0; right: 0;
+  align-items: center; justify-content: center;
+  background-color: rgba(1, 8, 18, 0.62);
+}
+.screen-panel {
+  width: 470px; max-height: 90%; padding: 30px; align-items: center;
+  background-color: rgba(3, 17, 29, 0.98);
+  border-top-width: 4px; border-top-color: #b88cf0;
+  border-bottom-color: #4f8394; border-left-color: #4f8394; border-right-color: #4f8394;
+  border-top-left-radius: 14px; border-top-right-radius: 14px;
+  border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;
+}
+.screen-overline { color: #bfa0ed; font-size: 12px; letter-spacing: 2px; -unity-font-style: bold; }
+.screen-title {
+  color: #ffffff; font-size: 48px; margin-bottom: 18px;
+  -unity-font-definition: url("project://database/Assets/TextMesh Pro/Examples & Extras/Fonts/Oswald-Bold.ttf");
+}
+.screen-subtitle { color: #bddde7; font-size: 17px; margin-bottom: 18px; }
+.screen-panel .primary-button {
+  width: 290px; align-self: center;
+  border-top-left-radius: 28px; border-top-right-radius: 28px;
+  border-bottom-left-radius: 28px; border-bottom-right-radius: 28px;
+}
+.screen-button {
+  width: 280px; height: 50px; font-size: 15px; margin-bottom: 10px;
+  border-top-left-radius: 25px; border-top-right-radius: 25px;
+  border-bottom-left-radius: 25px; border-bottom-right-radius: 25px;
+}
+.settings-label { color: #81e8e8; font-size: 14px; margin-top: 10px; letter-spacing: 2px; }
+.settings-value { color: #ffffff; font-size: 14px; margin-bottom: 7px; }
+.audio-slider { width: 100%; height: 38px; }
+.audio-slider .unity-base-slider__tracker { height: 8px; background-color: #285462; }
+.audio-slider .unity-base-slider__dragger { width: 20px; height: 20px; background-color: #6be9e9; }
+

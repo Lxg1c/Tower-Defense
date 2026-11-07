@@ -51,7 +51,8 @@ namespace TowerDefense.Tests
             var template = Button("Page template");
             Label("Page label").transform.SetParent(template.transform, false);
             title = Label("Title"); description = Label("Description"); start = Button("Start");
-            Set(menu, "levels", levels); Set(menu, "levelButtonTemplate", template);
+            Set(menu, "levels", levels); Set(menu, "gameplayLabLevel", levels[0]);
+            Set(menu, "levelButtonTemplate", template);
             Set(menu, "levelButtonContainer", UI("Pages").transform);
             Set(menu, "levelLabel", title); Set(menu, "levelDescription", description);
             Set(menu, "wavePreview", Label("Preview")); Set(menu, "startButton", start);

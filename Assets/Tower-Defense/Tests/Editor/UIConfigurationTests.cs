@@ -3,11 +3,73 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace TowerDefense.Tests
 {
     public class UIConfigurationTests
     {
+        [Test]
+        public void ToolkitScreensHaveDocumentsAndRequiredSceneBindings()
+        {
+            var panel = AssetDatabase.LoadAssetAtPath<PanelSettings>(
+                "Assets/Tower-Defense/UI/Toolkit/PanelSettings.asset");
+            Assert.That(panel, Is.Not.Null);
+            foreach (string scenePath in new[]
+                     {
+                         "Assets/Tower-Defense/Scenes/MainMenu.unity",
+                         "Assets/Tower-Defense/Scenes/Level 1.unity",
+                         "Assets/Tower-Defense/Scenes/GameplayLab.unity"
+                     })
+            {
+                var scene = EditorSceneManager.OpenPreviewScene(scenePath);
+                try
+                {
+                    var document = scene.GetRootGameObjects()
+                        .SelectMany(root => root.GetComponentsInChildren<UIDocument>(true)).Single();
+                    Assert.That(document.panelSettings, Is.SameAs(panel), scenePath);
+                    Assert.That(document.visualTreeAsset, Is.Not.Null, scenePath);
+                    var view = scenePath.EndsWith("MainMenu.unity")
+                        ? (MonoBehaviour)document.GetComponent<MenuToolkitView>()
+                        : document.GetComponent<GameplayToolkitView>();
+                    Assert.That(view, Is.Not.Null, scenePath);
+                    var data = new SerializedObject(view);
+                    string[] fields = scenePath.EndsWith("MainMenu.unity")
+                        ? new[] { "legacyCanvas", "menu", "legacyScreens" }
+                        : new[] { "legacyOrderCanvas", "responsiveHud", "spawner", "wallet", "timer",
+                            "movement", "ultimate", "teleport", "pauseMenu", "victory", "defeat",
+                            "levelSetup", "buildModal", "orders", "slowAmmo", "playerHealth",
+                            "companionTurrets" };
+                    foreach (string field in fields)
+                        Assert.That(data.FindProperty(field).objectReferenceValue, Is.Not.Null,
+                            scenePath + ": " + field);
+                    if (view is MenuToolkitView)
+                    {
+                        var oldCanvas = (Canvas)data.FindProperty("legacyCanvas").objectReferenceValue;
+                        Assert.That(oldCanvas.enabled, Is.False, scenePath);
+                    }
+                    else if (view is GameplayToolkitView)
+                    {
+                        var groups = data.FindProperty("legacyScreenGroups");
+                        Assert.That(groups.arraySize, Is.EqualTo(4), scenePath);
+                        for (int i = 0; i < groups.arraySize; i++)
+                        {
+                            var groupObject = groups.GetArrayElementAtIndex(i).objectReferenceValue as GameObject;
+                            Assert.That(groupObject, Is.Not.Null,
+                                scenePath + ": legacyScreenGroups[" + i + "]");
+                            var canvasGroup = groupObject.GetComponent<CanvasGroup>();
+                            Assert.That(canvasGroup, Is.Not.Null, groupObject.name);
+                            Assert.That(canvasGroup.alpha, Is.Zero, groupObject.name);
+                            Assert.That(canvasGroup.blocksRaycasts, Is.False, groupObject.name);
+                            Assert.That(canvasGroup.interactable, Is.False, groupObject.name);
+                            Assert.That(groupObject.activeSelf, Is.True, groupObject.name);
+                        }
+                    }
+                }
+                finally { EditorSceneManager.ClosePreviewScene(scene); }
+            }
+        }
+
         [Test]
         public void BarracksOrdersHaveAnIconAndBothGameplayScenesHaveACompleteMapMode()
         {

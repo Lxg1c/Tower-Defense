@@ -122,7 +122,7 @@ public class WaveDirectionIndicator : MonoBehaviour
         Vector2 markerScreenPoint = spawnPointVisible
             ? rawScreenPoint + visibleSpawnPointOffset
             : ClampToScreenEdge(rawScreenPoint, screenCenter, edgeX, edgeY);
-        // Visible spawn cards avoid touch controls; edge badges stay at the screen edge.
+        // Keep edge badges on the spawn side, clear of the lower touch controls.
         Rect safe = Screen.safeArea;
         if (!spawnPointVisible)
         {
@@ -133,6 +133,13 @@ public class WaveDirectionIndicator : MonoBehaviour
                 if (markerScreenPoint.y < safe.yMin + actions.y + edgeY)
                     markerScreenPoint.x = Mathf.Min(markerScreenPoint.x,
                         safe.xMax - actions.x - edgeX);
+            }
+            else if (layout != null &&
+                     (markerScreenPoint.x < safe.xMin + safe.width * 0.22f ||
+                      markerScreenPoint.x > safe.xMax - safe.width * 0.33f))
+            {
+                markerScreenPoint.y = Mathf.Max(markerScreenPoint.y,
+                    safe.yMin + safe.height * 0.30f + edgeY);
             }
         }
         markerScreenPoint.x = Mathf.Clamp(markerScreenPoint.x,

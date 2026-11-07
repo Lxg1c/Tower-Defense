@@ -36,6 +36,12 @@ public static class PlayerProgression
         Save();
     }
 
+    public static void RecordDefeatReward(int reward)
+    {
+        State.RecordDefeatReward(reward);
+        Save();
+    }
+
     public static bool TrySpend(int amount)
     {
         if (!State.TrySpend(amount)) return false;
@@ -46,6 +52,20 @@ public static class PlayerProgression
     public static bool TryUpgrade(PlayerSkill skill)
     {
         if (!State.TryUpgrade(skill)) return false;
+        Save();
+        return true;
+    }
+
+    public static bool TryPurchaseOverdrive()
+    {
+        if (!State.TryPurchaseOverdrive()) return false;
+        Save();
+        return true;
+    }
+
+    public static bool TryEquipWeaponModule(PlayerWeaponModule module)
+    {
+        if (!State.TryEquipWeaponModule(module)) return false;
         Save();
         return true;
     }

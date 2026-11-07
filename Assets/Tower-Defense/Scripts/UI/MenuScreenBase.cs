@@ -40,14 +40,14 @@ public abstract class MenuScreenBase : MonoBehaviour
             root.SetActive(false);
     }
 
-    public void Restart()
+    public virtual void Restart()
     {
         Time.timeScale = 1f;
         Scene scene = SceneManager.GetActiveScene();
         SceneManager.LoadScene(scene.buildIndex);
     }
 
-    public void GoToMainMenu()
+    public virtual void GoToMainMenu()
     {
         GameAudioSettings.Save();
         RunSelection.Clear();

@@ -104,7 +104,8 @@ namespace TowerDefense.Tests
             {
                 other.transform.position = new Vector3(100f, 0f, 0f);
                 var secondGrid = other.AddComponent<LevelGrid>();
-                Vector3 pointer = new Vector3(100f, 0f, 0f);
+                // An even-sized grid has no cell center at its transform origin.
+                Vector3 pointer = new Vector3(101.5f, 0f, 1.5f);
 
                 Assert.That(grid.TryGetPlacement(pointer, BuildSlotType.Defense, out _), Is.False);
                 Assert.That(secondGrid.TryGetPlacement(pointer, BuildSlotType.Defense,

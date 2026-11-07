@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public enum PlayerSkill { Vitality, Firepower, RapidFire }
+public enum PlayerWeaponModule { Standard, Overdrive }
 
 /// <summary>Permanent upgrades and replayable victory rewards.</summary>
 [Serializable]
@@ -33,12 +34,38 @@ public sealed class SkillTreeState
     [SerializeField] private int vitalityRank;
     [SerializeField] private int firepowerRank;
     [SerializeField] private int rapidFireRank;
+    [SerializeField] private bool overdriveUnlocked;
+    [SerializeField] private PlayerWeaponModule equippedWeaponModule;
     [SerializeField] private List<LevelClear> clearedLevels = new();
 
     public int Money => money;
     public float HealthMultiplier => 1f + .15f * vitalityRank;
     public float DamageMultiplier => 1f + .10f * firepowerRank;
     public float FireRateMultiplier => 1f + .08f * rapidFireRank;
+    public const int OverdriveCost = 300;
+    public PlayerWeaponModule EquippedWeaponModule => equippedWeaponModule;
+    public float WeaponDamageMultiplier => equippedWeaponModule == PlayerWeaponModule.Overdrive ? .85f : 1f;
+    public float WeaponFireRateMultiplier => equippedWeaponModule == PlayerWeaponModule.Overdrive ? 1.4f : 1f;
+    public bool IsWeaponModuleUnlocked(PlayerWeaponModule module) => module switch
+    {
+        PlayerWeaponModule.Standard => true,
+        PlayerWeaponModule.Overdrive => overdriveUnlocked,
+        _ => throw new ArgumentOutOfRangeException(nameof(module))
+    };
+
+    public bool TryPurchaseOverdrive()
+    {
+        if (overdriveUnlocked || !TrySpend(OverdriveCost)) return false;
+        overdriveUnlocked = true;
+        return true;
+    }
+
+    public bool TryEquipWeaponModule(PlayerWeaponModule module)
+    {
+        if (!IsWeaponModuleUnlocked(module) || equippedWeaponModule == module) return false;
+        equippedWeaponModule = module;
+        return true;
+    }
 
     public int Rank(PlayerSkill skill) => skill switch
     {
@@ -95,6 +122,12 @@ public sealed class SkillTreeState
         money = newBalance;
     }
 
+    public void RecordDefeatReward(int reward)
+    {
+        if (reward < 0) throw new ArgumentOutOfRangeException(nameof(reward));
+        money = checked(money + reward);
+    }
+
     public int NextCost(PlayerSkill skill)
     {
         int rank = Rank(skill);
@@ -130,7 +163,9 @@ public sealed class SkillTreeState
         if (version != 2 || money < 0 || clearedLevels == null ||
             vitalityRank < 0 || vitalityRank > MaxRank ||
             firepowerRank < 0 || firepowerRank > MaxRank ||
-            rapidFireRank < 0 || rapidFireRank > MaxRank)
+            rapidFireRank < 0 || rapidFireRank > MaxRank ||
+            !Enum.IsDefined(typeof(PlayerWeaponModule), equippedWeaponModule) ||
+            (equippedWeaponModule == PlayerWeaponModule.Overdrive && !overdriveUnlocked))
             throw new InvalidOperationException("Saved skill progression is invalid.");
         var ids = new HashSet<string>();
         foreach (var clear in clearedLevels)

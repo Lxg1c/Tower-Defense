@@ -11,10 +11,25 @@ public sealed class LevelSetup : MonoBehaviour
     [SerializeField] private PlayerWallet wallet;
     private bool restorePlayerEnemyCollision;
     public LevelDefinition CurrentLevel { get; private set; }
+    public bool IsFirstLocation => CurrentLevel != null && CurrentLevel.progressionId == "level-1";
     public int CurrentDifficulty { get; private set; }
     private readonly VictoryRewardGate rewardGate = new();
-    public bool HasAwardedVictory => rewardGate.HasAwarded;
+    public bool HasAwardedVictory => rewardGate.HasAwarded &&
+        spawner != null && spawner.CurrentPhase == WaveSpawner.Phase.AllCompleted;
+    public bool HasAwardedDefeat => rewardGate.HasAwarded &&
+        spawner != null && spawner.CurrentPhase == WaveSpawner.Phase.Defeated;
     public int VictoryMoneyReward { get; private set; }
+    public int DefeatMoneyReward { get; private set; }
+
+    private void OnEnable()
+    {
+        if (spawner != null) spawner.onDefeated.AddListener(AwardDefeat);
+    }
+
+    private void OnDisable()
+    {
+        if (spawner != null) spawner.onDefeated.RemoveListener(AwardDefeat);
+    }
 
     private void Awake()
     {
@@ -55,6 +70,21 @@ public sealed class LevelSetup : MonoBehaviour
             VictoryMoneyReward = reward;
         });
     }
+
+    public bool TryAwardDefeat()
+    {
+        if (CurrentLevel == null || spawner == null ||
+            spawner.CurrentPhase != WaveSpawner.Phase.Defeated) return false;
+
+        int reward = spawner.CalculateDefeatReward(CurrentLevel.GetMoneyReward(CurrentDifficulty));
+        return rewardGate.TryAward(() =>
+        {
+            if (reward > 0) PlayerProgression.RecordDefeatReward(reward);
+            DefeatMoneyReward = reward;
+        });
+    }
+
+    private void AwardDefeat() => TryAwardDefeat();
 
     private void OnDestroy()
     {

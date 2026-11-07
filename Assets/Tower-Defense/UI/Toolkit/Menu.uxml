@@ -1,0 +1,126 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <ui:Style src="Menu.uss" />
+  <ui:VisualElement name="menuRoot" class="menu-root" picking-mode="Ignore">
+    <ui:VisualElement class="menu-shade" picking-mode="Ignore" />
+    <ui:VisualElement class="menu-shell" picking-mode="Ignore">
+      <ui:VisualElement class="menu-header" picking-mode="Ignore">
+        <ui:VisualElement class="brand-row" picking-mode="Ignore">
+          <ui:VisualElement class="brand-mark" picking-mode="Ignore" />
+          <ui:Label text="TOWER DEFENSE  /  FRONTLINE" class="eyebrow" />
+        </ui:VisualElement>
+        <ui:VisualElement class="title-block" picking-mode="Ignore">
+          <ui:Label text="TOWER" class="game-title" />
+          <ui:Label text="DEFENSE" class="game-title title-accent" />
+        </ui:VisualElement>
+        <ui:VisualElement class="title-rule" picking-mode="Ignore" />
+        <ui:Label text="Build your line. Hold until dawn." class="subtitle" />
+      </ui:VisualElement>
+      <ui:VisualElement name="homePage" class="menu-page home-page" picking-mode="Ignore">
+        <ui:Label text="01  /  COMMAND CENTER" class="section-label" />
+        <ui:Button name="playButton" text="START CAMPAIGN     →" class="primary-button" />
+        <ui:VisualElement class="home-secondary" picking-mode="Ignore">
+          <ui:Button name="skillsButton" text="SKILL TREE" class="menu-button" />
+          <ui:Button name="loadoutButton" text="EQUIPMENT" class="menu-button" />
+          <ui:Button name="settingsButton" text="SETTINGS" class="menu-button" />
+        </ui:VisualElement>
+        <ui:Button name="labButton" text="GAMEPLAY TEST   /   SANDBOX" class="lab-button" />
+        <ui:Button name="exitButton" text="EXIT GAME" class="quiet-button" />
+      </ui:VisualElement>
+      <ui:VisualElement name="levelsPage" class="menu-page is-hidden" picking-mode="Ignore">
+        <ui:Label text="02  /  CAMPAIGN" class="section-label" />
+        <ui:Label text="SELECT YOUR FRONT" class="page-title" />
+        <ui:VisualElement class="level-layout" picking-mode="Ignore">
+          <ui:VisualElement class="level-detail" picking-mode="Ignore">
+            <ui:VisualElement class="detail-top" picking-mode="Ignore">
+              <ui:VisualElement class="detail-copy" picking-mode="Ignore">
+                <ui:Label text="OPERATION BRIEF" class="micro-label" />
+                <ui:Label name="levelTitle" class="detail-title" />
+                <ui:Label name="levelDescription" class="body-copy" />
+              </ui:VisualElement>
+              <ui:VisualElement class="level-illustration" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label text="THREAT LEVEL" class="micro-label" />
+            <ui:VisualElement class="difficulty-row" picking-mode="Ignore">
+              <ui:Button name="normalButton" text="NORMAL" class="difficulty-button" />
+              <ui:Button name="hardButton" text="HARD" class="difficulty-button" />
+              <ui:Button name="nightmareButton" text="NIGHTMARE" class="difficulty-button" />
+            </ui:VisualElement>
+            <ui:Label name="wavePreview" class="level-preview" />
+            <ui:Button name="startButton" text="DEPLOY TO LEVEL     →" class="primary-button" />
+          </ui:VisualElement>
+          <ui:ScrollView name="levelList" class="level-list" mode="Horizontal" />
+        </ui:VisualElement>
+        <ui:Button name="levelsBack" text="←  BACK TO MENU" class="back-button" />
+      </ui:VisualElement>
+      <ui:VisualElement name="settingsPage" class="menu-page is-hidden" picking-mode="Ignore">
+        <ui:Label text="03  /  PREFERENCES" class="section-label" />
+        <ui:Label text="SETTINGS" class="page-title" />
+        <ui:VisualElement class="settings-card" picking-mode="Ignore">
+          <ui:Label text="AUDIO MIX" class="card-overline" />
+          <ui:Label text="MUSIC" class="field-label" />
+          <ui:Slider name="musicSlider" low-value="0" high-value="1" class="audio-slider" />
+          <ui:Label name="musicValue" class="value-label" />
+          <ui:Label text="SOUND EFFECTS" class="field-label" />
+          <ui:Slider name="effectsSlider" low-value="0" high-value="1" class="audio-slider" />
+          <ui:Label name="effectsValue" class="value-label" />
+          <ui:VisualElement class="settings-divider" picking-mode="Ignore" />
+          <ui:Button name="fpsToggle" class="menu-button" />
+        </ui:VisualElement>
+        <ui:Button name="settingsBack" text="←  BACK TO MENU" class="back-button" />
+      </ui:VisualElement>
+      <ui:VisualElement name="skillsPage" class="menu-page is-hidden" picking-mode="Ignore">
+        <ui:Label text="04  /  PERMANENT UPGRADES" class="section-label" />
+        <ui:Label text="SKILL TREE" class="page-title" />
+        <ui:Label name="moneyLabel" class="money-label" />
+        <ui:VisualElement name="skillList" class="skill-list" picking-mode="Ignore" />
+        <ui:Button name="skillsBack" text="←  BACK TO MENU" class="back-button" />
+      </ui:VisualElement>
+      <ui:VisualElement name="loadoutPage" class="menu-page loadout-page is-hidden" picking-mode="Ignore">
+        <ui:VisualElement class="loadout-heading" picking-mode="Ignore">
+          <ui:VisualElement picking-mode="Ignore">
+            <ui:Label text="04  /  PLAYER EQUIPMENT" class="section-label" />
+            <ui:Label text="COMBAT LOADOUT" class="page-title" />
+          </ui:VisualElement>
+          <ui:Label name="loadoutMoney" class="loadout-money" />
+        </ui:VisualElement>
+        <ui:VisualElement class="loadout-body" picking-mode="Ignore">
+          <ui:VisualElement class="loadout-hero" picking-mode="Ignore">
+            <ui:Label text="FRONTLINE ROBOT" class="loadout-hero-caption" />
+            <ui:VisualElement class="loadout-portrait" picking-mode="Ignore" />
+            <ui:Label text="DUAL GUN PLATFORM" class="loadout-hero-name" />
+            <ui:Label text="EQUIPPED MODULE" class="loadout-micro" />
+            <ui:Label name="equippedModule" class="equipped-module" />
+          </ui:VisualElement>
+          <ui:VisualElement class="loadout-catalog" picking-mode="Ignore">
+            <ui:Label text="WEAPON MODULES" class="loadout-catalog-title" />
+            <ui:Label text="Choose before entering a level" class="loadout-catalog-copy" />
+            <ui:VisualElement class="module-card" picking-mode="Ignore">
+              <ui:VisualElement class="module-mark standard-mark" picking-mode="Ignore" />
+              <ui:VisualElement class="module-copy" picking-mode="Ignore">
+                <ui:Label text="STANDARD" class="module-name" />
+                <ui:Label text="Balanced damage and rate of fire" class="module-description" />
+              </ui:VisualElement>
+              <ui:Button name="standardModule" class="module-button" />
+            </ui:VisualElement>
+            <ui:VisualElement class="module-card overdrive-card" picking-mode="Ignore">
+              <ui:VisualElement class="module-mark overdrive-mark" picking-mode="Ignore" />
+              <ui:VisualElement class="module-copy" picking-mode="Ignore">
+                <ui:Label text="OVERDRIVE" class="module-name" />
+                <ui:Label text="+40% fire rate  •  −15% shot damage" class="module-description" />
+              </ui:VisualElement>
+              <ui:Button name="overdriveModule" class="module-button" />
+            </ui:VisualElement>
+            <ui:VisualElement class="loadout-stat-strip" picking-mode="Ignore">
+              <ui:Label text="DAMAGE" class="stat-label" />
+              <ui:Label name="moduleDamage" class="stat-value" />
+              <ui:Label text="FIRE RATE" class="stat-label" />
+              <ui:Label name="moduleFireRate" class="stat-value" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Button name="loadoutBack" text="←  BACK TO MENU" class="back-button" />
+      </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:Label name="fpsLabel" class="fps-label is-hidden" />
+  </ui:VisualElement>
+</ui:UXML>

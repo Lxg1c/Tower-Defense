@@ -18,6 +18,20 @@ public class PlayerMovement : MonoBehaviour
 
     private Rigidbody     rb;
     private Vector2       moveInput;
+    private bool          toolkitJoystickActive;
+    private Vector2       toolkitMoveInput;
+
+    public void SetToolkitMoveInput(Vector2 input)
+    {
+        toolkitJoystickActive = true;
+        toolkitMoveInput = Vector2.ClampMagnitude(input, 1f);
+    }
+
+    public void ClearToolkitMoveInput()
+    {
+        toolkitJoystickActive = false;
+        toolkitMoveInput = Vector2.zero;
+    }
     private Transform     cam;
     private PlayerHealth  playerHealth;
     private PlayerAnimator playerAnimator;
@@ -40,7 +54,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        moveInput = joystick != null ? joystick.Direction : Vector2.zero;
+        moveInput = toolkitJoystickActive ? toolkitMoveInput :
+            joystick != null ? joystick.Direction : Vector2.zero;
 
         if (Keyboard.current == null) return;
         Keyboard keyboard = Keyboard.current;

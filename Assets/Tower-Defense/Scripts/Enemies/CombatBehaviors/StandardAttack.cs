@@ -50,8 +50,8 @@ public class StandardAttack : MonoBehaviour, ICombatBehavior
         if (cooldown > 0f) return;
         if (target == null || !target.IsAlive) return;
 
-        _animator.SetTrigger(attackTriggerName);
-        float finalDamage = damage * GetMultiplierFor(target);
+        if (_animator != null) _animator.SetTrigger(attackTriggerName);
+        float finalDamage = damage * mob.DamageMultiplier * GetMultiplierFor(target);
         target.TakeDamage(finalDamage);
 
         cooldown = 1f / Mathf.Max(0.01f, attackRate);

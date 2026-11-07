@@ -67,6 +67,25 @@ public class MineIncome : MonoBehaviour
         }
     }
 
+    public static Damageable FindClosestTarget(Vector3 origin)
+    {
+        Damageable closest = null;
+        float bestDistance = float.MaxValue;
+        for (int i = 0; i < activeMines.Count; i++)
+        {
+            MineIncome mine = activeMines[i];
+            if (mine == null || !mine.isActiveAndEnabled ||
+                mine.health == null || !mine.health.IsTargetable)
+                continue;
+
+            float distance = (mine.transform.position - origin).sqrMagnitude;
+            if (distance >= bestDistance) continue;
+            bestDistance = distance;
+            closest = mine.health;
+        }
+        return closest;
+    }
+
     private void Awake()
     {
         health = GetComponent<Damageable>();

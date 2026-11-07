@@ -105,5 +105,36 @@ namespace TowerDefense.Tests
             Assert.That(session.CurrentPhase, Is.EqualTo(GameSession.Phase.AllCompleted));
             Assert.That(session.TryStartWave(true, false), Is.False);
         }
+
+        [TestCase(0, 0)]
+        [TestCase(1, 33)]
+        [TestCase(2, 66)]
+        public void DefeatRewardCountsOnlyCompletedWavesAndRoundsDown(int completed, int expected)
+        {
+            var session = new GameSession(new[] { 4, 4, 4 }, _ => { });
+            for (int wave = 0; wave < completed; wave++)
+            {
+                Assert.That(session.TryStartWave(true, false), Is.True);
+                Assert.That(session.TryCompleteWave(wave), Is.True);
+            }
+            Assert.That(session.CalculateDefeatReward(100), Is.Zero);
+            Assert.That(session.TryDefeat(), Is.True);
+            Assert.That(session.CalculateDefeatReward(100), Is.EqualTo(expected));
+            Assert.That(session.TryDefeat(), Is.False);
+        }
+
+        [Test]
+        public void DefeatRewardUsesWideArithmeticForLargeRewards()
+        {
+            var session = new GameSession(new[] { 0, 0, 0 }, _ => { });
+            for (int wave = 0; wave < 2; wave++)
+            {
+                session.TryStartWave(true, false);
+                session.TryCompleteWave(wave);
+            }
+            session.TryDefeat();
+            Assert.That(session.CalculateDefeatReward(int.MaxValue),
+                Is.EqualTo((int)((long)int.MaxValue * 2 / 3)));
+        }
     }
 }

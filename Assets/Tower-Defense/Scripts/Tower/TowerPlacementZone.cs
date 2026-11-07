@@ -20,6 +20,10 @@ public class TowerPlacementZone : MonoBehaviour
     [Header("Options")]
     [Tooltip("Player loadout — set of buildable towers. Single source of truth shared across zones.")]
     [SerializeField] private TowerLoadout loadout;
+    [Tooltip("Options used on the first location only; other locations keep the shared loadout.")]
+    [SerializeField] private TowerLoadout firstLocationLoadout;
+    [Tooltip("Hide this point on the first location without changing its availability on later locations.")]
+    [SerializeField] private bool unavailableOnFirstLocation;
     [SerializeField] private BuildSlotType allowedType = BuildSlotType.Defense;
     [Tooltip("Required town hall level for this zone to appear. 0 = available before town hall is built. 1 = after town hall is built. 2 = after first town hall upgrade.")]
     [Min(0)] [SerializeField] private int requiredTownHallLevel = 0;
@@ -66,10 +70,16 @@ public class TowerPlacementZone : MonoBehaviour
     private bool modalOpenedByMe;
     private Color currentColor;
     private BuildingSlot slot;
-    private BuildingSlot Slot => slot ??= new BuildingSlot(loadout, allowedType,
+    private LevelSetup levelSetup;
+    private bool IsFirstLocation => (levelSetup ??= FindFirstObjectByType<LevelSetup>()) != null &&
+        levelSetup.IsFirstLocation;
+    private TowerLoadout ActiveLoadout => IsFirstLocation && firstLocationLoadout != null
+        ? firstLocationLoadout : loadout;
+    private BuildingSlot Slot => slot ??= new BuildingSlot(ActiveLoadout, allowedType,
         requiredTownHallLevel, allowedType == BuildSlotType.Wall
             ? GetWallLength() : 1);
-    private bool IsBuildPhase => WaveSpawner.Instance == null || WaveSpawner.Instance.IsBuildPhase;
+    private bool IsBuildPhase => !(IsFirstLocation && unavailableOnFirstLocation) &&
+        (WaveSpawner.Instance == null || WaveSpawner.Instance.IsBuildPhase);
 
     public int GetOptionCost(TowerOption option) => Slot.GetCost(option);
 
@@ -161,7 +171,8 @@ public class TowerPlacementZone : MonoBehaviour
 
     public bool IsUnlocked()
     {
-        return Slot.IsUnlocked(GetTownHallLevel());
+        return !(IsFirstLocation && unavailableOnFirstLocation) &&
+            Slot.IsUnlocked(GetTownHallLevel());
     }
 
     private void SetVisualActive(bool on)
@@ -228,6 +239,8 @@ public class TowerPlacementZone : MonoBehaviour
         foreach (Collider c in hits)
         {
             var w = c.GetComponentInParent<PlayerWallet>();
+            if (w != null && w.GetComponentInParent<PlayerHealth>() is { IsGhost: true })
+                continue;
             if (w != null) { foundWallet = w; break; }
         }
 
@@ -243,7 +256,8 @@ public class TowerPlacementZone : MonoBehaviour
             CancelProgress();
             return;
         }
-        if (loadout == null || loadout.options == null || loadout.options.Length == 0)
+        TowerLoadout activeLoadout = ActiveLoadout;
+        if (activeLoadout == null || activeLoadout.options == null || activeLoadout.options.Length == 0)
         {
             Debug.LogWarning("[TowerPlacementZone] No loadout assigned or empty.", this);
             CancelProgress();

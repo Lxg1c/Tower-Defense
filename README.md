@@ -4,6 +4,12 @@ A Unity 3D tower-defense prototype with a directly controlled hero, automatic
 shooting, build/upgrade phases, enemy waves and allied squads.
 
 Contributor and agent conventions are in [Skills.md](Skills.md).
+The current game design and open decisions are in [Docs/GDD.md](Docs/GDD.md).
+The [GDD implementation plan](Docs/GDD-Implementation-Plan.md) orders the work for
+the first demo and later locations, with checks for each milestone.
+The [GDD question register](Docs/GDD-Questions.md) tracks the 344 questions from
+the supplied design workbook and distinguishes author decisions from the current
+prototype and unresolved topics.
 See [Docs/VisualDirection.md](Docs/VisualDirection.md) for the first UI polish pass
 and the remaining visual priorities.
 See [Docs/Balance.md](Docs/Balance.md) for the economy review, measured wave
@@ -27,6 +33,7 @@ contains Unity packages. The main project folders follow responsibility:
 | `Art/Materials`, `Art/Shaders`, `Art/Animations`, `Art/UI` | Rendering, animation and UI artwork |
 | `Audio`, `Resources`, `Settings` | Game audio, runtime-loaded assets and render/build settings |
 | `Editor`, `Tests` | Authoring tools and Unity Test Framework suites |
+| `UI/Toolkit` | UXML, USS and panel settings for the current menu and gameplay screens |
 
 See [Docs/Architecture.md](Docs/Architecture.md) for code ownership and
 asset references. Unity GUIDs were retained during the asset reorganization.
@@ -53,6 +60,12 @@ then a stronger mixed attack. The lab has its own level asset and NavMesh; it
 is separate from campaign level selection and awards no campaign money. Changes
 to its waves or placements do not change Level 1.
 
+The lab's neutral floor is 120×120 m. The `Traversal Probe` markers near its
+west and east edges give a 90 m route for checking hero movement and camera
+behavior. Build zones and enemy spawns remain near the center for combat tests;
+the lab's NavMesh was rebaked for the larger floor. Campaign map dimensions
+remain a separate level-art decision.
+
 For a useful first playtest, complete one run without adjusting values. Note
 when you first make a meaningful building choice, when you feel you are only
 waiting, whether you use the ultimate and squad orders, where the defense
@@ -75,6 +88,26 @@ immediately. This is not a player setting. Stand in a building zone until its
 progress circle fills to choose a building or upgrade. Use Start Wave to begin
 combat after the town hall exists. The melee barracks opens at town hall level 2
 and the ranged barracks at level 3; the chosen type stays with that barracks.
+
+The Main Menu, campaign level and GameplayLab now use UI Toolkit for their
+screen-space menus and HUD. The UXML and USS files are in `UI/Toolkit`;
+`MenuToolkitView` and `GameplayToolkitView` in `Scripts/UI` connect them to the
+existing gameplay controllers. The old menu Canvas is disabled in the scene.
+The gameplay screen groups have invisible, non-interactive CanvasGroups in both
+gameplay scenes, while their controllers stay active. World-space placement
+progress, health bars and spawn indicators still use their existing presentation.
+Missing UI Toolkit references are logged as configuration errors. Keep the legacy
+Canvas until the new layout has been verified on the target device. The new
+on-screen joystick feeds `PlayerMovement` directly, while desktop movement
+still uses the existing keyboard path. The UI Toolkit building panel leaves
+movement available so stepping out of a zone closes the panel.
+The top HUD uses separate compact wave, time, enemy and supply indicators. The
+Main Menu **Equipment** screen lets the player buy the Overdrive gun module for
+300 permanent money and equip either module before a level. Standard preserves
+the authored guns; Overdrive increases their fire rate by 40% and reduces shot
+damage by 15%. This choice is saved with permanent progression and applied when
+the player enters a level.
+
 To order a squad, tap the flag icon above its completed barracks. The HUD hides,
 the camera pulls back from the hero at its usual angle, and only **Cancel**
 stays on screen. Tap a
@@ -156,7 +189,7 @@ pays again; reopening the Victory panel within the same run does not. The money
 balance and purchases are saved locally with PlayerPrefs and are separate from
 the per-run coins used to build towers. Use **Skills** on the Victory screen to
 open the tree between levels, or open it from the main menu. This same permanent
-balance can fund future loadout purchases.
+balance also funds the Equipment module purchase.
 
 Buy **Vitality** first to unlock the two branches. Each branch has three ranks:
 Vitality adds 15% maximum player HP per rank, Firepower adds 10% normal-shot

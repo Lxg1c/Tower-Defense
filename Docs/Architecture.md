@@ -27,19 +27,41 @@ vendor packages stay in their original folders under `Assets` or `Packages`.
 
 ## Permanent player progression
 
-`SkillTreeState` owns permanent money, purchased ranks, prerequisites, and
-the highest cleared difficulty of each level. `PlayerProgression` saves that
-state to PlayerPrefs and migrates old skill points at 100 money per point; it
-never spends `PlayerWallet` coins. `LevelSetup` resolves the selected
-difficulty, configures its waves and grants the permanent victory reward through
-`VictoryRewardGate` when `VictoryScreen` observes `AllCompleted`. Reopening
-the victory screen cannot pay twice in one run; replaying a level pays again.
+`SkillTreeState` owns permanent money, purchased ranks, the selected weapon
+module, prerequisites, and the highest cleared difficulty of each level.
+`PlayerProgression` saves that state to PlayerPrefs and migrates old skill
+points at 100 money per point; it never spends `PlayerWallet` coins. `LevelSetup`
+resolves the selected difficulty and configures its waves. It grants the
+permanent victory reward when `VictoryScreen` observes `AllCompleted`, or a
+defeat reward when `WaveSpawner` enters `Defeated`: full reward multiplied by
+completed waves divided by total waves, rounded down. A shared reward gate
+allows only one outcome award per run; replaying a level can pay again.
 The Victory Skills button requests the skill screen
 in the next MainMenu scene. `MainMenuScreens` opens `SkillTreePanel`, which only
 displays state and submits purchases. `PlayerSkillBonus` on the Player prefab
 applies the purchased health, shot-damage, and fire-rate bonuses once when the
 level starts. New levels need a unique progression ID and three authored
 difficulty configurations.
+
+Difficulty variants can set enemy health and damage multipliers. `WaveSpawner`
+applies them to each spawned or reused mob; the prefab remains the source of
+base health and attack damage. The first location uses 1.25x and 1.5625x on
+Hard and Nightmare; later levels currently use 1x. The shared Level 1 scene
+uses `LevelSetup.IsFirstLocation` to select first-location building rules.
+`TowerPlacementZone` may hide a point there or use a location-specific loadout
+without removing the point or its general options from later levels.
+
+`MineIncome` tracks active surviving mines for income and the Bat target selector.
+Bat chooses the nearest surviving mine, then the base; Destroyer uses the
+base-only selector. Spider and Shooter still use nearest-threat selection.
+`PulseTower` excludes the Flying tag, grows its overlap buffer when crowded,
+and damages each target once per pulse even with multiple colliders.
+
+`PauseMenu` owns run exit confirmation in active Build and Combat phases. It
+pauses the clock before showing the UI Toolkit confirmation and restores time
+on cancellation or scene transition. A foregrounded Android run remains paused
+after the app returns from the background. Closing the app does not serialize
+an unfinished run.
 
 ## Building flow
 
@@ -306,6 +328,10 @@ levels. The Main Menu's Home screen has a separate TEST LEVEL action wired to
 `MainMenu.StartGameplayLab`, which selects the lab definition and loads the lab
 scene. GameplayLab is the third enabled build scene so game UI navigation and
 Restart work in Player builds; it is not included in campaign level selection.
+The neutral floor spans 120×120 m, with `Traversal Probe` markers 90 m apart
+for movement checks. Build zones and enemy spawns stay in the central combat
+area. The lab's existing NavMesh asset was rebaked without changing its GUID;
+the campaign scene and its navigation asset are separate.
 
 The seeded-wave prototype and inline scene waves have been removed. WaveSpawner
 holds only a runtime copy of the selected level's waves. Missing level setup
@@ -367,6 +393,22 @@ it owns no gameplay rules. The level UI uses one screen-space `MainCanvas` with
 full-stretch HUD, touch, modal and screen containers. Its Canvas Scaler uses a
 1920×1080 reference and height-based scaling.
 
+`MenuToolkitView` and `GameplayToolkitView` are the current screen-space
+presentation layer. Their UXML, USS and shared PanelSettings live under
+`Assets/Tower-Defense/UI/Toolkit`; the C# views live in `Scripts/UI` so the
+runtime assembly and EditMode tests can reference them. The old Main Menu Canvas
+is disabled in the scene. The gameplay scenes persist invisible, non-interactive
+CanvasGroups on old screen-space groups while retaining their controllers.
+World-space indicators remain visible. The views read state from the existing menu, wave, wallet,
+progression, audio, pause, build selection and squad order components. It sends
+actions back through those controllers, without copying their gameplay rules.
+The mobile joystick writes a normalized vector into `PlayerMovement`; desktop
+keyboard movement continues through its existing path. The build panel reads
+`TowerSelectionModal.ActiveCards` and calls `TowerCard.Activate()` for the chosen
+option. The old Canvas remains serialized because world-space widgets and
+existing gameplay bindings still depend on it. Remove it after those references
+are migrated and the UI Toolkit view is validated on devices.
+
 ## Next boundaries to improve
 
 - Make tower combat shutdown explicit instead of disabling every neighboring script.
@@ -379,16 +421,21 @@ gun bones after animation, while `PlayerMovement` owns horizontal turning.
 The Player prefab assigns both bones explicitly; muzzle markers are children of
 their respective guns. Elevation/depression limits and turn speed are tunable on
 `PlayerGunAim`. Target loss returns the guns to the animated pose.
+`SkillTreeState` also stores the purchased and equipped player gun module in the
+existing progression save. `MenuToolkitView` owns the Equipment screen and
+purchase/equip actions. `PlayerSkillBonus` combines skill and module multipliers
+once on level start; the module changes rate/damage without replacing the gun
+prefab. Old progression saves default to Standard.
 
 ## Menu screens and audio preferences
 
 `GamePerformanceSettings` initializes frame pacing before scene load and owns the
-saved FPS visibility preference. `FpsInterface` creates one overlay per root Canvas
-and adds an FPS button to the existing settings panels at runtime; scenes need no
-new serialized references. `MainMenuScreens`, `AudioSettingsPanel` and `WaveHUD`
-provide their existing UI/font references. `FpsDisplay` uses unscaled frame time,
-so the counter continues to update on pause. Frame-rate policy and FPS interaction
-tests are in `FrameRatePolicyTests` and `FpsDisplayTests`.
+saved FPS visibility preference. The UI Toolkit views expose that preference in
+their settings panels and display FPS using unscaled frame time, including during
+pause. `FpsInterface` still creates the legacy overlay for scenes without the new
+view; the Toolkit views hide it where they replace the screen-space Canvas.
+Frame-rate policy and legacy FPS interaction tests are in `FrameRatePolicyTests`
+and `FpsDisplayTests`.
 
 MainMenuScreens owns home, level selection and settings visibility. MainMenu owns
 the selected level and explicitly colors the active page independently of keyboard

@@ -1,0 +1,126 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <ui:Style src="Gameplay.uss" />
+  <ui:VisualElement name="gameRoot" class="game-root" picking-mode="Ignore">
+    <ui:VisualElement name="topBar" class="top-bar" picking-mode="Ignore">
+      <ui:Button name="pauseButton" class="icon-button pause-button">
+        <ui:VisualElement class="pause-glyph" picking-mode="Ignore" />
+      </ui:Button>
+      <ui:VisualElement class="top-status" picking-mode="Ignore">
+        <ui:VisualElement class="wave-block" picking-mode="Ignore">
+          <ui:Label text="DEFENSE PHASE" class="status-caption" />
+          <ui:Label name="waveLabel" text="WAVE 1 / 3" class="wave-label" />
+        </ui:VisualElement>
+        <ui:VisualElement class="time-block" picking-mode="Ignore">
+          <ui:Label text="ELAPSED" class="status-caption" />
+          <ui:Label name="timerLabel" text="00:00" class="top-value" />
+        </ui:VisualElement>
+        <ui:VisualElement class="enemy-block" picking-mode="Ignore">
+          <ui:Label text="INCOMING" class="status-caption" />
+          <ui:Label name="enemiesLabel" text="10 ENEMIES" class="top-value" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement class="economy-status" picking-mode="Ignore">
+        <ui:Label text="SUPPLIES" class="status-caption" />
+        <ui:Label name="coinsLabel" text="◆ 1000" class="coins-label" />
+        <ui:Label name="incomeLabel" text="+0 / WAVE" class="income-label" />
+      </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:Label name="guideLabel" class="guide-label" />
+    <ui:Label name="fpsLabel" class="fps-label is-hidden" />
+    <ui:VisualElement name="effectRow" class="effect-row" picking-mode="Ignore">
+      <ui:Label name="slowEffect" class="effect-chip is-hidden" />
+      <ui:Label name="shieldEffect" class="effect-chip is-hidden" />
+      <ui:Label name="turretEffect" class="effect-chip is-hidden" />
+    </ui:VisualElement>
+    <ui:VisualElement name="spawnPreview" class="spawn-preview" picking-mode="Ignore" />
+    <ui:Button name="startWaveButton" class="start-wave-button is-hidden">
+      <ui:VisualElement class="start-wave-icon" picking-mode="Ignore" />
+      <ui:Label text="START WAVE" class="start-wave-text" picking-mode="Ignore" />
+    </ui:Button>
+    <ui:VisualElement name="touchControls" class="touch-controls" picking-mode="Ignore">
+      <ui:VisualElement name="joystick" class="joystick" picking-mode="Position">
+        <ui:VisualElement class="joystick-track" picking-mode="Ignore" />
+        <ui:VisualElement name="joystickKnob" class="joystick-knob" picking-mode="Ignore" />
+      </ui:VisualElement>
+      <ui:VisualElement name="actionStack" class="action-stack" picking-mode="Ignore">
+        <ui:Button name="rallyButton" class="small-action">
+          <ui:VisualElement class="action-icon rally-icon" picking-mode="Ignore" />
+          <ui:Label text="RALLY" class="action-label" picking-mode="Ignore" />
+        </ui:Button>
+        <ui:Button name="homeButton" class="small-action">
+          <ui:VisualElement class="action-icon home-icon" picking-mode="Ignore" />
+          <ui:Label text="HOME" class="action-label" picking-mode="Ignore" />
+        </ui:Button>
+        <ui:VisualElement class="ultimate-wrap" picking-mode="Ignore">
+          <ui:Button name="ultimateButton" class="ultimate-button">
+            <ui:VisualElement class="ultimate-icon" picking-mode="Ignore" />
+            <ui:Label text="ULTIMATE" class="action-label" picking-mode="Ignore" />
+          </ui:Button>
+          <ui:ProgressBar name="ultimateProgress" class="ultimate-progress" low-value="0" high-value="100" value="0" />
+          <ui:Label name="ultimateCooldown" class="cooldown-label is-hidden" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="desktopActions" class="desktop-actions is-hidden" picking-mode="Ignore">
+      <ui:Button name="desktopRally" text="RALLY" class="desktop-action" />
+      <ui:Button name="desktopHome" text="HOME" class="desktop-action" />
+      <ui:Button name="desktopUltimate" text="ULTIMATE" class="desktop-action" />
+      <ui:Label text="WASD TO MOVE   •   SPACE FOR ULTIMATE" class="desktop-hint" />
+    </ui:VisualElement>
+    <ui:VisualElement name="buildPanel" class="side-panel is-hidden" picking-mode="Ignore">
+      <ui:Label text="CONSTRUCTION / BLUEPRINTS" class="panel-overline" />
+      <ui:Label name="buildHeading" text="CHOOSE A BUILDING" class="panel-heading" />
+      <ui:ScrollView name="buildCards" class="build-cards" />
+    </ui:VisualElement>
+    <ui:VisualElement name="orderLayer" class="order-layer is-hidden" picking-mode="Ignore">
+      <ui:Label text="TAP A WALKABLE POINT FOR YOUR SQUAD" class="order-instruction" />
+      <ui:Button name="orderCancel" text="CANCEL" class="order-cancel" />
+    </ui:VisualElement>
+    <ui:VisualElement name="screenOverlay" class="screen-overlay is-hidden" picking-mode="Ignore">
+      <ui:VisualElement name="pausePanel" class="screen-panel is-hidden" picking-mode="Ignore">
+        <ui:Label text="SYSTEM / STANDBY" class="screen-overline" />
+        <ui:Label text="PAUSED" class="screen-title" />
+        <ui:Button name="resumeButton" text="RESUME" class="primary-button" />
+        <ui:Button name="pauseSettings" text="AUDIO SETTINGS" class="screen-button" />
+        <ui:Button name="restartButton" text="RESTART" class="screen-button" />
+        <ui:Button name="pauseMenuButton" text="MAIN MENU" class="screen-button" />
+      </ui:VisualElement>
+      <ui:VisualElement name="audioPanel" class="screen-panel is-hidden" picking-mode="Ignore">
+        <ui:Label text="SYSTEM / PREFERENCES" class="screen-overline" />
+        <ui:Label text="AUDIO SETTINGS" class="screen-title" />
+        <ui:Label text="MUSIC" class="settings-label" />
+        <ui:Slider name="musicSlider" low-value="0" high-value="1" class="audio-slider" />
+        <ui:Label name="musicValue" class="settings-value" />
+        <ui:Label text="SOUND EFFECTS" class="settings-label" />
+        <ui:Slider name="effectsSlider" low-value="0" high-value="1" class="audio-slider" />
+        <ui:Label name="effectsValue" class="settings-value" />
+        <ui:Button name="fpsToggle" class="screen-button" />
+        <ui:Button name="audioBack" text="BACK" class="screen-button" />
+      </ui:VisualElement>
+      <ui:VisualElement name="exitConfirmPanel" class="screen-panel is-hidden" picking-mode="Ignore">
+        <ui:Label text="LEAVE CURRENT RUN?" class="screen-overline" />
+        <ui:Label name="exitConfirmTitle" text="CONFIRM EXIT" class="screen-title" />
+        <ui:Label name="exitConfirmDescription" text="Current wave progress will be lost. No reward is granted." class="screen-subtitle" />
+        <ui:Button name="exitCancelButton" text="KEEP PLAYING" class="screen-button" />
+        <ui:Button name="exitConfirmButton" text="CONFIRM" class="primary-button" />
+      </ui:VisualElement>
+      <ui:VisualElement name="victoryPanel" class="screen-panel is-hidden" picking-mode="Ignore">
+        <ui:Label text="MISSION COMPLETE" class="screen-overline" />
+        <ui:Label text="VICTORY" class="screen-title" />
+        <ui:Label name="victoryReward" class="screen-subtitle" />
+        <ui:Button name="nextLevelButton" text="NEXT LEVEL" class="primary-button" />
+        <ui:Button name="replayButton" text="REPLAY" class="screen-button" />
+        <ui:Button name="victorySkills" text="SKILL TREE" class="screen-button" />
+        <ui:Button name="victoryMenu" text="MAIN MENU" class="screen-button" />
+      </ui:VisualElement>
+      <ui:VisualElement name="defeatPanel" class="screen-panel is-hidden" picking-mode="Ignore">
+        <ui:Label text="MISSION FAILED" class="screen-overline" />
+        <ui:Label text="DEFENSE LOST" class="screen-title" />
+        <ui:Label text="Return stronger. The front is waiting." class="screen-subtitle" />
+        <ui:Label name="defeatReward" class="screen-subtitle" />
+        <ui:Button name="defeatReplay" text="REPLAY" class="screen-button" />
+        <ui:Button name="defeatMenu" text="MAIN MENU" class="primary-button" />
+      </ui:VisualElement>
+    </ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>

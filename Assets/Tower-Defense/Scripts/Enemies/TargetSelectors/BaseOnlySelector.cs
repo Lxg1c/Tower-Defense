@@ -17,6 +17,8 @@ public class BaseOnlySelector : MonoBehaviour, ITargetSelector
 
     public Damageable GetTarget(MobCore mob)
     {
+        if (targetBase == null)
+            targetBase = Base.Instance;
         if (targetBase == null || !targetBase.IsTargetable) return null;
         return targetBase;
     }

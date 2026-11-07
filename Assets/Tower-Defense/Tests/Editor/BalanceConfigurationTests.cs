@@ -292,7 +292,12 @@ namespace TowerDefense.Tests
                     }
                     int flyers = entries.Where(e => e.Prefab.GetComponent<FlyingNav>() != null).Sum(e => e.count);
                     if (i == 0) Assert.That(flyers, Is.Zero);
-                    if (i == 1) Assert.That(flyers, Is.InRange(1, 3), "Introduce flight with a small group.");
+                    if (i == 1)
+                    {
+                        Assert.That(flyers, Is.GreaterThan(0), "Introduce flight in the second wave.");
+                        Assert.That(flyers, Is.LessThanOrEqualTo(entries.Sum(e => e.count) * .25f),
+                            "The first flying group should be at most a quarter of the wave.");
+                    }
                     if (i == 3)
                         Assert.That(entries.Any(e => e.Prefab.GetComponent<MobHealth>().MaxHealth >= 300),
                             Is.True, "The finale should include the previously introduced armored threat.");

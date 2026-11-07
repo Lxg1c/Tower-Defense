@@ -29,6 +29,8 @@ public sealed class SquadOrderController : MonoBehaviour
     private GameObject selectionMarker;
     private Coroutine routeHideRoutine;
     private bool orderModeActive;
+    public bool IsOrderModeActive => orderModeActive;
+    private PlayerHealth playerHealth;
     private bool brainWasEnabled;
     private bool pressStarted;
     private bool pressedOnUi;
@@ -43,6 +45,14 @@ public sealed class SquadOrderController : MonoBehaviour
             orderCanvas == null || cancelButton == null || routeLine == null || cameraBrain == null)
         {
             Debug.LogError("[SquadOrderController] Assign the camera with CinemachineBrain, level grid, order surface, order canvas, cancel button and route line.", this);
+            enabled = false;
+            return;
+        }
+
+        playerHealth = playerTarget.GetComponentInParent<PlayerHealth>();
+        if (playerHealth == null)
+        {
+            Debug.LogError("[SquadOrderController] Player target needs PlayerHealth.", this);
             enabled = false;
             return;
         }
@@ -66,6 +76,11 @@ public sealed class SquadOrderController : MonoBehaviour
 
     private void Update()
     {
+        if (orderModeActive && playerHealth.IsGhost)
+        {
+            CancelOrder();
+            return;
+        }
         if (orderModeActive && selected == null)
         {
             CancelOrder();
@@ -88,6 +103,7 @@ public sealed class SquadOrderController : MonoBehaviour
     public void StartOrder(BarracksBuilding barracks)
     {
         if (!isActiveAndEnabled || orderModeActive || barracks == null || !barracks.isActiveAndEnabled ||
+            playerHealth == null || playerHealth.IsGhost ||
             Time.timeScale <= 0f || TowerSelectionModal.Instance != null && TowerSelectionModal.Instance.IsOpen)
             return;
 

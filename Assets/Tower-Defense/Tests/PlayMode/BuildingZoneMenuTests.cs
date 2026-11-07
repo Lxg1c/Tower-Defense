@@ -194,12 +194,12 @@ namespace TowerDefense.Tests
         public IEnumerator PlayerCanWalkAwayAndReenterWithoutACloseButton()
         {
             var start = wallet.transform.position;
-            Set(movement, "moveInput", Vector2.right);
+            movement.SetToolkitMoveInput(Vector2.right);
             for (int i = 0; i < 35; i++) yield return new WaitForFixedUpdate();
             Assert.That(Vector3.Distance(start, wallet.transform.position), Is.GreaterThan(1.2f));
             Assert.That(selection.IsOpen, Is.False);
             Assert.That(selection.Owner, Is.Null);
-            Set(movement, "moveInput", Vector2.zero);
+            movement.ClearToolkitMoveInput();
             wallet.GetComponent<Rigidbody>().position = Vector3.zero;
             wallet.GetComponent<Rigidbody>().linearVelocity = Vector3.zero;
             Physics.SyncTransforms();
@@ -219,6 +219,19 @@ namespace TowerDefense.Tests
             Assert.That(wallet.Coins, Is.EqualTo(coins));
             Assert.That(selection.IsOpen, Is.False);
             yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator GhostCannotKeepOpenBuildMenuOrSpendCoins()
+        {
+            var health = wallet.gameObject.AddComponent<PlayerHealth>();
+            int coins = wallet.Coins;
+            health.TakeDamage(health.MaxHealth);
+            Assert.That(health.IsGhost, Is.True);
+            yield return null;
+            Assert.That(selection.IsOpen, Is.False);
+            Assert.That(zone.IsBuilt, Is.False);
+            Assert.That(wallet.Coins, Is.EqualTo(coins));
         }
 
         [UnityTest]

@@ -86,6 +86,8 @@ MonoBehaviour:
   additionalDifficulties:
   - startingCoins: 10
     moneyReward: 150
+    enemyHealthMultiplier: 1
+    enemyDamageMultiplier: 1
     waves:
     - coinReward: 4
       spawnGroups:
@@ -152,6 +154,8 @@ MonoBehaviour:
           spawnInterval: 0.7225
   - startingCoins: 10
     moneyReward: 225
+    enemyHealthMultiplier: 1
+    enemyDamageMultiplier: 1
     waves:
     - coinReward: 4
       spawnGroups:

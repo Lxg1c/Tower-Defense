@@ -18,7 +18,7 @@ public sealed class PlayerSkillBonus : MonoBehaviour
 
         SkillTreeState skills = PlayerProgression.State;
         health.SetMaxHealth(health.MaxHealth * skills.HealthMultiplier);
-        shooter.Damage *= skills.DamageMultiplier;
-        shooter.FireRate *= skills.FireRateMultiplier;
+        shooter.Damage *= skills.DamageMultiplier * skills.WeaponDamageMultiplier;
+        shooter.FireRate *= skills.FireRateMultiplier * skills.WeaponFireRateMultiplier;
     }
 }
