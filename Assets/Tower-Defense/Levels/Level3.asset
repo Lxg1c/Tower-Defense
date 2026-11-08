@@ -44,7 +44,7 @@ MonoBehaviour:
     - spawnPointIndex: 2
       entries:
       - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
-        count: 17
+        count: 16
         spawnInterval: 0.85
     - spawnPointIndex: 3
       entries:

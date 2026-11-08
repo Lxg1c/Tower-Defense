@@ -12,35 +12,42 @@ the mine and cannon initially; three new defense points offer Pulse after town
 hall level 2. Later-location points remain available on Levels 2 and 3 because
 all three levels share one scene.
 
-| Wave | Normal composition | Unscaled enemy HP |
-| --- | --- | ---: |
-| 1 | 5 Spider | 450 |
-| 2 | 9 Spider, 2 Bat | 1,050 |
-| 3 | 11 Spider, 3 Bat | 1,350 |
-| 4 | 13 Spider, 3 Bat, 2 Shooter | 1,710 |
-| 5 | 15 Spider, 4 Bat, 3 Shooter, 1 Destroyer | 2,460 |
+| Wave | Normal composition |
+| --- | --- |
+| 1 | 5 Spider |
+| 2 | 9 Spider, 2 Bat |
+| 3 | 11 Spider, 3 Bat |
+| 4 | 13 Spider, 3 Bat, 2 Shooter |
+| 5 | 15 Spider, 4 Bat, 3 Shooter, 1 Destroyer |
 
 | Wave | Hard composition | Nightmare composition |
 | --- | --- | --- |
 | 1 | 6 Spider | 7 Spider |
-| 2 | 9 Spider, 2 Bat | 9 Spider, 2 Bat |
-| 3 | 11 Spider, 3 Bat | 12 Spider, 3 Bat |
-| 4 | 13 Spider, 3 Bat, 2 Shooter | 14 Spider, 3 Bat, 2 Shooter |
-| 5 | 16 Spider, 4 Bat, 3 Shooter, 1 Destroyer | 17 Spider, 4 Bat, 3 Shooter, 1 Destroyer |
+| 2 | 9 Spider, 2 Bat | 9 Spider, 2 Bat, 1 Shooter |
+| 3 | 11 Spider, 3 Bat, 1 Shooter | 12 Spider, 3 Bat, 1 Shooter, 1 Destroyer |
+| 4 | 13 Spider, 3 Bat, 2 Shooter, 1 Destroyer | 14 Spider, 3 Bat, 2 Shooter, 1 Destroyer |
+| 5 | 16 Spider, 4 Bat, 3 Shooter, 1 Destroyer | 17 Spider, 4 Bat, 4 Shooter, 2 Destroyer |
 
-All three difficulties use 1.05-second spawn intervals. Hard multiplies enemy
-health and damage by 1.25; Nightmare multiplies both by 1.30. The Nightmare
-increase is smaller than the original +25% per step hypothesis: the original
-1.5625 multiplier plus a 0.735-second spawn interval defeated an automated
-no-skill run in wave 2. These are provisional balance values, not human win rates.
+All three difficulties use 1.05-second spawn intervals and 1.0 health/damage
+multipliers. Difficulty now comes from composition and modest count increases:
+Shooter appears earlier on Hard and Nightmare, and Destroyer appears earlier on
+those difficulties. These are four existing enemy types, not newly created models.
+Bat base HP was reduced from 120 to 70 on every difficulty; it is now more
+fragile than Spider (90 HP). The earlier uniform +25% stat-scaling hypothesis
+was retired after the author's feedback that it made familiar enemies too tough.
+Because Bat is shared by all levels, Level 3 Normal wave 3 was reduced from
+17 to 16 Spider to keep its existing inter-wave HP growth guardrail passing.
 
 Automated five-wave runs with a moving, shooting R-07 and purchased buildings
-cleared Normal with both mine-first and cannon-first openings. Hard mine-first
-cleared all five waves with 391 base HP remaining; the victory panel showed a
-150-money reward. The same script reached Nightmare wave 5 and lost there;
-other purchase orders also lost. The script's simple targeting and ultimate
-timing do not prove that a skilled player cannot win. Human playtests must
-measure the intended Normal 1–2-attempt win rate and Nightmare viability.
+cleared Normal with both mine-first and cannon-first openings before this pass.
+With the new composition and no permanent skills, Hard and Nightmare mine-first
+both cleared all five waves; Hard cannon-first also cleared, including a run
+without using the ultimate. The victory panels showed 150 and 225 permanent
+money on Hard and Nightmare. This proves the revised configurations can be
+completed by this automated policy, but it does not establish human win rates
+or the intended difference in effort. Human playtests must check that Hard and
+Nightmare remain meaningfully harder and that Bat survives long enough to play
+its mine-hunting role.
 
 An earlier idle-hero smoke showed cannon surviving wave 1 and mine losing,
 which makes active hero play matter. Bat prioritizes surviving mines before

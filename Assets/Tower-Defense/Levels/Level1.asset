@@ -79,8 +79,8 @@ MonoBehaviour:
   additionalDifficulties:
   - startingCoins: 8
     moneyReward: 150
-    enemyHealthMultiplier: 1.25
-    enemyDamageMultiplier: 1.25
+    enemyHealthMultiplier: 1
+    enemyDamageMultiplier: 1
     waves:
     - coinReward: 4
       spawnGroups:
@@ -109,6 +109,9 @@ MonoBehaviour:
         - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
           count: 3
           spawnInterval: 1.05
+        - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
+          count: 1
+          spawnInterval: 1.05
     - coinReward: 4
       spawnGroups:
       - spawnPointIndex: 0
@@ -121,6 +124,9 @@ MonoBehaviour:
           spawnInterval: 1.05
         - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
           count: 2
+          spawnInterval: 1.05
+        - enemy: {fileID: 11400000, guid: f95b8e55cd011eb48aa6e5173af7e84e, type: 2}
+          count: 1
           spawnInterval: 1.05
     - coinReward: 4
       spawnGroups:
@@ -140,8 +146,8 @@ MonoBehaviour:
           spawnInterval: 1.05
   - startingCoins: 8
     moneyReward: 225
-    enemyHealthMultiplier: 1.3
-    enemyDamageMultiplier: 1.3
+    enemyHealthMultiplier: 1
+    enemyDamageMultiplier: 1
     waves:
     - coinReward: 4
       spawnGroups:
@@ -160,6 +166,9 @@ MonoBehaviour:
         - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
           count: 2
           spawnInterval: 1.05
+        - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
+          count: 1
+          spawnInterval: 1.05
     - coinReward: 4
       spawnGroups:
       - spawnPointIndex: 0
@@ -169,6 +178,12 @@ MonoBehaviour:
           spawnInterval: 1.05
         - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
           count: 3
+          spawnInterval: 1.05
+        - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
+          count: 1
+          spawnInterval: 1.05
+        - enemy: {fileID: 11400000, guid: f95b8e55cd011eb48aa6e5173af7e84e, type: 2}
+          count: 1
           spawnInterval: 1.05
     - coinReward: 4
       spawnGroups:
@@ -183,6 +198,9 @@ MonoBehaviour:
         - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
           count: 2
           spawnInterval: 1.05
+        - enemy: {fileID: 11400000, guid: f95b8e55cd011eb48aa6e5173af7e84e, type: 2}
+          count: 1
+          spawnInterval: 1.05
     - coinReward: 4
       spawnGroups:
       - spawnPointIndex: 0
@@ -194,8 +212,8 @@ MonoBehaviour:
           count: 4
           spawnInterval: 1.05
         - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
-          count: 3
+          count: 4
           spawnInterval: 1.05
         - enemy: {fileID: 11400000, guid: f95b8e55cd011eb48aa6e5173af7e84e, type: 2}
-          count: 1
+          count: 2
           spawnInterval: 1.05
