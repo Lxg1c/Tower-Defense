@@ -26,56 +26,56 @@ MonoBehaviour:
       entries:
       - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
         count: 6
-        spawnInterval: 0.8
+        spawnInterval: 0.65
   - coinReward: 8
     spawnGroups:
     - spawnPointIndex: 0
       entries:
       - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
         count: 12
-        spawnInterval: 0.7
+        spawnInterval: 0.55
       - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
         count: 2
-        spawnInterval: 0.7
+        spawnInterval: 0.55
   - coinReward: 4
     spawnGroups:
     - spawnPointIndex: 0
       entries:
       - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
         count: 23
-        spawnInterval: 0.6
+        spawnInterval: 0.45
       - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
         count: 5
-        spawnInterval: 0.6
+        spawnInterval: 0.45
   - coinReward: 4
     spawnGroups:
     - spawnPointIndex: 0
       entries:
       - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
         count: 37
-        spawnInterval: 0.5
+        spawnInterval: 0.35
       - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
         count: 5
-        spawnInterval: 0.5
+        spawnInterval: 0.35
       - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
         count: 3
-        spawnInterval: 0.5
+        spawnInterval: 0.35
   - coinReward: 4
     spawnGroups:
     - spawnPointIndex: 0
       entries:
       - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
         count: 55
-        spawnInterval: 0.4
+        spawnInterval: 0.25
       - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
         count: 6
-        spawnInterval: 0.4
+        spawnInterval: 0.25
       - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
         count: 4
-        spawnInterval: 0.4
+        spawnInterval: 0.25
       - enemy: {fileID: 11400000, guid: f95b8e55cd011eb48aa6e5173af7e84e, type: 2}
         count: 1
-        spawnInterval: 0.4
+        spawnInterval: 0.25
   additionalDifficulties:
   - startingCoins: 8
     moneyReward: 150
@@ -89,56 +89,56 @@ MonoBehaviour:
         entries:
         - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
           count: 6
-          spawnInterval: 0.8
+          spawnInterval: 0.65
     - coinReward: 8
       spawnGroups:
       - spawnPointIndex: 0
         entries:
         - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
           count: 13
-          spawnInterval: 0.7
+          spawnInterval: 0.55
         - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
           count: 2
-          spawnInterval: 0.7
+          spawnInterval: 0.55
     - coinReward: 4
       spawnGroups:
       - spawnPointIndex: 0
         entries:
         - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
           count: 24
-          spawnInterval: 0.6
+          spawnInterval: 0.45
         - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
           count: 5
-          spawnInterval: 0.6
+          spawnInterval: 0.45
     - coinReward: 4
       spawnGroups:
       - spawnPointIndex: 0
         entries:
         - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
           count: 38
-          spawnInterval: 0.5
+          spawnInterval: 0.35
         - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
           count: 5
-          spawnInterval: 0.5
+          spawnInterval: 0.35
         - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
           count: 3
-          spawnInterval: 0.5
+          spawnInterval: 0.35
     - coinReward: 4
       spawnGroups:
       - spawnPointIndex: 0
         entries:
         - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
           count: 56
-          spawnInterval: 0.4
+          spawnInterval: 0.25
         - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
           count: 6
-          spawnInterval: 0.4
+          spawnInterval: 0.25
         - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
           count: 4
-          spawnInterval: 0.4
+          spawnInterval: 0.25
         - enemy: {fileID: 11400000, guid: f95b8e55cd011eb48aa6e5173af7e84e, type: 2}
           count: 1
-          spawnInterval: 0.4
+          spawnInterval: 0.25
   - startingCoins: 8
     moneyReward: 225
     enemyHealthMultiplier: 2
@@ -151,53 +151,53 @@ MonoBehaviour:
         entries:
         - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
           count: 6
-          spawnInterval: 0.8
+          spawnInterval: 0.65
     - coinReward: 8
       spawnGroups:
       - spawnPointIndex: 0
         entries:
         - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
           count: 14
-          spawnInterval: 0.7
+          spawnInterval: 0.55
         - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
           count: 2
-          spawnInterval: 0.7
+          spawnInterval: 0.55
     - coinReward: 4
       spawnGroups:
       - spawnPointIndex: 0
         entries:
         - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
           count: 25
-          spawnInterval: 0.6
+          spawnInterval: 0.45
         - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
           count: 5
-          spawnInterval: 0.6
+          spawnInterval: 0.45
     - coinReward: 4
       spawnGroups:
       - spawnPointIndex: 0
         entries:
         - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
           count: 39
-          spawnInterval: 0.5
+          spawnInterval: 0.35
         - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
           count: 5
-          spawnInterval: 0.5
+          spawnInterval: 0.35
         - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
           count: 3
-          spawnInterval: 0.5
+          spawnInterval: 0.35
     - coinReward: 4
       spawnGroups:
       - spawnPointIndex: 0
         entries:
         - enemy: {fileID: 11400000, guid: f62b95056a15e784495bece55b6204e5, type: 2}
           count: 57
-          spawnInterval: 0.4
+          spawnInterval: 0.25
         - enemy: {fileID: 11400000, guid: 8389da989cca75e46b9abc07f1d3b912, type: 2}
           count: 6
-          spawnInterval: 0.4
+          spawnInterval: 0.25
         - enemy: {fileID: 11400000, guid: 6e5fc2eada2b1e648b5eb908d61b18be, type: 2}
           count: 4
-          spawnInterval: 0.4
+          spawnInterval: 0.25
         - enemy: {fileID: 11400000, guid: f95b8e55cd011eb48aa6e5173af7e84e, type: 2}
           count: 1
-          spawnInterval: 0.4
+          spawnInterval: 0.25

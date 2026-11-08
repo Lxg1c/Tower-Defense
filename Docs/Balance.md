@@ -20,7 +20,11 @@ damage skills and other damage sources change the actual number of hits.
 | 5 | 66 | 67 | 68 |
 
 The Normal finale contains 55 Spider, 6 Bat, 4 Shooter and 1 Destroyer.
-The later waves spawn faster, reaching 0.4 seconds between enemies in wave 5.
+Spawn intervals are 0.65/0.55/0.45/0.35/0.25 seconds from wave 1 to wave 5
+on all three difficulties. The final wave now spawns its 66 Normal enemies in
+roughly 16.5 seconds of game time instead of 26.4 seconds. An Editor autopilot
+run after this change completed all five Normal waves without permanent skills;
+the fifth wave reached 51 enemies alive at once, up from 36 in the previous run.
 These counts target a crowded fight like the reference; they are not yet a
 measured performance or human balance result. Level 1 points now unlock in
 part through construction: the second mine follows the first, and Pulse points
