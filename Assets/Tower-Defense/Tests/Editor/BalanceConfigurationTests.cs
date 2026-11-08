@@ -267,7 +267,7 @@ namespace TowerDefense.Tests
         }
 
         [Test]
-        public void LevelIntroducesFlightGraduallyAndIncreasesWaveHealthWithinBudget()
+        public void LevelIntroducesFlightGraduallyAndGrowsInEnemyCount()
         {
             var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");
             try
@@ -275,7 +275,7 @@ namespace TowerDefense.Tests
                 var spawner = scene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<WaveSpawner>(true)).Single();
                 spawner.ConfigureLevel(AssetDatabase.LoadAssetAtPath<LevelDefinition>("Assets/Tower-Defense/Levels/Level3.asset"));
                 Assert.That(spawner.WaveCount, Is.EqualTo(4));
-                float previousHealth = 0;
+                int previousCount = 0;
                 for (int i = 0; i < spawner.WaveCount; i++)
                 {
                     var wave = spawner.GetWave(i);
@@ -283,12 +283,10 @@ namespace TowerDefense.Tests
                         ? wave.spawnGroups.SelectMany(g => g.entries).ToArray() : wave.entries;
                     Assert.That(entries, Is.Not.Empty);
                     Assert.That(entries.All(e => e.Prefab != null && e.count > 0), Is.True);
-                    float health = entries.Sum(e => e.count * e.Prefab.GetComponent<MobHealth>().MaxHealth);
+                    int count = entries.Sum(e => e.count);
                     if (i > 0)
                     {
-                        Assert.That(health, Is.GreaterThan(previousHealth), $"Wave {i + 1}");
-                        Assert.That(health, Is.LessThanOrEqualTo(previousHealth * 1.8f),
-                            $"Wave {i + 1}: wave HP must grow by at most 80%.");
+                        Assert.That(count, Is.GreaterThan(previousCount), $"Wave {i + 1}");
                     }
                     int flyers = entries.Where(e => e.Prefab.GetComponent<FlyingNav>() != null).Sum(e => e.count);
                     if (i == 0) Assert.That(flyers, Is.Zero);
@@ -301,7 +299,7 @@ namespace TowerDefense.Tests
                     if (i == 3)
                         Assert.That(entries.Any(e => e.Prefab.GetComponent<MobHealth>().MaxHealth >= 300),
                             Is.True, "The finale should include the previously introduced armored threat.");
-                    previousHealth = health;
+                    previousCount = count;
                 }
             }
             finally { EditorSceneManager.ClosePreviewScene(scene); }

@@ -608,7 +608,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fireRate: 2
-  damage: 10
+  damage: 5
   firePoints:
   - {fileID: 8464208900308800912}
   - {fileID: 1582547407669753536}

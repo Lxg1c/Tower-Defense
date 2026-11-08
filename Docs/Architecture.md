@@ -43,10 +43,12 @@ applies the purchased health, shot-damage, and fire-rate bonuses once when the
 level starts. New levels need a unique progression ID and three authored
 difficulty configurations.
 
-Difficulty variants can set enemy health and damage multipliers. `WaveSpawner`
-applies them to each spawned or reused mob; the prefab remains the source of
-base health and attack damage. The first location uses 1.25x and 1.5625x on
-Hard and Nightmare; later levels currently use 1x. The shared Level 1 scene
+Difficulty variants can set enemy health, damage and movement-speed multipliers.
+`WaveSpawner` applies them to each spawned or reused mob; the prefab remains the
+source of base health, attack damage and movement speed. Level 1 uses 1.5x/2x
+health and 1.08x/1.16x movement speed on Hard/Nightmare, while damage stays 1x.
+`MobSlow` preserves the selected speed multiplier when a temporary slow expires.
+The shared Level 1 scene
 uses `LevelSetup.IsFirstLocation` to select first-location building rules.
 `TowerPlacementZone` may hide a point there or use a location-specific loadout
 without removing the point or its general options from later levels.
@@ -101,6 +103,10 @@ delegate to its slot. Leaving the zone, losing interaction eligibility, combat
 and disabling the zone close its owned panel. Shared panels record their owning
 zone; overlapping zones cannot steal or close another zone's interaction.
 Build and upgrade submissions recheck physical proximity before spending coins.
+An optional `requiredBuiltZone` reference keeps a point hidden until its source
+point has been built. The prerequisite is checked again when a purchase is submitted.
+Level 1 uses it to reveal the second mine after the first mine and Pulse points
+in a chain after the starting cannon, alongside their town-hall level requirements.
 The panel roots have no active full-screen backdrop or pointer blocker, and no
 Close buttons. The joystick remains available while a panel is open.
 

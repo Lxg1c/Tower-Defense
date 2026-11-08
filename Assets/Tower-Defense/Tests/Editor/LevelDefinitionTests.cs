@@ -172,14 +172,20 @@ namespace TowerDefense.Tests
         }
 
         [Test]
-        public void LevelsIntroduceIncreasingEnemyPressure()
+        public void FirstLocationGrowsToAFullScaleFinalWave()
         {
-            int Count(LevelDefinition l) => l.waves.Sum(w => w.spawnGroups.Sum(g => g.entries.Sum(e => e.count)));
-            Assert.That(Count(Level(2)), Is.GreaterThan(Count(Level(1))));
-            Assert.That(Count(Level(3)), Is.GreaterThan(Count(Level(2))));
+            int Count(LevelDefinition.LevelWave wave) =>
+                wave.spawnGroups.Sum(g => g.entries.Sum(e => e.count));
+            var normal = Level(1).GetWaves(1).Select(Count).ToArray();
+            Assert.That(normal[0], Is.EqualTo(6));
+            Assert.That(normal[4], Is.EqualTo(66));
+            for (int i = 1; i < normal.Length; i++)
+                Assert.That(normal[i], Is.GreaterThan(normal[i - 1]));
             foreach (int difficulty in new[] { 1, 2, 3 })
             {
                 var waves = Level(1).GetWaves(difficulty);
+                Assert.That(waves[1].coinReward, Is.EqualTo(8),
+                    "Wave two should fund a meaningful town-hall and defense choice.");
                 Assert.That(waves, Has.Length.EqualTo(5));
                 Assert.That(waves[0].spawnGroups.SelectMany(g => g.entries)
                     .All(e => e.enemy.displayName == "Spider"), Is.True);
@@ -189,37 +195,39 @@ namespace TowerDefense.Tests
                     .Any(e => e.enemy.displayName == "Destroyer"), Is.True);
                 Assert.That(Level(1).GetStartingCoins(difficulty), Is.EqualTo(8));
                 Assert.That(Level(1).GetEnemyHealthMultiplier(difficulty),
-                    Is.EqualTo(1f).Within(0.0001f));
+                    Is.EqualTo(difficulty == 1 ? 1f : difficulty == 2 ? 1.5f : 2f).Within(0.0001f));
                 Assert.That(Level(1).GetEnemyDamageMultiplier(difficulty),
                     Is.EqualTo(1f).Within(0.0001f));
+                Assert.That(Level(1).GetEnemySpeedMultiplier(difficulty),
+                    Is.EqualTo(difficulty == 1 ? 1f : difficulty == 2 ? 1.08f : 1.16f).Within(0.0001f));
             }
         }
 
         [Test]
-        public void HigherDifficultyIntroducesExistingThreatTypesEarlierWithoutBuffingEveryMob()
+        public void EnemyDurabilityMatchesUnupgradedHeroShotTargets()
         {
             var level = Level(1);
-            bool HasEnemy(int difficulty, int waveIndex, string name) =>
-                level.GetWaves(difficulty)[waveIndex].spawnGroups
-                    .SelectMany(group => group.entries)
-                    .Any(entry => entry.enemy.displayName == name);
+            var player = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/Tower-Defense/Prefabs/Player.prefab");
+            var shooter = player.GetComponent<Shooter>();
+            var serialized = new SerializedObject(shooter);
+            Assert.That(serialized.FindProperty("firePoints").arraySize, Is.EqualTo(2));
+            Assert.That(shooter.Damage, Is.EqualTo(5f));
+            float fullVolleyDamage = shooter.Damage * 2f;
+            int Shots(string prefab, int difficulty) => Mathf.CeilToInt(
+                AssetDatabase.LoadAssetAtPath<GameObject>(
+                    $"Assets/Tower-Defense/Prefabs/Mobs/{prefab}.prefab")
+                    .GetComponent<MobHealth>().MaxHealth *
+                level.GetEnemyHealthMultiplier(difficulty) / fullVolleyDamage);
 
-            Assert.That(HasEnemy(1, 2, "Shooter"), Is.False);
-            Assert.That(HasEnemy(2, 2, "Shooter"), Is.True);
-            Assert.That(HasEnemy(2, 1, "Shooter"), Is.False);
-            Assert.That(HasEnemy(3, 1, "Shooter"), Is.True);
-            Assert.That(HasEnemy(1, 3, "Destroyer"), Is.False);
-            Assert.That(HasEnemy(2, 3, "Destroyer"), Is.True);
-            Assert.That(HasEnemy(2, 2, "Destroyer"), Is.False);
-            Assert.That(HasEnemy(3, 2, "Destroyer"), Is.True);
-
-            var bat = AssetDatabase.LoadAssetAtPath<GameObject>(
-                "Assets/Tower-Defense/Prefabs/Mobs/Bat.prefab");
-            var spider = AssetDatabase.LoadAssetAtPath<GameObject>(
-                "Assets/Tower-Defense/Prefabs/Mobs/EnemySpider.prefab");
-            Assert.That(bat.GetComponentInChildren<MobHealth>(true).MaxHealth, Is.EqualTo(70f));
-            Assert.That(bat.GetComponentInChildren<MobHealth>(true).MaxHealth,
-                Is.LessThan(spider.GetComponentInChildren<MobHealth>(true).MaxHealth));
+            Assert.That(Shots("EnemySpider", 1), Is.EqualTo(3));
+            Assert.That(Shots("EnemyShooter", 1), Is.EqualTo(2));
+            Assert.That(Shots("EnemySpider", 2), Is.EqualTo(5));
+            Assert.That(Shots("EnemyShooter", 2), Is.EqualTo(3));
+            Assert.That(Shots("EnemyDestoyer", 1), Is.GreaterThanOrEqualTo(30));
+            Assert.That(Shots("EnemyDestoyer", 2), Is.GreaterThan(Shots("EnemyDestoyer", 1)));
+            Assert.That(Shots("Bat", 1), Is.EqualTo(3));
+            Assert.That(Shots("Bat", 2), Is.EqualTo(4));
         }
 
         [Test]
@@ -229,6 +237,9 @@ namespace TowerDefense.Tests
             try
             {
                 copy.additionalDifficulties[0].enemyDamageMultiplier = 0f;
+                Assert.Throws<ArgumentException>(() => copy.Validate(difficulty: 2));
+                copy.additionalDifficulties[0].enemyDamageMultiplier = 1f;
+                copy.additionalDifficulties[0].enemySpeedMultiplier = 0f;
                 Assert.Throws<ArgumentException>(() => copy.Validate(difficulty: 2));
             }
             finally { UnityEngine.Object.DestroyImmediate(copy); }
@@ -250,6 +261,8 @@ namespace TowerDefense.Tests
                     Is.EqualTo(4));
                 Assert.That(zones.Any(zone => zone.FindProperty("requiredTownHallLevel").intValue >= 4),
                     Is.False);
+                Assert.That(zones.Count(zone => zone.FindProperty("requiredBuiltZone").objectReferenceValue != null),
+                    Is.EqualTo(4));
             }
             finally { EditorSceneManager.ClosePreviewScene(scene); }
         }

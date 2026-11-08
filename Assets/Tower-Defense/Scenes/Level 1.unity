@@ -1152,6 +1152,10 @@ PrefabInstance:
       value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 1794057242627787066, guid: 8fbef848b9607b44ba3d3d7cf4679a86, type: 3}
+      propertyPath: requiredBuiltZone
+      value: 
+      objectReference: {fileID: 1999874892}
+    - target: {fileID: 1794057242627787066, guid: 8fbef848b9607b44ba3d3d7cf4679a86, type: 3}
       propertyPath: firstLocationLoadout
       value: 
       objectReference: {fileID: 11400000, guid: e2732cdf50959e94c8fee8368c6ef3d5, type: 2}
@@ -1245,6 +1249,17 @@ MonoBehaviour:
     width: 1
     height: 1
   previewPrefab: {fileID: 6094794923633026110, guid: 3876e576b68a05444a09548bab71ce94, type: 3}
+--- !u!114 &68241128 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1794057242627787066, guid: 8fbef848b9607b44ba3d3d7cf4679a86, type: 3}
+  m_PrefabInstance: {fileID: 68241124}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 68241126}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edb587b04ab9965479621d22e2212e16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &69705498
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11197,6 +11212,17 @@ MonoBehaviour:
     width: 1
     height: 1
   previewPrefab: {fileID: 6094794923633026110, guid: 3876e576b68a05444a09548bab71ce94, type: 3}
+--- !u!114 &631284489 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1794057242627787066, guid: 8fbef848b9607b44ba3d3d7cf4679a86, type: 3}
+  m_PrefabInstance: {fileID: 631284485}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 631284487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edb587b04ab9965479621d22e2212e16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &631691195
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -23218,6 +23244,10 @@ PrefabInstance:
       propertyPath: m_LocalRotation.z
       value: -0
       objectReference: {fileID: 0}
+    - target: {fileID: 1794057242627787066, guid: 8fbef848b9607b44ba3d3d7cf4679a86, type: 3}
+      propertyPath: requiredBuiltZone
+      value: 
+      objectReference: {fileID: 68241128}
     - target: {fileID: 1794057242627787066, guid: 8fbef848b9607b44ba3d3d7cf4679a86, type: 3}
       propertyPath: firstLocationLoadout
       value: 
@@ -36037,6 +36067,17 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1499764383}
   m_SourcePrefab: {fileID: 100100000, guid: 8fbef848b9607b44ba3d3d7cf4679a86, type: 3}
+--- !u!114 &1977362442 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1794057242627787066, guid: 8fbef848b9607b44ba3d3d7cf4679a86, type: 3}
+  m_PrefabInstance: {fileID: 1977362441}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499764380}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edb587b04ab9965479621d22e2212e16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &1978163008 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6878185321482303451, guid: a464eb7cccad4e940906c19b9ace6133, type: 3}
@@ -36545,6 +36586,10 @@ PrefabInstance:
       value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 1794057242627787066, guid: 8fbef848b9607b44ba3d3d7cf4679a86, type: 3}
+      propertyPath: requiredBuiltZone
+      value: 
+      objectReference: {fileID: 631284489}
+    - target: {fileID: 1794057242627787066, guid: 8fbef848b9607b44ba3d3d7cf4679a86, type: 3}
       propertyPath: firstLocationLoadout
       value: 
       objectReference: {fileID: 11400000, guid: e2732cdf50959e94c8fee8368c6ef3d5, type: 2}
@@ -36638,6 +36683,17 @@ MonoBehaviour:
     width: 1
     height: 1
   previewPrefab: {fileID: 6094794923633026110, guid: 3876e576b68a05444a09548bab71ce94, type: 3}
+--- !u!114 &1999874892 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1794057242627787066, guid: 8fbef848b9607b44ba3d3d7cf4679a86, type: 3}
+  m_PrefabInstance: {fileID: 1999874888}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1999874890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edb587b04ab9965479621d22e2212e16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &2001665636
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -37305,6 +37361,10 @@ PrefabInstance:
       propertyPath: allowedType
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 1794057242627787066, guid: 8fbef848b9607b44ba3d3d7cf4679a86, type: 3}
+      propertyPath: requiredBuiltZone
+      value: 
+      objectReference: {fileID: 1977362442}
     - target: {fileID: 1794057242627787066, guid: 8fbef848b9607b44ba3d3d7cf4679a86, type: 3}
       propertyPath: requiredTownHallLevel
       value: 1

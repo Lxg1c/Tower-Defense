@@ -91,6 +91,27 @@ namespace TowerDefense.Tests
         }
 
         [UnityTest]
+        public IEnumerator BuildingPrerequisiteRevealsNextPointAfterPurchase()
+        {
+            var next = Zone(new Vector3(3f, 0f, 0f));
+            Set(next, "requiredBuiltZone", zone);
+            var visual = New("Dependent point visual", next.transform);
+            visual.SetActive(true);
+            Set(next, "visualRoot", visual);
+            next.SendMessage("SyncWithPhase");
+            Assert.That(next.IsUnlocked(), Is.False);
+            Assert.That(visual.activeSelf, Is.False);
+
+            selectionPanel.GetComponentInChildren<UnityEngine.UI.Button>().onClick.Invoke();
+            yield return null;
+            Assert.That(zone.IsBuilt, Is.True);
+            Assert.That(next.IsUnlocked(), Is.True);
+            Assert.That(visual.activeSelf, Is.True);
+            foreach (var building in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None))
+                if (building.name == "Building template(Clone)") objects.Add(building.gameObject);
+        }
+
+        [UnityTest]
         public IEnumerator FullProgressRemainsWhileModalIsOpenAndClearsOnExit()
         {
             var fill = (UnityEngine.UI.Image)typeof(TowerPlacementZone).GetField("placementCircleFill",

@@ -25,6 +25,7 @@ public sealed class LevelDefinition : ScriptableObject
         [Min(0)] public int moneyReward;
         [Min(0.01f)] public float enemyHealthMultiplier = 1f;
         [Min(0.01f)] public float enemyDamageMultiplier = 1f;
+        [Min(0.01f)] public float enemySpeedMultiplier = 1f;
         public LevelWave[] waves;
     }
 
@@ -65,6 +66,9 @@ public sealed class LevelDefinition : ScriptableObject
     public float GetEnemyDamageMultiplier(int difficulty) =>
         difficulty == 1 ? 1f : Variant(difficulty).enemyDamageMultiplier;
 
+    public float GetEnemySpeedMultiplier(int difficulty) =>
+        difficulty == 1 ? 1f : Variant(difficulty).enemySpeedMultiplier;
+
     private DifficultyVariant Variant(int difficulty)
     {
         if (difficulty < 2 || difficulty > 3 || additionalDifficulties == null ||
@@ -84,10 +88,12 @@ public sealed class LevelDefinition : ScriptableObject
             throw new ArgumentException($"{name}: assign a stable progression ID and nonnegative money reward.");
         float healthMultiplier = GetEnemyHealthMultiplier(difficulty);
         float damageMultiplier = GetEnemyDamageMultiplier(difficulty);
+        float speedMultiplier = GetEnemySpeedMultiplier(difficulty);
         if (float.IsNaN(healthMultiplier) || float.IsInfinity(healthMultiplier) ||
             healthMultiplier <= 0f || float.IsNaN(damageMultiplier) ||
-            float.IsInfinity(damageMultiplier) || damageMultiplier <= 0f)
-            throw new ArgumentException($"{name}: assign positive finite enemy health and damage multipliers.");
+            float.IsInfinity(damageMultiplier) || damageMultiplier <= 0f ||
+            float.IsNaN(speedMultiplier) || float.IsInfinity(speedMultiplier) || speedMultiplier <= 0f)
+            throw new ArgumentException($"{name}: assign positive finite enemy health, damage and speed multipliers.");
         for (int w = 0; w < selectedWaves.Length; w++)
         {
             var wave = selectedWaves[w];

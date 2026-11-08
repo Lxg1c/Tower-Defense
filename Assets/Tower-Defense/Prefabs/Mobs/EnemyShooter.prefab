@@ -107,14 +107,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6acd8d04ce665a4fb5998337a01ae3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 90
+  maxHealth: 20
   onHealthChanged:
     m_PersistentCalls:
       m_Calls: []
   onDied:
     m_PersistentCalls:
       m_Calls: []
-  coinReward: 0
   deathExplosionPrefab: {fileID: 7055069102849094303, guid: 77547fd0918d63c4fb50774a3a4f727a, type: 3}
   deathExplosionScale: {x: 1, y: 1, z: 1}
   deathExplosionLifetime: 2

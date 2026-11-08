@@ -29,11 +29,21 @@ public class MobCore : MonoBehaviour
     public NavMeshAgent Agent   { get; private set; }
     public MobHealth    Health  { get; private set; }
     public float DamageMultiplier { get; private set; } = 1f;
+    private float authoredAgentSpeed;
 
-    public void ConfigureDifficulty(float maxHealth, float damageMultiplier)
+    public void ConfigureDifficulty(float maxHealth, float damageMultiplier, float speedMultiplier = 1f)
     {
         Health.SetMaxHealth(maxHealth);
         DamageMultiplier = damageMultiplier;
+        var slow = GetComponent<MobSlow>();
+        if (slow != null)
+            slow.ConfigureDifficultySpeed(speedMultiplier, authoredAgentSpeed);
+        else
+        {
+            if (Agent != null) Agent.speed = authoredAgentSpeed * speedMultiplier;
+            var flying = GetComponent<FlyingNav>();
+            if (flying != null) flying.SpeedMultiplier = speedMultiplier;
+        }
     }
 
     public ITargetSelector     TargetSelector     { get; private set; }
@@ -67,6 +77,7 @@ public class MobCore : MonoBehaviour
     private void Awake()
     {
         Agent  = GetComponent<NavMeshAgent>();
+        if (Agent != null) authoredAgentSpeed = Agent.speed;
         Health = GetComponent<MobHealth>();
 
         TargetSelector     = targetSelectorRef     as ITargetSelector;

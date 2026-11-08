@@ -7,6 +7,7 @@ public sealed class MobSlow : MonoBehaviour
     private NavMeshAgent agent;
     private FlyingNav flyingNav;
     private float normalAgentSpeed;
+    private float normalFlyingSpeedMultiplier = 1f;
     private float expiresAt;
 
     public float Multiplier { get; private set; } = 1f;
@@ -16,6 +17,15 @@ public sealed class MobSlow : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         flyingNav = GetComponent<FlyingNav>();
         if (agent != null) normalAgentSpeed = agent.speed;
+        if (flyingNav != null) normalFlyingSpeedMultiplier = flyingNav.SpeedMultiplier;
+    }
+
+    public void ConfigureDifficultySpeed(float multiplier, float authoredAgentSpeed)
+    {
+        normalAgentSpeed = authoredAgentSpeed * multiplier;
+        normalFlyingSpeedMultiplier = multiplier;
+        if (agent != null) agent.speed = normalAgentSpeed * Multiplier;
+        if (flyingNav != null) flyingNav.SpeedMultiplier = normalFlyingSpeedMultiplier * Multiplier;
     }
 
     public void Apply(float multiplier, float duration)
@@ -24,7 +34,7 @@ public sealed class MobSlow : MonoBehaviour
         Multiplier = Mathf.Min(Multiplier, Mathf.Clamp(multiplier, 0.1f, 1f));
         expiresAt = Mathf.Max(expiresAt, Time.time + duration);
         if (agent != null && agent.enabled) agent.speed = normalAgentSpeed * Multiplier;
-        if (flyingNav != null) flyingNav.SpeedMultiplier = Multiplier;
+        if (flyingNav != null) flyingNav.SpeedMultiplier = normalFlyingSpeedMultiplier * Multiplier;
     }
 
     private void Update()
@@ -39,6 +49,6 @@ public sealed class MobSlow : MonoBehaviour
         Multiplier = 1f;
         expiresAt = 0f;
         if (agent != null) agent.speed = normalAgentSpeed;
-        if (flyingNav != null) flyingNav.SpeedMultiplier = 1f;
+        if (flyingNav != null) flyingNav.SpeedMultiplier = normalFlyingSpeedMultiplier;
     }
 }

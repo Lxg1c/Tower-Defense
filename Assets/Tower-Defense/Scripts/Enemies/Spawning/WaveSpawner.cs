@@ -95,6 +95,7 @@ public class WaveSpawner : MonoBehaviour
     private bool completingWave;
     private float enemyHealthMultiplier = 1f;
     private float enemyDamageMultiplier = 1f;
+    private float enemySpeedMultiplier = 1f;
 
     public Phase CurrentPhase => session == null ? Phase.Build : (Phase)session.CurrentPhase;
     public int   WaveCount    => waves != null ? waves.Length : 0;
@@ -214,6 +215,7 @@ public class WaveSpawner : MonoBehaviour
         waves = configuredWaves;
         enemyHealthMultiplier = level.GetEnemyHealthMultiplier(difficulty);
         enemyDamageMultiplier = level.GetEnemyDamageMultiplier(difficulty);
+        enemySpeedMultiplier = level.GetEnemySpeedMultiplier(difficulty);
     }
 
     /// <summary>
@@ -374,7 +376,7 @@ public class WaveSpawner : MonoBehaviour
         var pool = GetOrCreatePool(prefab);
         var mob  = pool.Get(pos, point.rotation);
         mob.ConfigureDifficulty(prefab.GetComponent<MobHealth>().MaxHealth * enemyHealthMultiplier,
-            enemyDamageMultiplier);
+            enemyDamageMultiplier, enemySpeedMultiplier);
 
         if (option != null)
         {

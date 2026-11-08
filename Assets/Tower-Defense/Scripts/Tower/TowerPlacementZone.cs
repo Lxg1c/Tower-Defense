@@ -27,6 +27,8 @@ public class TowerPlacementZone : MonoBehaviour
     [SerializeField] private BuildSlotType allowedType = BuildSlotType.Defense;
     [Tooltip("Required town hall level for this zone to appear. 0 = available before town hall is built. 1 = after town hall is built. 2 = after first town hall upgrade.")]
     [Min(0)] [SerializeField] private int requiredTownHallLevel = 0;
+    [Tooltip("Optional point that must be built before this point becomes available.")]
+    [SerializeField] private TowerPlacementZone requiredBuiltZone;
 
     [Header("Placement")]
     [SerializeField] private float enterDelay = 1.5f;
@@ -80,6 +82,10 @@ public class TowerPlacementZone : MonoBehaviour
             ? GetWallLength() : 1);
     private bool IsBuildPhase => !(IsFirstLocation && unavailableOnFirstLocation) &&
         (WaveSpawner.Instance == null || WaveSpawner.Instance.IsBuildPhase);
+    private bool PrerequisiteBuilt => requiredBuiltZone == null ||
+        (requiredBuiltZone != this && requiredBuiltZone.IsBuilt);
+    private bool CanInteractNow => PrerequisiteBuilt &&
+        Slot.CanInteract(IsBuildPhase, GetTownHallLevel());
 
     public int GetOptionCost(TowerOption option) => Slot.GetCost(option);
 
@@ -164,7 +170,7 @@ public class TowerPlacementZone : MonoBehaviour
 
     private void SyncWithPhase()
     {
-        bool available = Slot.CanInteract(IsBuildPhase, GetTownHallLevel());
+        bool available = CanInteractNow;
         if (!available) CloseModal();
         SetVisualActive(available);
     }
@@ -172,7 +178,7 @@ public class TowerPlacementZone : MonoBehaviour
     public bool IsUnlocked()
     {
         return !(IsFirstLocation && unavailableOnFirstLocation) &&
-            Slot.IsUnlocked(GetTownHallLevel());
+            PrerequisiteBuilt && Slot.IsUnlocked(GetTownHallLevel());
     }
 
     private void SetVisualActive(bool on)
@@ -183,13 +189,16 @@ public class TowerPlacementZone : MonoBehaviour
 
     private void Update()
     {
-        if (!Slot.CanInteract(IsBuildPhase, GetTownHallLevel()))
+        if (!CanInteractNow)
         {
             CloseModal();
             SetVisualActive(false);
             wasPlayerInZone = false;
             return;
         }
+
+        if (visualRoot != null && !visualRoot.activeSelf)
+            SetVisualActive(true);
 
         DetectPlayer();
 
@@ -290,7 +299,7 @@ public class TowerPlacementZone : MonoBehaviour
     private void OpenBuiltObjectModal()
     {
         var modal = TowerSelectionModal.Instance;
-        if (modal == null || Slot.BuiltOption == null || !Slot.CanInteract(IsBuildPhase, GetTownHallLevel())) return;
+        if (modal == null || Slot.BuiltOption == null || !CanInteractNow) return;
         // Buildings without an upgrade component have a single inspectable level.
         int level = BuiltBase != null ? BuiltBase.CurrentLevel : BuiltTower != null ? BuiltTower.CurrentLevel : 0;
         int? cost = BuiltBase != null ? BuiltBase.NextLevelData?.upgradeCost : BuiltTower?.NextLevelData?.upgradeCost;
@@ -306,7 +315,7 @@ public class TowerPlacementZone : MonoBehaviour
             CloseModal();
             return false;
         }
-        bool upgraded = Slot.TryUpgrade(IsBuildPhase, GetTownHallLevel());
+        bool upgraded = Slot.TryUpgrade(IsBuildPhase && PrerequisiteBuilt, GetTownHallLevel());
         if (upgraded) { modalOpenedByMe = false; SyncWithPhase(); }
         return upgraded;
     }
@@ -339,7 +348,7 @@ public class TowerPlacementZone : MonoBehaviour
         Vector3 pos = spawnPoint != null ? spawnPoint.position : transform.position;
         Quaternion rot = spawnPoint != null ? spawnPoint.rotation : transform.rotation;
 
-        if (!isActiveAndEnabled || !Slot.TryBuild(opt, wallet, IsBuildPhase,
+        if (!isActiveAndEnabled || !Slot.TryBuild(opt, wallet, IsBuildPhase && PrerequisiteBuilt,
                 GetTownHallLevel(), pos, rot, out GameObject building))
             return;
 

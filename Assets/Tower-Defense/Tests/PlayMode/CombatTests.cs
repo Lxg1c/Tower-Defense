@@ -28,6 +28,41 @@ namespace TowerDefense.Tests
         }
 
         [UnityTest]
+        public IEnumerator DifficultySpeedSurvivesSlowAndPooledReconfiguration()
+        {
+            GameObject enemy = NewObject("Speed-scaled enemy", false);
+            var agent = enemy.AddComponent<NavMeshAgent>();
+            agent.speed = 4f;
+            enemy.AddComponent<MobHealth>();
+            var selector = enemy.AddComponent<NearestThreatSelector>();
+            var attack = enemy.AddComponent<StandardAttack>();
+            var navigation = enemy.AddComponent<DefaultNav>();
+            var mob = enemy.AddComponent<MobCore>();
+            Set(mob, "targetSelectorRef", selector);
+            Set(mob, "combatBehaviorRef", attack);
+            Set(mob, "navigationModifierRef", navigation);
+            enemy.SetActive(true);
+            mob.enabled = false;
+            mob.ConfigureDifficulty(45f, 1f, 1.5f);
+            Assert.That(agent.speed, Is.EqualTo(6f).Within(.001f));
+
+            var slow = enemy.AddComponent<MobSlow>();
+            slow.Apply(.5f, 10f);
+            Assert.That(agent.speed, Is.EqualTo(3f).Within(.001f));
+            slow.enabled = false;
+            Assert.That(agent.speed, Is.EqualTo(6f).Within(.001f));
+
+            mob.ConfigureDifficulty(30f, 1f, 1.1f);
+            Assert.That(agent.speed, Is.EqualTo(4.4f).Within(.001f));
+            slow.enabled = true;
+            slow.Apply(.5f, 10f);
+            Assert.That(agent.speed, Is.EqualTo(2.2f).Within(.001f));
+            slow.enabled = false;
+            Assert.That(agent.speed, Is.EqualTo(4.4f).Within(.001f));
+            yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator DifficultyScalingRaisesMobHealthAndMeleeDamage()
         {
             GameObject enemy = NewObject("Scaled enemy", false);

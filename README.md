@@ -273,16 +273,19 @@ rebake the NavMesh. The existing Level 1 floor is not replaced automatically.
 
 | Level | Focus | Waves | Starting coins |
 |---|---|---|---|
-| 1 | Ground enemies; learn building and economy | 3 | 12 |
+| 1 | One enemy approach; learn building and economy, then defend a large mixed wave | 5 | 8 |
 | 2 | Introduce flight and different approaches | 4 | 10 |
 | 3 | Mixed enemies with armored threats | 4 | 10 |
 
 These are starting balance presets, not fully playtested difficulty guarantees.
 Each level asset contains its Normal waves plus two additional difficulty
-variants. The current Hard and Nightmare presets increase enemy counts and
-shorten spawn intervals; all numbers and enemy packs can be tuned independently
-in the Inspector. The level's descriptive difficulty text is separate from
-this three-step difficulty selection.
+variants. Level 1 grows from 6 enemies in its first Normal wave to 66 in its
+fifth. Hard and Nightmare raise enemy HP and movement speed, with a small
+increase in enemy counts; they keep the same enemy types in each wave. Some
+Level 1 build points also require an earlier mine or turret to be built before
+they appear, in addition to their town-hall requirement. Wave counts, intervals,
+enemy packs and difficulty multipliers can be tuned in the Inspector. The
+level's descriptive difficulty text is separate from this three-step selection.
 
 To create or tune a level:
 

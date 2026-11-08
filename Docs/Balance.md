@@ -1,9 +1,44 @@
 # Gameplay balance review
 
-## November 2026 first-location pass
+## Current Level 1 proposal — 8 November 2026
+
+The unupgraded R-07 fires two staggered projectiles per volley. Each projectile
+deals 5 damage, so a full volley deals 10 when both hit. Base enemy HP is Spider
+30, Shooter 20, Bat 25 and Destroyer 360. Normal therefore needs 3/2/3/36 full
+volleys; Hard uses 1.5x HP, so Spider needs 5, Shooter 3 and Bat 4 full volleys.
+Nightmare uses 2x HP.
+Enemy attack damage remains unchanged. Hard/Nightmare movement speed is 1.08x/1.16x;
+temporary slows preserve those base speeds when they expire. Permanent player
+damage skills and other damage sources change the actual number of hits.
+
+| Wave | Normal | Hard | Nightmare |
+| --- | ---: | ---: | ---: |
+| 1 | 6 | 6 | 6 |
+| 2 | 14 | 15 | 16 |
+| 3 | 28 | 29 | 30 |
+| 4 | 45 | 46 | 47 |
+| 5 | 66 | 67 | 68 |
+
+The Normal finale contains 55 Spider, 6 Bat, 4 Shooter and 1 Destroyer.
+The later waves spawn faster, reaching 0.4 seconds between enemies in wave 5.
+These counts target a crowded fight like the reference; they are not yet a
+measured performance or human balance result. Level 1 points now unlock in
+part through construction: the second mine follows the first, and Pulse points
+follow the cannon and then earlier Pulse points, alongside town-hall levels.
+Wave 2 pays 8 build coins instead of 4, so the player can choose the town-hall
+upgrade and first Pulse before wave 3 after either opening. Later wave rewards
+remain 4 coins. This economy still needs a live-player balance check.
+
+An Editor-only moving-hero autopilot with no permanent skills completed all five
+Normal waves after opening with a mine. The fifth wave reached 36 enemies alive
+at once. The same simple route on Hard reached wave 5 but lost; a cannon-first
+route before the wave-2 reward adjustment lost in wave 3. These runs verify that
+the wave and building systems execute, not that a human can or cannot win Hard.
+
+## Previous November 2026 first-location pass
 
 The sections below preserve earlier measurements and configurations as history.
-The current `Level1.asset` has five waves per difficulty and 8 starting coins.
+The earlier `Level1.asset` had five waves per difficulty and 8 starting coins.
 After the 5-coin town hall, the player can choose an early 2-coin mine or a
 3-coin cannon. Automated moving-hero runs completed all five Normal waves
 with either opening, without permanent skills or enemy/base-health cheats.
