@@ -25,6 +25,16 @@
         <ui:Label name="incomeLabel" text="+0 / WAVE" class="income-label" />
       </ui:VisualElement>
     </ui:VisualElement>
+    <ui:VisualElement name="coreAlert" class="core-alert is-hidden" picking-mode="Ignore">
+      <ui:VisualElement class="core-edge core-edge-top" picking-mode="Ignore" />
+      <ui:VisualElement class="core-edge core-edge-bottom" picking-mode="Ignore" />
+      <ui:VisualElement class="core-edge core-edge-left" picking-mode="Ignore" />
+      <ui:VisualElement class="core-edge core-edge-right" picking-mode="Ignore" />
+      <ui:VisualElement class="core-warning" picking-mode="Ignore">
+        <ui:Label text="СЕТЕВОЙ УЗЕЛ АТАКУЮТ" class="core-warning-text" />
+        <ui:Label name="coreHealthLabel" text="100%" class="core-warning-health" />
+      </ui:VisualElement>
+    </ui:VisualElement>
     <ui:Label name="guideLabel" class="guide-label" />
     <ui:Label name="fpsLabel" class="fps-label is-hidden" />
     <ui:VisualElement name="effectRow" class="effect-row" picking-mode="Ignore">
@@ -35,12 +45,14 @@
     <ui:VisualElement name="spawnPreview" class="spawn-preview" picking-mode="Ignore" />
     <ui:Button name="startWaveButton" class="start-wave-button is-hidden">
       <ui:VisualElement class="start-wave-icon" picking-mode="Ignore" />
-      <ui:Label text="START WAVE" class="start-wave-text" picking-mode="Ignore" />
+      <ui:Label text="В БОЙ" class="start-wave-text" picking-mode="Ignore" />
     </ui:Button>
     <ui:VisualElement name="touchControls" class="touch-controls" picking-mode="Ignore">
       <ui:VisualElement name="joystick" class="joystick" picking-mode="Position">
-        <ui:VisualElement class="joystick-track" picking-mode="Ignore" />
-        <ui:VisualElement name="joystickKnob" class="joystick-knob" picking-mode="Ignore" />
+        <ui:VisualElement name="joystickArt" class="joystick-art" picking-mode="Ignore" />
+        <ui:VisualElement name="joystickKnob" class="joystick-knob" picking-mode="Ignore">
+          <ui:VisualElement name="joystickKnobArt" class="joystick-knob-art" picking-mode="Ignore" />
+        </ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement name="actionStack" class="action-stack" picking-mode="Ignore">
         <ui:Button name="rallyButton" class="small-action">
@@ -53,19 +65,18 @@
         </ui:Button>
         <ui:VisualElement class="ultimate-wrap" picking-mode="Ignore">
           <ui:Button name="ultimateButton" class="ultimate-button">
-            <ui:VisualElement class="ultimate-icon" picking-mode="Ignore" />
-            <ui:Label text="ULTIMATE" class="action-label" picking-mode="Ignore" />
+            <ui:VisualElement class="ultimate-face" picking-mode="Ignore" />
           </ui:Button>
-          <ui:ProgressBar name="ultimateProgress" class="ultimate-progress" low-value="0" high-value="100" value="0" />
           <ui:Label name="ultimateCooldown" class="cooldown-label is-hidden" />
         </ui:VisualElement>
       </ui:VisualElement>
     </ui:VisualElement>
     <ui:VisualElement name="desktopActions" class="desktop-actions is-hidden" picking-mode="Ignore">
-      <ui:Button name="desktopRally" text="RALLY" class="desktop-action" />
-      <ui:Button name="desktopHome" text="HOME" class="desktop-action" />
-      <ui:Button name="desktopUltimate" text="ULTIMATE" class="desktop-action" />
-      <ui:Label text="WASD TO MOVE   •   SPACE FOR ULTIMATE" class="desktop-hint" />
+      <ui:Button name="desktopRally" class="small-action desktop-small-action"><ui:VisualElement class="action-icon rally-icon" picking-mode="Ignore" /><ui:Label text="RALLY" class="action-label" picking-mode="Ignore" /></ui:Button>
+      <ui:Button name="desktopHome" class="small-action desktop-small-action"><ui:VisualElement class="action-icon home-icon" picking-mode="Ignore" /><ui:Label text="HOME" class="action-label" picking-mode="Ignore" /></ui:Button>
+      <ui:Button name="desktopUltimate" class="desktop-action desktop-ultimate">
+        <ui:VisualElement class="ultimate-face" picking-mode="Ignore" />
+      </ui:Button>
     </ui:VisualElement>
     <ui:VisualElement name="buildPanel" class="side-panel is-hidden" picking-mode="Ignore">
       <ui:Label text="CONSTRUCTION / BLUEPRINTS" class="panel-overline" />

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" style="color:#9CCAFF">
+  <defs>
+    <linearGradient id="plate" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#173B4E"/><stop offset=".55" stop-color="#0A2231"/><stop offset="1" stop-color="#061521"/></linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="5"/></filter>
+  </defs>
+  <path d="M48 13h160l35 35v160l-35 35H48l-35-35V48z" fill="url(#plate)" stroke="#9CCAFF" stroke-width="5"/>
+  <path d="M57 26h143l30 30v144l-30 30H57l-30-30V56z" fill="none" stroke="#9CCAFF" stroke-opacity=".26" stroke-width="3"/>
+  <path d="M52 24h38M166 232h38" stroke="#9CCAFF" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="128" cy="128" r="73" fill="#4C83BD" opacity=".12"/>
+  <g style="color:#9CCAFF" opacity=".5" filter="url(#glow)"><g stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M48 176h160M56 94h144v82H56zM56 121h144M56 149h144M102 94v27M154 94v27M81 121v28M128 121v28M175 121v28M102 149v27M154 149v27"/>
+      <path d="M49 88h20v-22h23v22h24v-22h24v22h24v-22h23v22h20"/>
+    </g></g>
+  <g style="color:#9CCAFF"><g stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M48 176h160M56 94h144v82H56zM56 121h144M56 149h144M102 94v27M154 94v27M81 121v28M128 121v28M175 121v28M102 149v27M154 149v27"/>
+      <path d="M49 88h20v-22h23v22h24v-22h24v22h24v-22h23v22h20"/>
+    </g></g>
+</svg>

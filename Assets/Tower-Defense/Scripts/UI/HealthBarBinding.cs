@@ -8,7 +8,6 @@ using UnityEngine;
 public sealed class HealthBarBinding : MonoBehaviour
 {
     [SerializeField] private Damageable target;
-    [SerializeField] private HealthBar prefab;
     [SerializeField] private Transform anchor;
     [SerializeField] private bool hideOnDeath = true;
 
@@ -18,7 +17,6 @@ public sealed class HealthBarBinding : MonoBehaviour
     public static event Action<HealthBarBinding> Added;
     public static event Action<HealthBarBinding> Removed;
     public Damageable Target => target;
-    public HealthBar Prefab => prefab;
     public Transform Anchor => anchor;
     public bool HideOnDeath => hideOnDeath;
 

@@ -8,7 +8,6 @@ public class PlayerMovement : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float walkSpeed     = 3f;
     [SerializeField] private float rotationSpeed = 10f;
-    [SerializeField] private Joystick  joystick;
 
     [Header("States")]
     [Tooltip("Speed multiplier while in ghost state (0 = can't move, 1 = normal).")]
@@ -54,8 +53,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        moveInput = toolkitJoystickActive ? toolkitMoveInput :
-            joystick != null ? joystick.Direction : Vector2.zero;
+        moveInput = toolkitJoystickActive ? toolkitMoveInput : Vector2.zero;
 
         if (Keyboard.current == null) return;
         Keyboard keyboard = Keyboard.current;
@@ -66,6 +64,11 @@ public class PlayerMovement : MonoBehaviour
         Vector2 keys = new(horizontal, vertical);
         if (keys.sqrMagnitude > 0f)
             moveInput = keys.normalized;
+
+        if (Time.timeScale > 0f && keyboard.spaceKey.wasPressedThisFrame)
+            ultimate?.BeginCharge();
+        if (keyboard.spaceKey.wasReleasedThisFrame)
+            ultimate?.Release();
     }
 
     private void FixedUpdate()

@@ -163,94 +163,140 @@
 }
 .skill-copy { color: #c1dce5; font-size: 13px; white-space: normal; min-height: 37px; }
 .skill-button { width: 100%; height: 44px; font-size: 12px; margin-top: 14px; }
-.loadout-page { width: 760px; align-items: stretch; }
-.loadout-heading { width: 100%; flex-direction: row; align-items: center; justify-content: space-between; }
-.loadout-heading .section-label { margin-bottom: 1px; }
-.loadout-heading .page-title { margin-bottom: 10px; }
-.loadout-money {
-  min-width: 110px; padding: 9px 13px; margin-bottom: 8px;
-  color: #fff1af; font-size: 17px; -unity-font-style: bold;
-  background-color: rgba(45, 37, 26, 0.96);
-  border-top-width: 2px; border-bottom-width: 4px; border-left-width: 2px; border-right-width: 2px;
-  border-top-color: #ffe69b; border-bottom-color: #8a6227;
-  border-left-color: #be933d; border-right-color: #be933d;
-  border-top-left-radius: 13px; border-top-right-radius: 13px;
-  border-bottom-left-radius: 13px; border-bottom-right-radius: 13px;
-}
-.loadout-body { width: 100%; height: 390px; flex-direction: row; }
-.loadout-hero {
-  width: 280px; height: 100%; padding: 14px; align-items: center;
-  background-color: rgba(8, 27, 46, 0.98);
-  border-top-width: 3px; border-bottom-width: 5px; border-left-width: 2px; border-right-width: 2px;
-  border-top-color: #c69cef; border-bottom-color: #564275;
-  border-left-color: #785c99; border-right-color: #785c99;
-  border-top-left-radius: 19px; border-top-right-radius: 19px;
-  border-bottom-left-radius: 19px; border-bottom-right-radius: 19px;
-}
-.loadout-hero-caption, .loadout-micro { color: #9ce9e8; font-size: 11px; letter-spacing: 2px; -unity-font-style: bold; }
-.loadout-portrait {
-  width: 245px; height: 246px; margin-top: 4px;
-  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/player.png");
-  -unity-background-scale-mode: scale-to-fit;
-}
-.loadout-hero-name {
-  color: #ffffff; font-size: 23px; margin-top: 2px; margin-bottom: 14px;
-  -unity-font-definition: url("project://database/Assets/TextMesh Pro/Examples & Extras/Fonts/Oswald-Bold.ttf");
-}
-.equipped-module { color: #eed2ff; font-size: 17px; -unity-font-style: bold; margin-top: 5px; }
-.loadout-catalog {
-  width: 468px; height: 100%; margin-left: 12px; padding: 16px;
-  background-color: rgba(3, 17, 32, 0.97);
-  border-top-width: 3px; border-bottom-width: 5px; border-left-width: 2px; border-right-width: 2px;
-  border-top-color: #63e9e6; border-bottom-color: #1b536a;
-  border-left-color: #367b91; border-right-color: #367b91;
-  border-top-left-radius: 19px; border-top-right-radius: 19px;
-  border-bottom-left-radius: 19px; border-bottom-right-radius: 19px;
-}
-.loadout-catalog-title {
-  color: #ffffff; font-size: 25px;
-  -unity-font-definition: url("project://database/Assets/TextMesh Pro/Examples & Extras/Fonts/Oswald-Bold.ttf");
-}
-.loadout-catalog-copy { color: #a3c6d3; font-size: 12px; margin-bottom: 13px; }
-.module-card {
-  height: 92px; margin-bottom: 10px; padding: 9px; flex-direction: row; align-items: center;
-  background-color: #16384b;
-  border-left-width: 4px; border-left-color: #72eae5;
-  border-bottom-width: 2px; border-bottom-color: #19465b;
+.loadout-open { background-color: #061a29; background-image: none; }
+.loadout-open .menu-shade, .loadout-open .menu-header { display: none; }
+.loadout-open .fps-label { display: none; }
+.loadout-open .menu-shell { width: 1328px; max-width: 96%; padding-top: 24px; padding-bottom: 16px; }
+.loadout-page { width: 100%; align-items: stretch; }
+.loadout-heading { height: 94px; flex-direction: row; align-items: flex-start; }
+.loadout-back {
+  width: 56px; height: 56px; margin-right: 16px; font-size: 31px;
+  color: #f1ffff; background-color: #15384d; -unity-text-align: middle-center;
+  border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-right-width: 1px;
+  border-top-color: #70d4d8; border-bottom-color: #70d4d8; border-left-color: #70d4d8; border-right-color: #70d4d8;
   border-top-left-radius: 10px; border-top-right-radius: 10px;
   border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;
 }
-.overdrive-card { border-left-color: #c69bed; background-color: #302949; }
-.module-mark {
-  width: 64px; height: 64px; margin-right: 10px; flex-shrink: 0;
-  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/UI/lightningIcon.png");
-  -unity-background-scale-mode: scale-to-fit;
+.loadout-title {
+  flex-grow: 1; color: #f0ffff; font-size: 40px;
+  -unity-font-definition: url("project://database/Assets/TextMesh Pro/Examples & Extras/Fonts/Oswald-Bold.ttf");
 }
-.overdrive-mark { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/player.png"); }
-.module-copy { flex-grow: 1; }
-.module-name { color: #ffffff; font-size: 18px; -unity-font-style: bold; }
-.module-description { color: #bcd4db; font-size: 11px; white-space: normal; }
-.module-button {
-  width: 93px; height: 45px; margin-left: 5px;
-  color: #092732; background-color: #65e9e5; -unity-font-style: bold; -unity-text-align: middle-center;
-  border-top-width: 2px; border-bottom-width: 4px; border-left-width: 2px; border-right-width: 2px;
-  border-top-color: #d3fffc; border-bottom-color: #197b88;
-  border-left-color: #54cad2; border-right-color: #54cad2;
-  border-top-left-radius: 13px; border-top-right-radius: 13px;
-  border-bottom-left-radius: 13px; border-bottom-right-radius: 13px;
+.loadout-money {
+  min-width: 176px; height: 57px; padding: 12px; color: #fff3bf;
+  background-color: #123044; font-size: 18px; -unity-font-style: bold; -unity-text-align: middle-center;
+  border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-right-width: 1px;
+  border-top-color: #c69e56; border-bottom-color: #c69e56; border-left-color: #c69e56; border-right-color: #c69e56;
+  border-top-left-radius: 10px; border-top-right-radius: 10px;
+  border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;
 }
-.module-button:hover { background-color: #bafff9; }
+.loadout-body { width: 100%; height: 534px; flex-direction: row; }
+.loadout-stage {
+  position: relative; flex-grow: 1; height: 100%; margin-right: 24px;
+  background-color: rgba(10, 34, 53, 0.97);
+  border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-right-width: 1px;
+  border-top-color: #63d4d8; border-bottom-color: #63d4d8; border-left-color: #63d4d8; border-right-color: #63d4d8;
+  border-top-left-radius: 14px; border-top-right-radius: 14px;
+  border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;
+}
+.loadout-orbit {
+  position: absolute; left: 24%; top: 10%; width: 52%; height: 78%;
+  border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-right-width: 1px;
+  border-top-color: #705a9d; border-bottom-color: #705a9d; border-left-color: #705a9d; border-right-color: #705a9d;
+  border-top-left-radius: 220px; border-top-right-radius: 220px;
+  border-bottom-left-radius: 220px; border-bottom-right-radius: 220px;
+}
+.loadout-portrait { position: absolute; left: 25%; top: 12%; width: 50%; height: 78%; -unity-background-scale-mode: scale-to-fit; }
+.preview-base { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/Loadout/r07-current.png"); }
+.preview-armor { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/Loadout/r07-armor-concept.png"); }
+.preview-left { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/Loadout/r07-left-heavy-concept.png"); }
+.preview-right { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/Loadout/r07-heavy-weapon-concept.png"); }
+.preview-both { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/Loadout/r07-both-heavy-concept.png"); }
+.preview-armor-left { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/Loadout/r07-armor-left-heavy-concept.png"); }
+.preview-armor-right { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/Loadout/r07-combined-concept.png"); }
+.preview-armor-both { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/Loadout/r07-armor-both-heavy-concept.png"); }
+.loadout-slot {
+  position: absolute; width: 190px; height: 78px; padding: 9px;
+  color: #e8fdff; background-color: rgba(22, 63, 79, 0.95);
+  font-size: 13px; -unity-font-style: bold; -unity-text-align: middle-center;
+  border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-right-width: 1px;
+  border-top-color: #7ba7b5; border-bottom-color: #7ba7b5; border-left-color: #7ba7b5; border-right-color: #7ba7b5;
+  border-top-left-radius: 8px; border-top-right-radius: 8px;
+  border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;
+}
+.loadout-slot:hover, .loadout-slot.is-focused { border-top-color: #83f0ea; border-bottom-color: #83f0ea; border-left-color: #83f0ea; border-right-color: #83f0ea; }
+.armor-slot { left: 18px; top: 148px; }
+.left-weapon-slot { left: 18px; top: 286px; }
+.right-weapon-slot { right: 18px; top: 148px; }
+.module-slot { right: 18px; top: 286px; }
+.loadout-catalog {
+  width: 543px; height: 312px; padding: 19px 21px; background-color: rgba(12, 34, 51, 0.97);
+  border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-right-width: 1px;
+  border-top-color: #ad91d6; border-bottom-color: #ad91d6; border-left-color: #ad91d6; border-right-color: #ad91d6;
+  border-top-left-radius: 14px; border-top-right-radius: 14px;
+  border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;
+}
+.loadout-tabs { height: 51px; flex-direction: row; padding-bottom: 13px; border-bottom-width: 1px; border-bottom-color: #607487; }
+.loadout-tab {
+  flex-grow: 1; height: 37px; margin-right: 4px; background-color: #183b4e; color: #e8ffff;
+  border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-right-width: 1px;
+  border-top-color: #607f93; border-bottom-color: #607f93; border-left-color: #607f93; border-right-color: #607f93;
+  -unity-font-style: bold; -unity-text-align: middle-center;
+}
+.loadout-tab.is-selected { background-color: #247183; border-top-color: #8df2ed; border-bottom-color: #8df2ed; border-left-color: #8df2ed; border-right-color: #8df2ed; }
+.catalog-page { padding-top: 13px; }
+.catalog-caption { margin-bottom: 10px; color: #acdce3; font-size: 12px; -unity-font-style: bold; }
+.preview-card {
+  width: 100%; height: 77px; margin-bottom: 9px; padding: 8px; flex-direction: row; align-items: center; color: #eefeff;
+  background-color: #13364a; -unity-font-style: bold; -unity-text-align: middle-left;
+  border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-right-width: 1px;
+  border-top-color: #5c8ba1; border-bottom-color: #5c8ba1; border-left-color: #5c8ba1; border-right-color: #5c8ba1;
+  border-top-left-radius: 8px; border-top-right-radius: 8px;
+  border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;
+}
+.preview-card.is-selected { background-color: #1d5361; border-left-width: 4px; border-left-color: #80f2eb; }
+.preview-card:hover { background-color: #255c70; }
+.preview-art { width: 53px; height: 53px; margin-right: 10px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; background-color: #173b52; }
+.armor-base-art { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/Loadout/r07-current.png"); }
+.armor-assault-art { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/Loadout/r07-armor-concept.png"); }
+.weapon-standard-art { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/Loadout/r07-current.png"); }
+.weapon-heavy-art { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/Loadout/r07-left-heavy-concept.png"); }
+.preview-name { flex-grow: 1; color: #f3ffff; font-size: 15px; -unity-font-style: bold; }
+.preview-status { padding: 7px; color: #172b34; background-color: #ffca58; font-size: 11px; -unity-font-style: bold; }
+.preview-card.is-selected .preview-status { color: #efffff; background-color: #307987; }
+.weapon-columns { flex-direction: row; }
+.weapon-column {
+  flex-grow: 1; width: 50%; height: 187px; padding: 8px; margin-right: 8px;
+  background-color: #112c3d; border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-right-width: 1px;
+  border-top-color: #477288; border-bottom-color: #477288; border-left-color: #477288; border-right-color: #477288;
+  border-top-left-radius: 8px; border-top-right-radius: 8px;
+  border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;
+}
+.weapon-column.is-focused { border-top-color: #80f2eb; border-bottom-color: #80f2eb; border-left-color: #80f2eb; border-right-color: #80f2eb; }
+.weapon-column-title { height: 26px; color: #d9f7f8; font-size: 12px; -unity-font-style: bold; }
+.weapon-preview { height: 65px; }
+.weapon-preview .preview-art { width: 40px; height: 40px; margin-right: 5px; }
+.weapon-preview .preview-name { font-size: 12px; }
+.module-card { height: 78px; margin-bottom: 9px; padding: 9px; flex-direction: row; align-items: center; background-color: #173c4f; border-left-width: 4px; border-left-color: #7dece7; }
+.overdrive-card { border-left-color: #be91ee; background-color: #302c48; }
+.module-name { flex-grow: 1; color: #ffffff; font-size: 15px; -unity-font-style: bold; }
+.module-button { width: 114px; height: 42px; color: #102c36; background-color: #ffca58; -unity-font-style: bold; -unity-text-align: middle-center; }
+.module-button:hover { background-color: #ffe398; }
 .module-button:disabled { opacity: 0.58; }
-.loadout-stat-strip {
-  height: 48px; margin-top: 7px; padding: 8px 12px; flex-direction: row; align-items: center;
-  background-color: #112d3d;
-  border-top-width: 2px; border-top-color: #4a8293;
-  border-top-left-radius: 9px; border-top-right-radius: 9px;
-  border-bottom-left-radius: 9px; border-bottom-right-radius: 9px;
-}
-.stat-label { color: #9dc5d1; font-size: 11px; margin-right: 7px; -unity-font-style: bold; }
-.stat-value { color: #ffffff; font-size: 18px; margin-right: 25px; -unity-font-style: bold; }
-.loadout-page .back-button { align-self: center; }
+.loadout-narrow .menu-shell { padding-top: 12px; }
+.loadout-narrow .loadout-heading { height: 57px; }
+.loadout-narrow .loadout-title { font-size: 28px; }
+.loadout-narrow .loadout-back { width: 43px; height: 43px; font-size: 24px; }
+.loadout-narrow .loadout-money { height: 43px; min-width: 115px; font-size: 13px; }
+.loadout-narrow .loadout-body { height: 316px; }
+.loadout-narrow .loadout-stage { margin-right: 10px; }
+.loadout-narrow .loadout-catalog { width: 47%; height: 100%; padding: 9px; }
+.loadout-narrow .loadout-portrait { top: 3%; height: 94%; }
+.loadout-narrow .loadout-slot { width: 100px; height: 48px; padding: 3px; font-size: 9px; }
+.loadout-narrow .armor-slot, .loadout-narrow .right-weapon-slot { top: 60px; }
+.loadout-narrow .left-weapon-slot, .loadout-narrow .module-slot { top: 205px; }
+.loadout-narrow .weapon-column { margin-right: 3px; padding: 3px; }
+.loadout-narrow .weapon-preview .preview-name { font-size: 10px; }
+.loadout-narrow .weapon-preview .preview-art { width: 28px; height: 28px; }
 .fps-label {
   position: absolute; top: 24px; right: 28px; padding: 6px 10px;
   color: #d6fafa; background-color: rgba(6, 29, 43, 0.88); font-size: 12px;

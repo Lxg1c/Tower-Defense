@@ -6,21 +6,6 @@ public class VictoryScreen : MenuScreenBase
     [SerializeField] private WaveSpawner spawner;
     [SerializeField] private bool pauseGameOnShow = true;
     [SerializeField] private LevelSetup levelSetup;
-    [SerializeField] private UnityEngine.UI.Button nextLevelButton;
-    [SerializeField] private UnityEngine.UI.Button skillTreeButton;
-    [SerializeField] private TMPro.TMP_Text skillRewardLabel;
-
-    protected override void Awake()
-    {
-        base.Awake();
-        if (skillTreeButton != null) skillTreeButton.onClick.AddListener(OpenSkills);
-    }
-
-    protected override void OnDestroy()
-    {
-        if (skillTreeButton != null) skillTreeButton.onClick.RemoveListener(OpenSkills);
-        base.OnDestroy();
-    }
 
     public void OpenSkills()
     {
@@ -64,11 +49,8 @@ public class VictoryScreen : MenuScreenBase
             levelSetup != null && levelSetup.CurrentLevel != null)
         {
             levelSetup.TryAwardVictory();
-            if (skillRewardLabel != null)
-                skillRewardLabel.text = $"+{levelSetup.VictoryMoneyReward} MONEY";
         }
         base.Show();
-        if (nextLevelButton != null) nextLevelButton.gameObject.SetActive(CanPlayNextLevel);
         if (pauseGameOnShow) Time.timeScale = 0f;
     }
 }

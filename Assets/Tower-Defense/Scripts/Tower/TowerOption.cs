@@ -26,6 +26,10 @@ public class TowerOption
     [Tooltip("Name shown on the card.")]
     public string displayName;
 
+    [TextArea(1, 3)]
+    [Tooltip("Short gameplay role shown while choosing this building.")]
+    public string description;
+
     [Tooltip("Icon shown on the card.")]
     public Sprite icon;
 

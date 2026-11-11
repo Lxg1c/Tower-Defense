@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -7,8 +6,6 @@ using UnityEngine.UIElements;
 [RequireComponent(typeof(UIDocument))]
 public sealed class GameplayToolkitView : MonoBehaviour
 {
-    [SerializeField] private GameObject[] legacyScreenGroups;
-    [SerializeField] private Canvas legacyOrderCanvas;
     [SerializeField] private ResponsiveGameplayHud responsiveHud;
     [SerializeField] private WaveSpawner spawner;
     [SerializeField] private PlayerWallet wallet;
@@ -26,7 +23,6 @@ public sealed class GameplayToolkitView : MonoBehaviour
     [SerializeField] private PlayerHealth playerHealth;
     [SerializeField] private CompanionTurretController companionTurrets;
 
-    private readonly List<CanvasGroup> hiddenGroups = new();
     private VisualElement root;
     private VisualElement touchControls;
     private VisualElement desktopActions;
@@ -35,6 +31,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private VisualElement buildPanel;
     private VisualElement orderLayer;
     private VisualElement screenOverlay;
+    private VisualElement spawnPreview;
+    private VisualElement coreAlert;
     private VisualElement pausePanel;
     private VisualElement audioPanel;
     private VisualElement exitConfirmPanel;
@@ -51,6 +49,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private Label coinsLabel;
     private Label incomeLabel;
     private Label guideLabel;
+    private Label coreHealthLabel;
     private Label slowEffect;
     private Label shieldEffect;
     private Label turretEffect;
@@ -59,7 +58,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private Button fpsToggle;
     private float fpsElapsed;
     private int fpsFrames;
-    private ProgressBar ultimateProgress;
+    private RadialProgressElement mobileUltimateRing;
+    private RadialProgressElement desktopUltimateRing;
     private Button startWaveButton;
     private Button homeButton;
     private Button desktopHome;
@@ -73,33 +73,43 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private bool ultimatePointerHeld;
     private int lastModalRevision = -1;
     private bool bound;
+    private Base observedCore;
+    private float previousCoreHealth;
+    private float coreAlertUntil;
+    private readonly List<WaveSpawner.WavePreviewEntry> spawnEntries = new();
+    private readonly List<SpawnMarker> spawnMarkers = new();
+    private HealthBarManager healthBars;
+    private int previewWaveIndex = -1;
+
+    private sealed class SpawnMarker
+    {
+        public Transform Point;
+        public VisualElement Visible;
+        public VisualElement Edge;
+        public Label Distance;
+        public Label Arrow;
+    }
 
     private void OnEnable()
     {
         if (bound) return;
         var document = GetComponent<UIDocument>();
         if (document.panelSettings == null || document.visualTreeAsset == null ||
-            legacyScreenGroups == null || legacyScreenGroups.Length != 4 ||
-            legacyOrderCanvas == null || responsiveHud == null || spawner == null || wallet == null ||
+            responsiveHud == null || spawner == null || wallet == null ||
             timer == null || movement == null || ultimate == null || teleport == null ||
             pauseMenu == null || victory == null || defeat == null || levelSetup == null ||
             buildModal == null || orders == null ||
             slowAmmo == null || playerHealth == null || companionTurrets == null)
         {
-            Debug.LogError("[GameplayToolkitView] Assign all scene controllers, legacy screen groups and UI Toolkit assets.", this);
+            Debug.LogError("[GameplayToolkitView] Assign all scene controllers and UI Toolkit assets.", this);
             enabled = false;
             return;
         }
-        foreach (GameObject group in legacyScreenGroups)
-            if (group == null)
-            {
-                Debug.LogError("[GameplayToolkitView] A legacy screen group is missing.", this);
-                enabled = false;
-                return;
-            }
 
         root = document.rootVisualElement;
         root.AddToClassList("game-document-root");
+        coreAlert = root.Q("coreAlert");
+        coreHealthLabel = root.Q<Label>("coreHealthLabel");
         touchControls = root.Q("touchControls");
         desktopActions = root.Q("desktopActions");
         joystick = root.Q("joystick");
@@ -107,6 +117,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         buildPanel = root.Q("buildPanel");
         orderLayer = root.Q("orderLayer");
         screenOverlay = root.Q("screenOverlay");
+        spawnPreview = root.Q("spawnPreview");
         pausePanel = root.Q("pausePanel");
         audioPanel = root.Q("audioPanel");
         exitConfirmPanel = root.Q("exitConfirmPanel");
@@ -129,7 +140,6 @@ public sealed class GameplayToolkitView : MonoBehaviour
         cooldownLabel = root.Q<Label>("ultimateCooldown");
         fpsLabel = root.Q<Label>("fpsLabel");
         fpsToggle = root.Q<Button>("fpsToggle");
-        ultimateProgress = root.Q<ProgressBar>("ultimateProgress");
         startWaveButton = root.Q<Button>("startWaveButton");
         homeButton = root.Q<Button>("homeButton");
         desktopHome = root.Q<Button>("desktopHome");
@@ -141,14 +151,15 @@ public sealed class GameplayToolkitView : MonoBehaviour
         effectsSlider = root.Q<Slider>("effectsSlider");
         if (touchControls == null || desktopActions == null || joystick == null ||
             joystickKnob == null || buildPanel == null ||
-            orderLayer == null || screenOverlay == null || pausePanel == null ||
+            orderLayer == null || screenOverlay == null || spawnPreview == null || pausePanel == null ||
             audioPanel == null || exitConfirmPanel == null || victoryPanel == null || defeatPanel == null ||
             exitConfirmTitle == null || exitConfirmDescription == null || exitConfirmButton == null ||
             defeatReward == null ||
             buildCards == null || waveLabel == null || timerLabel == null ||
             enemiesLabel == null || coinsLabel == null || incomeLabel == null ||
-            guideLabel == null || slowEffect == null || shieldEffect == null ||
-            turretEffect == null || cooldownLabel == null || fpsLabel == null || fpsToggle == null || ultimateProgress == null ||
+            guideLabel == null || coreAlert == null || coreHealthLabel == null ||
+            slowEffect == null || shieldEffect == null ||
+            turretEffect == null || cooldownLabel == null || fpsLabel == null || fpsToggle == null ||
             startWaveButton == null || homeButton == null || desktopHome == null ||
             rallyButton == null || desktopRally == null ||
             ultimateButton == null || desktopUltimate == null || musicSlider == null || effectsSlider == null)
@@ -157,6 +168,13 @@ public sealed class GameplayToolkitView : MonoBehaviour
             enabled = false;
             return;
         }
+
+        ultimateButton.Q<RadialProgressElement>("ultimateChargeRing")?.RemoveFromHierarchy();
+        desktopUltimate.Q<RadialProgressElement>("desktopUltimateChargeRing")?.RemoveFromHierarchy();
+        mobileUltimateRing = CreateUltimateRing("ultimateChargeRing", 5f);
+        desktopUltimateRing = CreateUltimateRing("desktopUltimateChargeRing", 4f);
+        ultimateButton.Insert(1, mobileUltimateRing);
+        desktopUltimate.Insert(1, desktopUltimateRing);
 
         root.Q<Button>("pauseButton").clicked += pauseMenu.Pause;
         root.Q<Button>("resumeButton").clicked += pauseMenu.Resume;
@@ -191,34 +209,14 @@ public sealed class GameplayToolkitView : MonoBehaviour
         buildModal.onClosed.AddListener(ClearBuildCards);
         GameAudioSettings.Changed += RefreshAudio;
         GamePerformanceSettings.Changed += RefreshFps;
+        healthBars = FindFirstObjectByType<HealthBarManager>();
+        if (healthBars != null) healthBars.SetPresentationRoot(root);
         bound = true;
     }
 
     private void Start()
     {
         if (!bound) return;
-        foreach (GameObject screen in legacyScreenGroups)
-        {
-            CanvasGroup group = screen.GetComponent<CanvasGroup>();
-            if (group == null)
-            {
-                Debug.LogError("[GameplayToolkitView] Each legacy screen group needs a CanvasGroup.", screen);
-                enabled = false;
-                return;
-            }
-            group.alpha = 0f;
-            group.blocksRaycasts = false;
-            group.interactable = false;
-            hiddenGroups.Add(group);
-        }
-        var fps = legacyScreenGroups[0].transform.parent.Find("FpsOverlay");
-        if (fps != null && fps.TryGetComponent(out Canvas fpsCanvas)) fpsCanvas.enabled = false;
-        var orderGroup = legacyOrderCanvas.GetComponent<CanvasGroup>();
-        if (orderGroup == null) orderGroup = legacyOrderCanvas.gameObject.AddComponent<CanvasGroup>();
-        orderGroup.alpha = 0f;
-        orderGroup.blocksRaycasts = false;
-        orderGroup.interactable = false;
-        hiddenGroups.Add(orderGroup);
         RefreshAudio();
         RefreshFps();
         RefreshBuildCards();
@@ -231,15 +229,15 @@ public sealed class GameplayToolkitView : MonoBehaviour
         buildModal.onClosed.RemoveListener(ClearBuildCards);
         GameAudioSettings.Changed -= RefreshAudio;
         GamePerformanceSettings.Changed -= RefreshFps;
+        if (healthBars != null) healthBars.SetPresentationRoot(null);
         movement.ClearToolkitMoveInput();
         if (ultimatePointerHeld) ultimate.Release();
-        hiddenGroups.Clear();
         bound = false;
     }
 
     private void Update()
     {
-        if (!bound || hiddenGroups.Count == 0) return;
+        if (!bound) return;
         if (GamePerformanceSettings.ShowFps)
         {
             fpsElapsed += Time.unscaledDeltaTime;
@@ -257,6 +255,23 @@ public sealed class GameplayToolkitView : MonoBehaviour
         bool paused = pauseMenu.IsPaused && !won && !lost;
         bool confirmingExit = paused && pauseMenu.IsConfirmingExit;
         bool modal = buildModal.IsOpen;
+        if (healthBars != null) healthBars.SetVisible(!order && !paused && !won && !lost);
+        Base core = Base.Instance;
+        if (core != observedCore)
+        {
+            observedCore = core;
+            previousCoreHealth = core != null ? core.CurrentHealth : 0f;
+            coreAlertUntil = 0f;
+        }
+        if (core != null)
+        {
+            if (core.CurrentHealth < previousCoreHealth)
+                coreAlertUntil = Time.unscaledTime + 2f;
+            previousCoreHealth = core.CurrentHealth;
+            SetText(coreHealthLabel, $"{Mathf.CeilToInt(100f * core.CurrentHealth / core.MaxHealth)}%");
+        }
+        coreAlert.EnableInClassList("is-hidden", core == null || won || lost ||
+            Time.unscaledTime >= coreAlertUntil);
         fpsLabel.EnableInClassList("is-hidden", !GamePerformanceSettings.ShowFps || modal);
         bool desktop = responsiveHud.IsDesktopLayout;
         root.Q("topBar").EnableInClassList("is-hidden", order || won || lost);
@@ -298,8 +313,6 @@ public sealed class GameplayToolkitView : MonoBehaviour
         guideLabel.EnableInClassList("is-hidden", !spawner.IsBuildPhase || order || paused || modal || won || lost);
         startWaveButton.EnableInClassList("is-hidden", !spawner.IsBuildPhase || Base.Instance == null ||
             modal || order || paused || won || lost);
-        if (spawner.IsBuildPhase && spawner.NextWave != null)
-            SetText(startWaveButton, $"START WAVE  ·  +{spawner.NextWave.coinReward}");
 
         SetEffect(slowEffect, slowAmmo.RemainingSeconds > 0f,
             $"❄  SLOW  {Mathf.CeilToInt(slowAmmo.RemainingSeconds)}s");
@@ -312,13 +325,135 @@ public sealed class GameplayToolkitView : MonoBehaviour
         desktopHome.SetEnabled(homeAvailable);
         ultimateButton.SetEnabled(ultimate.CanReceiveInput || ultimate.IsCharging);
         desktopUltimate.SetEnabled(ultimate.CanReceiveInput || ultimate.IsCharging);
-        ultimateProgress.value = (ultimate.IsCharging ? ultimate.ChargeProgress : ultimate.CooldownProgress) * 100f;
+        float charge = ultimate.IsCharging ? ultimate.ChargeProgress :
+            ultimate.IsOnCooldown ? ultimate.CooldownProgress : ultimate.CanReceiveInput ? 1f : 0f;
+        mobileUltimateRing.Progress = charge;
+        desktopUltimateRing.Progress = charge;
         cooldownLabel.EnableInClassList("is-hidden", !ultimate.IsOnCooldown);
         if (ultimate.IsOnCooldown) SetText(cooldownLabel, Mathf.CeilToInt(ultimate.CooldownRemaining).ToString());
         root.Q<Button>("nextLevelButton").EnableInClassList("is-hidden", !victory.CanPlayNextLevel);
         if (won) SetText(root.Q<Label>("victoryReward"), $"+{levelSetup.VictoryMoneyReward} MONEY EARNED");
         if (lost) SetText(defeatReward, $"+{levelSetup.DefeatMoneyReward} MONEY EARNED");
         if (buildModal.IsOpen && buildModal.Revision != lastModalRevision) RefreshBuildCards();
+        UpdateSpawnPreview(spawner.IsBuildPhase && !order && !paused && !modal && !won && !lost);
+    }
+
+    private void UpdateSpawnPreview(bool visible)
+    {
+        spawnPreview.EnableInClassList("is-hidden", !visible);
+        if (!visible) return;
+        if (previewWaveIndex != spawner.NextWaveIndex)
+        {
+            previewWaveIndex = spawner.NextWaveIndex;
+            spawnEntries.Clear();
+            spawnMarkers.Clear();
+            spawnPreview.Clear();
+            spawner.GetWavePreviewEntries(previewWaveIndex, spawnEntries);
+            for (int i = 0; i < spawnEntries.Count; i++)
+            {
+                Transform point = spawnEntries[i].spawnPoint;
+                if (point == null || spawnMarkers.Exists(marker => marker.Point == point)) continue;
+                int number = spawnMarkers.Count + 1;
+                var world = new VisualElement();
+                world.AddToClassList("spawn-world-group");
+                world.AddToClassList("is-hidden");
+                var heading = new Label(number.ToString());
+                heading.AddToClassList("spawn-world-number");
+                world.Add(heading);
+                for (int j = 0; j < spawnEntries.Count; j++)
+                {
+                    if (spawnEntries[j].spawnPoint != point) continue;
+                    var row = new VisualElement();
+                    row.AddToClassList("spawn-type");
+                    if (spawnEntries[j].icon != null)
+                    {
+                        var icon = new Image { sprite = spawnEntries[j].icon };
+                        icon.AddToClassList("spawn-type-icon");
+                        row.Add(icon);
+                    }
+                    var count = new Label(spawnEntries[j].count.ToString());
+                    count.AddToClassList("spawn-type-count");
+                    row.Add(count);
+                    world.Add(row);
+                }
+                var edge = new VisualElement();
+                edge.AddToClassList("spawn-edge-badge");
+                edge.AddToClassList("is-hidden");
+                var arrow = new Label("▲");
+                arrow.AddToClassList("spawn-edge-arrow");
+                edge.Add(arrow);
+                var index = new Label(number.ToString());
+                index.AddToClassList("spawn-edge-number");
+                edge.Add(index);
+                var distance = new Label();
+                distance.AddToClassList("spawn-edge-distance");
+                edge.Add(distance);
+                IgnorePicking(world);
+                IgnorePicking(edge);
+                spawnPreview.Add(world);
+                spawnPreview.Add(edge);
+                spawnMarkers.Add(new SpawnMarker { Point = point, Visible = world, Edge = edge,
+                    Distance = distance, Arrow = arrow });
+            }
+        }
+        Camera camera = Camera.main;
+        float width = spawnPreview.resolvedStyle.width;
+        float height = spawnPreview.resolvedStyle.height;
+        if (camera == null || width <= 0f || height <= 0f) return;
+        foreach (SpawnMarker marker in spawnMarkers)
+        {
+            if (marker.Point == null) continue;
+            Vector3 screen = camera.WorldToScreenPoint(marker.Point.position);
+            Vector2 target = new(screen.x * width / Screen.width, screen.y * height / Screen.height);
+            Vector2 center = new(width * 0.5f, height * 0.5f);
+            if (screen.z < 0f) target = center - (target - center);
+            bool onScreen = screen.z > 0f && target.x >= 0f && target.x <= width &&
+                target.y >= 0f && target.y <= height;
+            marker.Visible.EnableInClassList("is-hidden", !onScreen);
+            marker.Edge.EnableInClassList("is-hidden", onScreen);
+            if (onScreen)
+            {
+                marker.Visible.style.left = Mathf.Clamp(target.x - marker.Visible.resolvedStyle.width * 0.5f,
+                    12f, width - marker.Visible.resolvedStyle.width - 12f);
+                marker.Visible.style.top = Mathf.Clamp(height - target.y - 84f, 90f, height - 210f);
+            }
+            else
+            {
+                Vector2 direction = target - center;
+                if (direction.sqrMagnitude < 0.001f) direction = Vector2.up;
+                float scaleX = Mathf.Abs(direction.x) > 0.001f ?
+                    (width * 0.5f - 58f) / Mathf.Abs(direction.x) : float.PositiveInfinity;
+                float scaleY = Mathf.Abs(direction.y) > 0.001f ?
+                    (height * 0.5f - 100f) / Mathf.Abs(direction.y) : float.PositiveInfinity;
+                Vector2 edgePosition = center + direction * Mathf.Min(scaleX, scaleY);
+                // Keep the badge clear of the corner pause button and the top HUD.
+                marker.Edge.style.left = Mathf.Clamp(edgePosition.x - 33f, 96f, width - 96f);
+                marker.Edge.style.top = Mathf.Clamp(height - edgePosition.y - 33f, 108f, height - 88f);
+                float meters = Vector3.Distance(camera.transform.position, marker.Point.position);
+                marker.Distance.text = $"{Mathf.RoundToInt(meters)}м";
+                marker.Arrow.style.rotate = new Rotate(new Angle(
+                    Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f));
+            }
+        }
+    }
+
+    private static RadialProgressElement CreateUltimateRing(string name, float width)
+    {
+        var ring = new RadialProgressElement
+        {
+            name = name,
+            TrackColor = new Color(0.31f, 0.20f, 0.46f, 0.8f),
+            FillColor = new Color(0.57f, 0.91f, 0.93f, 1f),
+            StrokeWidth = width
+        };
+        ring.AddToClassList("ultimate-charge-ring");
+        return ring;
+    }
+
+    private static void IgnorePicking(VisualElement element)
+    {
+        element.pickingMode = PickingMode.Ignore;
+        foreach (VisualElement child in element.Children()) IgnorePicking(child);
     }
 
     private static int CountEnemies(WaveSpawner.Wave wave)
@@ -350,12 +485,13 @@ public sealed class GameplayToolkitView : MonoBehaviour
         else buildPanel.RemoveFromClassList("panel-left");
         SetText(root.Q<Label>("buildHeading"), buildModal.Heading);
         int displayedCards = 0;
-        foreach (TowerCard source in buildModal.ActiveCards)
+        foreach (TowerSelectionModal.BuildOffer source in buildModal.ActiveOffers)
         {
             displayedCards++;
             var levels = BuildingLevelList.Read(source.Option);
             var card = new VisualElement();
             card.AddToClassList("build-card");
+            if (source.CurrentLevel > 0) card.AddToClassList("build-card-upgrade");
             var header = new VisualElement();
             header.AddToClassList("build-card-header");
             if (source.Option.icon != null)
@@ -364,32 +500,25 @@ public sealed class GameplayToolkitView : MonoBehaviour
                 icon.AddToClassList("build-card-icon");
                 header.Add(icon);
             }
+            var summary = new VisualElement();
+            summary.AddToClassList("build-card-summary");
             var title = new Label(source.Option.displayName.ToUpperInvariant());
             title.AddToClassList("build-card-title");
-            header.Add(title);
+            summary.Add(title);
+            var description = new Label(GetBuildingDescription(source.Option));
+            description.AddToClassList("build-card-description");
+            summary.Add(description);
+            header.Add(summary);
             card.Add(header);
-            var progression = new VisualElement();
-            progression.AddToClassList("build-levels");
-            int targetLevel = Mathf.Max(1, source.CurrentLevel);
-            for (int i = 0; i < levels.Count; i++)
+            if (source.CurrentLevel > 0 && levels.Count > 0)
             {
-                var level = levels[i];
-                var row = new VisualElement();
-                row.AddToClassList("build-level-row");
-                if (i + 1 == targetLevel) row.AddToClassList("build-level-target");
-                var number = new Label($"LV {i + 1:00}");
-                number.AddToClassList("build-level-number");
-                row.Add(number);
-                var values = new System.Text.StringBuilder();
-                if (level.Health.HasValue) values.Append($"HP {level.Health.Value:0}");
-                if (level.Damage.HasValue) values.Append($"   DMG {level.Damage.Value:0}");
-                if (level.Income.HasValue) values.Append($"   INCOME {level.Income.Value}");
-                var detail = new Label(values.ToString());
-                detail.AddToClassList("build-level-values");
-                row.Add(detail);
-                progression.Add(row);
+                int currentIndex = Mathf.Clamp(source.CurrentLevel - 1, 0, levels.Count - 1);
+                int nextIndex = Mathf.Min(currentIndex + 1, levels.Count - 1);
+                var progression = new Label($"LEVEL {source.CurrentLevel}  ·  {FormatLevel(levels[currentIndex])}" +
+                    (nextIndex > currentIndex ? $"\nNEXT  ·  {FormatLevel(levels[nextIndex])}" : "\nMAX LEVEL"));
+                progression.AddToClassList("build-upgrade-summary");
+                card.Add(progression);
             }
-            card.Add(progression);
             var action = new Button(source.Activate)
             {
                 text = source.Cost.HasValue ? $"{source.ActionText}   •   {source.Cost.Value} ◆" : source.ActionText
@@ -400,12 +529,40 @@ public sealed class GameplayToolkitView : MonoBehaviour
             buildCards.Add(card);
         }
         buildPanel.EnableInClassList("single-card-panel", displayedCards == 1);
+        buildPanel.EnableInClassList("upgrade-panel", displayedCards == 1 &&
+            buildModal.ActiveOffers.Count == 1 && buildModal.ActiveOffers[0].CurrentLevel > 0);
+    }
+
+    private static string FormatLevel(BuildingLevelList.Level level)
+    {
+        var values = new List<string>();
+        if (level.Health.HasValue) values.Add($"HP {level.Health.Value:0}");
+        if (level.Damage.HasValue) values.Add($"DMG {level.Damage.Value:0}");
+        if (level.Income.HasValue) values.Add($"+{level.Income.Value} / WAVE");
+        return string.Join("  ·  ", values);
+    }
+
+    private static string GetBuildingDescription(TowerOption option)
+    {
+        if (!string.IsNullOrWhiteSpace(option.description)) return option.description;
+        string name = option.displayName?.ToLowerInvariant() ?? "";
+        if (name.Contains("pulse")) return "AREA CONTROL · Damages and slows nearby ground enemies.";
+        if (name.Contains("mortar")) return "LONG RANGE · Hits groups from a distance.";
+        return option.slotType switch
+        {
+            BuildSlotType.Mine => "INCOME AFTER EACH WAVE · Funds future construction.",
+            BuildSlotType.TownHall => "DEFEND THIS CORE · Your base must survive every wave.",
+            BuildSlotType.Barracks => "ALLIED UNITS · Holds a position against enemies.",
+            BuildSlotType.Wall => "BLOCKS THE PATH · Gives your defenses more time.",
+            _ => "DIRECT FIRE · Attacks enemies within range."
+        };
     }
 
     private void ClearBuildCards()
     {
         buildCards.Clear();
         buildPanel.RemoveFromClassList("single-card-panel");
+        buildPanel.RemoveFromClassList("upgrade-panel");
         lastModalRevision = -1;
     }
 
@@ -470,8 +627,14 @@ public sealed class GameplayToolkitView : MonoBehaviour
 
     private void BindUltimate(Button button)
     {
+        button.clicked += () =>
+        {
+            if (ultimate.IsAutomaticCharge && ultimate.CanReceiveInput)
+                ultimate.BeginCharge();
+        };
         button.RegisterCallback<PointerDownEvent>(evt =>
         {
+            if (ultimate.IsAutomaticCharge) return;
             if (!ultimate.CanReceiveInput || ultimate.IsCharging) return;
             ultimatePointerHeld = !ultimate.IsAutomaticCharge;
             ultimate.BeginCharge();

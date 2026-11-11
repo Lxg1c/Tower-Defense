@@ -3,6 +3,7 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace TowerDefense.Tests
 {
@@ -228,18 +229,18 @@ namespace TowerDefense.Tests
         }
 
         [Test]
-        public void LevelWiresCompanionStatusIntoTheEffectRow()
+        public void LevelWiresCompanionStatusIntoToolkitHud()
         {
             var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");
             try
             {
-                var panel = scene.GetRootGameObjects()
-                    .SelectMany(root => root.GetComponentsInChildren<EffectStatusPanel>(true)).Single();
-                var serialized = new SerializedObject(panel);
-                foreach (string field in new[] { "companionTurrets", "companionIndicator",
-                             "companionRing", "companionTime", "companionCount" })
-                    Assert.That(serialized.FindProperty(field).objectReferenceValue, Is.Not.Null, field);
-                Assert.That(panel.transform.Find("TurretEffect"), Is.Not.Null);
+                var view = scene.GetRootGameObjects()
+                    .SelectMany(root => root.GetComponentsInChildren<GameplayToolkitView>(true)).Single();
+                Assert.That(new SerializedObject(view).FindProperty("companionTurrets").objectReferenceValue,
+                    Is.Not.Null);
+                var document = view.GetComponent<UnityEngine.UIElements.UIDocument>();
+                Assert.That(document.visualTreeAsset.CloneTree().Q<UnityEngine.UIElements.Label>("turretEffect"),
+                    Is.Not.Null);
             }
             finally { EditorSceneManager.ClosePreviewScene(scene); }
         }

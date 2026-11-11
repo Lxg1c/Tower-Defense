@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" style="color:#B4EE83">
+  <defs>
+    <linearGradient id="plate" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#173B4E"/><stop offset=".55" stop-color="#0A2231"/><stop offset="1" stop-color="#061521"/></linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="5"/></filter>
+  </defs>
+  <path d="M48 13h160l35 35v160l-35 35H48l-35-35V48z" fill="url(#plate)" stroke="#B4EE83" stroke-width="5"/>
+  <path d="M57 26h143l30 30v144l-30 30H57l-30-30V56z" fill="none" stroke="#B4EE83" stroke-opacity=".26" stroke-width="3"/>
+  <path d="M52 24h38M166 232h38" stroke="#B4EE83" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="128" cy="128" r="73" fill="#5F9E39" opacity=".12"/>
+  <g style="color:#B4EE83" opacity=".5" filter="url(#glow)"><g stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M60 184h136M78 184l14-30h72l14 30M96 112l32-45 32 45-32 43z"/>
+      <path d="M128 68v86M96 112h64M128 155l-26-43M128 155l26-43" stroke-width="5"/>
+      <path d="M73 120 53 107M183 120l20-13" stroke-width="6"/>
+    </g></g>
+  <g style="color:#B4EE83"><g stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M60 184h136M78 184l14-30h72l14 30M96 112l32-45 32 45-32 43z"/>
+      <path d="M128 68v86M96 112h64M128 155l-26-43M128 155l26-43" stroke-width="5"/>
+      <path d="M73 120 53 107M183 120l20-13" stroke-width="6"/>
+    </g></g>
+</svg>

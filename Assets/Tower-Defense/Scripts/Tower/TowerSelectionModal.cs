@@ -3,201 +3,126 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-/// <summary>
-/// Scene-wide singleton modal. A zone calls <see cref="Open"/> with a list of options
-/// and a callback. The modal instantiates one shared <see cref="cardPrefab"/> per option
-/// under <see cref="content"/> and binds it via <see cref="TowerCard.Bind"/> — no per-tower UI
-/// prefabs needed. Layout (HorizontalLayoutGroup / GridLayoutGroup) lives on the Content object.
-/// </summary>
-public class TowerSelectionModal : MonoBehaviour
+/// <summary>Build choices and purchase callbacks presented by GameplayToolkitView.</summary>
+public sealed class TowerSelectionModal : MonoBehaviour
 {
     public static TowerSelectionModal Instance { get; private set; }
-
-    [Header("Refs")]
-    [SerializeField] private GameObject    modalRoot;
-    [SerializeField] private RectTransform content;
-    [Tooltip("Single card prefab — must have a TowerCard component on root.")]
-    [SerializeField] private TowerCard     cardPrefab;
-    [SerializeField] private TMPro.TMP_Text heading;
-
-    [Header("Events")]
     public UnityEvent onOpened;
     public UnityEvent onClosed;
 
-    private readonly List<GameObject> spawnedEntries = new();
+    private readonly List<BuildOffer> offers = new();
     private Action<TowerOption> onPick;
     private int revision;
+    private bool isOpen;
+    private string heading = "CHOOSE A BUILDING";
 
-    public bool IsOpen => modalRoot != null && modalRoot.activeSelf;
-    public int Revision => revision;
-    public string Heading => heading != null ? heading.text : "CHOOSE A BUILDING";
-    public IEnumerable<TowerCard> ActiveCards
+    public sealed class BuildOffer
     {
-        get
+        public TowerOption Option { get; }
+        public int CurrentLevel { get; }
+        public int? Cost { get; }
+        public string ActionText { get; }
+        public bool Available { get; }
+        private readonly Action activate;
+
+        public BuildOffer(TowerOption option, int currentLevel, int? cost, string actionText,
+            bool available, Action activate)
         {
-            foreach (GameObject entry in spawnedEntries)
-                if (entry != null && entry.TryGetComponent(out TowerCard card))
-                    yield return card;
+            Option = option;
+            CurrentLevel = currentLevel;
+            Cost = cost;
+            ActionText = actionText;
+            Available = available;
+            this.activate = activate;
         }
+
+        public void Activate() { if (Available) activate?.Invoke(); }
     }
+
+    public bool IsOpen => isOpen;
+    public int Revision => revision;
+    public string Heading => heading;
+    public IReadOnlyList<BuildOffer> ActiveOffers => offers;
     public TowerPlacementZone Owner { get; private set; }
 
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
-
-        if (modalRoot != null)
-            modalRoot.SetActive(false);
     }
 
-    private void OnDestroy()
-    {
-        if (Instance == this) Instance = null;
-    }
+    private void OnEnable() { if (Instance == null) Instance = this; }
+    private void OnDisable() { if (Instance == this) Instance = null; }
+    private void OnDestroy() { if (Instance == this) Instance = null; }
 
-    public void Open(IReadOnlyList<TowerOption> options, Action<TowerOption> onPick, TowerPlacementZone owner = null)
+    public void Open(IReadOnlyList<TowerOption> options, Action<TowerOption> onPick,
+        TowerPlacementZone owner = null)
     {
         if (PlayerWallet.Instance == null)
         {
             Debug.LogError("[TowerSelectionModal] A PlayerWallet is required to show build options.", this);
             return;
         }
-        if (modalRoot == null || content == null || cardPrefab == null)
-        {
-            Debug.LogError("[TowerSelectionModal] Missing modalRoot / content / cardPrefab.", this);
-            return;
-        }
-
         this.onPick = onPick;
-        if (heading != null) heading.text = "CHOOSE A BUILDING";
         Owner = owner;
         ClearEntries();
-
+        heading = options.Count == 1 && options[0] != null &&
+            !string.IsNullOrWhiteSpace(options[0].displayName)
+            ? $"BUILD {options[0].displayName.ToUpperInvariant()}" : "CHOOSE A BUILDING";
         int coins = PlayerWallet.Instance.Coins;
-
-        foreach (var opt in options)
+        foreach (TowerOption option in options)
         {
-            if (opt == null || opt.prefab == null) continue;
-
-            TowerCard card = Instantiate(cardPrefab, content);
-            card.gameObject.SetActive(true);
-
-            var captured = opt;
+            if (option == null || option.prefab == null) continue;
+            TowerOption captured = option;
             int cardRevision = revision;
-            int cost = owner != null ? owner.GetOptionCost(opt) : opt.cost;
-            card.Bind(opt, 0, cost, "BUILD", coins >= cost, () =>
-            {
-                if (IsOpen && revision == cardRevision) HandlePick(captured);
-            });
-
-            spawnedEntries.Add(card.gameObject);
+            int cost = owner != null ? owner.GetOptionCost(option) : option.cost;
+            offers.Add(new BuildOffer(option, 0, cost, "BUILD", coins >= cost,
+                () => { if (isOpen && revision == cardRevision) HandlePick(captured); }));
         }
-
-        modalRoot.SetActive(true);
-        PositionPanel(spawnedEntries.Count, owner);
-        Canvas.ForceUpdateCanvases();
+        isOpen = true;
         onOpened?.Invoke();
     }
 
     public void OpenUpgrade(TowerOption option, int currentLevel, int? cost, bool unlocked,
         Func<bool> purchase, TowerPlacementZone owner)
     {
-        if (PlayerWallet.Instance == null || option == null || option.prefab == null
-            || modalRoot == null || content == null || cardPrefab == null) return;
+        if (PlayerWallet.Instance == null || option == null || option.prefab == null) return;
         ClearEntries();
         onPick = null;
         Owner = owner;
-        if (heading != null) heading.text = "BUILDING LEVELS";
-        var card = Instantiate(cardPrefab, content);
-        card.gameObject.SetActive(true);
+        heading = "BUILDING LEVELS";
         string action = !cost.HasValue ? "MAX LEVEL" : !unlocked ? "UPGRADE TOWN HALL" : "UPGRADE";
         bool canBuy = cost.HasValue && unlocked && PlayerWallet.Instance.Coins >= cost.Value;
         int cardRevision = revision;
-        card.Bind(option, currentLevel, cost, action, canBuy, () =>
+        offers.Add(new BuildOffer(option, currentLevel, cost, action, canBuy, () =>
         {
-            // A retained/stale button must not operate after the owning panel closes.
-            if (!IsOpen || Owner != owner || revision != cardRevision || !canBuy) return;
+            if (!isOpen || Owner != owner || revision != cardRevision || !canBuy) return;
             if (purchase()) Close();
-        });
-        spawnedEntries.Add(card.gameObject);
-        modalRoot.SetActive(true);
-        PositionPanel(1, owner);
-        Canvas.ForceUpdateCanvases();
+        }));
+        isOpen = true;
         onOpened?.Invoke();
     }
 
     public void Close()
     {
-        bool wasOpen = IsOpen;
+        bool wasOpen = isOpen;
         onPick = null;
         Owner = null;
         ClearEntries();
-        if (modalRoot != null)
-            modalRoot.SetActive(false);
+        isOpen = false;
         if (wasOpen) onClosed?.Invoke();
     }
 
-    private void HandlePick(TowerOption opt)
+    private void HandlePick(TowerOption option)
     {
-        var callback = onPick;
+        Action<TowerOption> callback = onPick;
         Close();
-        callback?.Invoke(opt);
-    }
-
-    private void PositionPanel(int cardCount, TowerPlacementZone owner)
-    {
-        var surface = content.parent as RectTransform;
-        var canvasRect = modalRoot.transform as RectTransform;
-        if (surface == null || canvasRect == null)
-            return;
-
-        var layout = content.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>();
-        var cardLayout = cardPrefab.GetComponent<UnityEngine.UI.LayoutElement>();
-        float cardWidth = cardLayout != null && cardLayout.preferredWidth > 0f
-            ? cardLayout.preferredWidth : ((RectTransform)cardPrefab.transform).rect.width;
-        if (cardCount > 1)
-        {
-            cardWidth = Mathf.Min(cardWidth, 300f);
-            foreach (var entry in spawnedEntries)
-            {
-                if (entry != null && entry.TryGetComponent(out UnityEngine.UI.LayoutElement element))
-                    element.preferredWidth = cardWidth;
-            }
-        }
-        float spacing = layout != null ? layout.spacing : 0f;
-        float width = 36f + Mathf.Max(1, cardCount) * cardWidth
-            + Mathf.Max(0, cardCount - 1) * spacing;
-        width = Mathf.Min(width, canvasRect.rect.width - 48f);
-        surface.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
-
-        float x = 0f;
-        Camera camera = Camera.main;
-        if (owner != null && camera != null)
-        {
-            Vector3 screen = camera.WorldToScreenPoint(owner.transform.position);
-            if (screen.z > 0f && RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    canvasRect, screen, null, out Vector2 point))
-            {
-                const float progressClearance = 96f;
-                float left = canvasRect.rect.xMin + 24f;
-                float right = canvasRect.rect.xMax - 24f;
-                float leftSpace = point.x - progressClearance - left;
-                float rightSpace = right - point.x - progressClearance;
-                x = rightSpace >= leftSpace
-                    ? point.x + progressClearance + width * 0.5f
-                    : point.x - progressClearance - width * 0.5f;
-                x = Mathf.Clamp(x, left + width * 0.5f, right - width * 0.5f);
-            }
-        }
-        surface.anchoredPosition = new Vector2(x, surface.anchoredPosition.y);
+        callback?.Invoke(option);
     }
 
     private void ClearEntries()
     {
         revision++;
-        foreach (var go in spawnedEntries)
-            if (go != null) { go.SetActive(false); Destroy(go); }
-        spawnedEntries.Clear();
+        offers.Clear();
     }
 }

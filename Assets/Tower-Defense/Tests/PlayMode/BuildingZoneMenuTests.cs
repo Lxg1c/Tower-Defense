@@ -15,9 +15,9 @@ namespace TowerDefense.Tests
         PlayerWallet wallet;
         PlayerMovement movement;
         TowerSelectionModal selection;
+        Texture2D markerTexture;
+        Sprite markerSprite;
 
-
-        GameObject selectionPanel;
 
         TowerPlacementZone zone;
         static void Set(object target, string field, object value) =>
@@ -30,7 +30,7 @@ namespace TowerDefense.Tests
             objects.Add(go);
             return go;
         }
-        TowerPlacementZone Zone(Vector3 position)
+        TowerPlacementZone Zone(Vector3 position, Sprite icon = null)
         {
             var go = New("Zone");
             go.transform.position = position;
@@ -38,8 +38,7 @@ namespace TowerDefense.Tests
             Set(result, "loadout", loadout);
             Set(result, "zoneRadius", 1f);
             Set(result, "enterDelay", .02f);
-            var fill = New("Progress fill").AddComponent<UnityEngine.UI.Image>();
-            Set(result, "placementCircleFill", fill);
+            if (icon != null) Set(result, "defenseIcon", icon);
             go.SetActive(true);
             return result;
         }
@@ -65,16 +64,6 @@ namespace TowerDefense.Tests
 
             var owner = New("Selection controller");
             selection = owner.AddComponent<TowerSelectionModal>();
-            selectionPanel = New("Selection panel", owner.transform);
-            var content = New("Content", selectionPanel.transform).AddComponent<RectTransform>();
-            content.gameObject.SetActive(true);
-            var template = New("Card");
-            var button = template.AddComponent<UnityEngine.UI.Button>();
-            var card = template.AddComponent<TowerCard>();
-            Set(card, "button", button);
-            Set(selection, "modalRoot", selectionPanel);
-            Set(selection, "content", content);
-            Set(selection, "cardPrefab", card);
             owner.SetActive(true);
 
             zone = Zone(Vector3.zero);
@@ -102,7 +91,7 @@ namespace TowerDefense.Tests
             Assert.That(next.IsUnlocked(), Is.False);
             Assert.That(visual.activeSelf, Is.False);
 
-            selectionPanel.GetComponentInChildren<UnityEngine.UI.Button>().onClick.Invoke();
+            selection.ActiveOffers[0].Activate();
             yield return null;
             Assert.That(zone.IsBuilt, Is.True);
             Assert.That(next.IsUnlocked(), Is.True);
@@ -112,24 +101,77 @@ namespace TowerDefense.Tests
         }
 
         [UnityTest]
+        public IEnumerator RootVisualPointStaysActiveUntilPrerequisiteIsBuilt()
+        {
+            markerTexture = new Texture2D(4, 4);
+            markerSprite = Sprite.Create(markerTexture, new Rect(0, 0, 4, 4),
+                new Vector2(.5f, .5f), 100f);
+            TowerPlacementZone next = Zone(new Vector3(3f, 0f, 0f), markerSprite);
+            Set(next, "requiredBuiltZone", zone);
+            Set(next, "visualRoot", next.gameObject);
+            next.SendMessage("SyncWithPhase");
+            yield return null;
+            SpriteRenderer icon = next.GetComponentInChildren<SpriteRenderer>();
+            Assert.That(next.gameObject.activeSelf, Is.True,
+                "A locked point must keep its controller running to detect unlocks.");
+            Assert.That(next.IsAvailable, Is.False);
+            Assert.That(icon.enabled, Is.False);
+
+            selection.ActiveOffers[0].Activate();
+            yield return null;
+            Assert.That(next.IsAvailable, Is.True);
+            Assert.That(icon.enabled, Is.True, "Unlocking the point must reveal its floor icon.");
+            foreach (Transform built in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None))
+                if (built.name == "Building template(Clone)") objects.Add(built.gameObject);
+        }
+
+        [UnityTest]
         public IEnumerator FullProgressRemainsWhileModalIsOpenAndClearsOnExit()
         {
-            var fill = (UnityEngine.UI.Image)typeof(TowerPlacementZone).GetField("placementCircleFill",
-                BindingFlags.NonPublic | BindingFlags.Instance).GetValue(zone);
-            Assert.That(fill.fillAmount, Is.EqualTo(1f));
+            Assert.That(zone.PlacementProgress, Is.EqualTo(1f));
             yield return new WaitForSeconds(.08f);
             Assert.That(selection.IsOpen, Is.True);
-            Assert.That(fill.fillAmount, Is.EqualTo(1f));
+            Assert.That(zone.PlacementProgress, Is.EqualTo(1f));
             Leave();
             yield return null;
             yield return null;
-            Assert.That(fill.fillAmount, Is.Zero);
+            Assert.That(zone.PlacementProgress, Is.Zero);
+        }
+
+        [UnityTest]
+        public IEnumerator WorldMarkerFillsInZoneAndHidesProgressOnExit()
+        {
+            markerTexture = new Texture2D(4, 4);
+            markerSprite = Sprite.Create(markerTexture, new Rect(0, 0, 4, 4),
+                new Vector2(.5f, .5f), 100f);
+            TowerPlacementZone next = Zone(new Vector3(3f, 0f, 0f), markerSprite);
+            yield return null;
+            var icon = next.GetComponentInChildren<SpriteRenderer>();
+            var track = (LineRenderer)typeof(TowerPlacementZone).GetField("worldProgressTrack",
+                BindingFlags.NonPublic | BindingFlags.Instance).GetValue(next);
+            Assert.That(icon, Is.Not.Null);
+            Assert.That(icon.enabled, Is.True);
+            Assert.That(track.enabled, Is.False);
+
+            wallet.GetComponent<Rigidbody>().position = next.transform.position;
+            Physics.SyncTransforms();
+            yield return new WaitForSeconds(.08f);
+            Assert.That(next.PlacementProgress, Is.EqualTo(1f));
+            Assert.That(track.enabled, Is.True);
+            Assert.That(selection.Owner, Is.SameAs(next));
+
+            Leave();
+            yield return null;
+            Assert.That(next.PlacementProgress, Is.Zero);
+            Assert.That(track.enabled, Is.False);
+            Assert.That(selection.IsOpen, Is.False);
+            Assert.That(icon.enabled, Is.True, "The floor marker stays visible after leaving.");
         }
 
         [UnityTest]
         public IEnumerator BuildingsWithoutUpgradesDoNotReopenTheirPointOrModal()
         {
-            selectionPanel.GetComponentInChildren<UnityEngine.UI.Button>().onClick.Invoke();
+            selection.ActiveOffers[0].Activate();
             var slot = (BuildingSlot)typeof(TowerPlacementZone).GetField("slot",
                 BindingFlags.NonPublic | BindingFlags.Instance).GetValue(zone);
             slot.BeginBuildPhase();
@@ -170,7 +212,7 @@ namespace TowerDefense.Tests
             Assert.That(visual.activeSelf, Is.True);
             Assert.That(selection.IsOpen, Is.True);
             Assert.That(selection.Owner, Is.SameAs(zone));
-            selectionPanel.GetComponentInChildren<UnityEngine.UI.Button>().onClick.Invoke();
+            selection.ActiveOffers[0].Activate();
             slot.BeginBuildPhase();
             zone.SendMessage("SyncWithPhase");
             yield return null;
@@ -183,11 +225,11 @@ namespace TowerDefense.Tests
         {
             int purchases = 0;
             selection.OpenUpgrade(option, 1, 2, true, () => { purchases++; return true; }, zone);
-            var button = selectionPanel.GetComponentInChildren<UnityEngine.UI.Button>();
+            var offer = selection.ActiveOffers[0];
             Assert.That(selection.IsOpen, Is.True);
-            Assert.That(button.interactable, Is.True);
-            button.onClick.Invoke();
-            button.onClick.Invoke();
+            Assert.That(offer.Available, Is.True);
+            offer.Activate();
+            offer.Activate();
             Assert.That(purchases, Is.EqualTo(1));
             Assert.That(selection.IsOpen, Is.False);
             yield return null;
@@ -202,9 +244,9 @@ namespace TowerDefense.Tests
                 int? cost = state == 0 ? (int?)null : state == 1 ? 2 : wallet.Coins + 1;
                 selection.OpenUpgrade(option, 1, cost, state != 1,
                     () => { purchases++; return true; }, zone);
-                var button = selectionPanel.GetComponentInChildren<UnityEngine.UI.Button>();
-                Assert.That(button.interactable, Is.False);
-                button.onClick.Invoke();
+                var offer = selection.ActiveOffers[0];
+                Assert.That(offer.Available, Is.False);
+                offer.Activate();
                 Assert.That(selection.IsOpen, Is.True);
                 Assert.That(purchases, Is.Zero);
             }
@@ -232,10 +274,10 @@ namespace TowerDefense.Tests
         [UnityTest]
         public IEnumerator ClickAfterLeavingCannotBuildOrSpendBeforeNextZoneUpdate()
         {
-            var button = selectionPanel.GetComponentInChildren<UnityEngine.UI.Button>();
+            var offer = selection.ActiveOffers[0];
             int coins = wallet.Coins;
             Leave();
-            button.onClick.Invoke();
+            offer.Activate();
             Assert.That(zone.IsBuilt, Is.False);
             Assert.That(wallet.Coins, Is.EqualTo(coins));
             Assert.That(selection.IsOpen, Is.False);
@@ -272,15 +314,15 @@ namespace TowerDefense.Tests
         public IEnumerator BuildInsideZoneSpendsOnceAndClosesMenu()
         {
             int coins = wallet.Coins;
-            var button = selectionPanel.GetComponentInChildren<UnityEngine.UI.Button>();
-            button.onClick.Invoke();
+            var offer = selection.ActiveOffers[0];
+            offer.Activate();
             var building = Object.FindFirstObjectByType<BuildingSpawnAnimation>();
             if (building != null) objects.Add(building.gameObject);
             Assert.That(zone.IsBuilt, Is.True);
             Assert.That(zone.UsedThisPhase, Is.True);
             Assert.That(wallet.Coins, Is.EqualTo(coins - option.cost));
             Assert.That(selection.IsOpen, Is.False);
-            button.onClick.Invoke();
+            offer.Activate();
             Assert.That(wallet.Coins, Is.EqualTo(coins - option.cost));
             yield return null;
         }
@@ -307,7 +349,7 @@ namespace TowerDefense.Tests
             Assert.That(selection.Owner, Is.EqualTo(zone));
             int coins = wallet.Coins;
             Leave();
-            selectionPanel.GetComponentInChildren<UnityEngine.UI.Button>().onClick.Invoke();
+            selection.ActiveOffers[0].Activate();
             Assert.That(wallet.Coins, Is.EqualTo(coins));
             Assert.That(slot.BuiltBase.CurrentLevel, Is.Zero);
             Assert.That(selection.IsOpen, Is.False);
@@ -328,6 +370,8 @@ namespace TowerDefense.Tests
             for (int i = objects.Count - 1; i >= 0; i--)
                 if (objects[i] != null) Object.Destroy(objects[i]);
             objects.Clear();
+            if (markerSprite != null) Object.Destroy(markerSprite);
+            if (markerTexture != null) Object.Destroy(markerTexture);
             Object.Destroy(loadout);
             Time.timeScale = 1;
             yield return null;

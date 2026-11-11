@@ -9,289 +9,144 @@ namespace TowerDefense.Tests
 {
     public class UIConfigurationTests
     {
+        private static readonly string[] ScenePaths =
+        {
+            "Assets/Tower-Defense/Scenes/MainMenu.unity",
+            "Assets/Tower-Defense/Scenes/Level 1.unity",
+            "Assets/Tower-Defense/Scenes/GameplayLab.unity"
+        };
+
         [Test]
-        public void ToolkitScreensHaveDocumentsAndRequiredSceneBindings()
+        public void PlayableScenesUseToolkitWithoutCanvas()
         {
             var panel = AssetDatabase.LoadAssetAtPath<PanelSettings>(
                 "Assets/Tower-Defense/UI/Toolkit/PanelSettings.asset");
             Assert.That(panel, Is.Not.Null);
-            foreach (string scenePath in new[]
-                     {
-                         "Assets/Tower-Defense/Scenes/MainMenu.unity",
-                         "Assets/Tower-Defense/Scenes/Level 1.unity",
-                         "Assets/Tower-Defense/Scenes/GameplayLab.unity"
-                     })
-            {
-                var scene = EditorSceneManager.OpenPreviewScene(scenePath);
-                try
-                {
-                    var document = scene.GetRootGameObjects()
-                        .SelectMany(root => root.GetComponentsInChildren<UIDocument>(true)).Single();
-                    Assert.That(document.panelSettings, Is.SameAs(panel), scenePath);
-                    Assert.That(document.visualTreeAsset, Is.Not.Null, scenePath);
-                    var view = scenePath.EndsWith("MainMenu.unity")
-                        ? (MonoBehaviour)document.GetComponent<MenuToolkitView>()
-                        : document.GetComponent<GameplayToolkitView>();
-                    Assert.That(view, Is.Not.Null, scenePath);
-                    var data = new SerializedObject(view);
-                    string[] fields = scenePath.EndsWith("MainMenu.unity")
-                        ? new[] { "legacyCanvas", "menu", "legacyScreens" }
-                        : new[] { "legacyOrderCanvas", "responsiveHud", "spawner", "wallet", "timer",
-                            "movement", "ultimate", "teleport", "pauseMenu", "victory", "defeat",
-                            "levelSetup", "buildModal", "orders", "slowAmmo", "playerHealth",
-                            "companionTurrets" };
-                    foreach (string field in fields)
-                        Assert.That(data.FindProperty(field).objectReferenceValue, Is.Not.Null,
-                            scenePath + ": " + field);
-                    if (view is MenuToolkitView)
-                    {
-                        var oldCanvas = (Canvas)data.FindProperty("legacyCanvas").objectReferenceValue;
-                        Assert.That(oldCanvas.enabled, Is.False, scenePath);
-                    }
-                    else if (view is GameplayToolkitView)
-                    {
-                        var groups = data.FindProperty("legacyScreenGroups");
-                        Assert.That(groups.arraySize, Is.EqualTo(4), scenePath);
-                        for (int i = 0; i < groups.arraySize; i++)
-                        {
-                            var groupObject = groups.GetArrayElementAtIndex(i).objectReferenceValue as GameObject;
-                            Assert.That(groupObject, Is.Not.Null,
-                                scenePath + ": legacyScreenGroups[" + i + "]");
-                            var canvasGroup = groupObject.GetComponent<CanvasGroup>();
-                            Assert.That(canvasGroup, Is.Not.Null, groupObject.name);
-                            Assert.That(canvasGroup.alpha, Is.Zero, groupObject.name);
-                            Assert.That(canvasGroup.blocksRaycasts, Is.False, groupObject.name);
-                            Assert.That(canvasGroup.interactable, Is.False, groupObject.name);
-                            Assert.That(groupObject.activeSelf, Is.True, groupObject.name);
-                        }
-                    }
-                }
-                finally { EditorSceneManager.ClosePreviewScene(scene); }
-            }
-        }
-
-        [Test]
-        public void BarracksOrdersHaveAnIconAndBothGameplayScenesHaveACompleteMapMode()
-        {
-            foreach (string prefabPath in new[]
-                     {
-                         "Assets/Tower-Defense/Prefabs/Buildings/Barracks.prefab",
-                         "Assets/Tower-Defense/Prefabs/Buildings/BarracksRanged.prefab"
-                     })
-            {
-                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
-                Assert.That(prefab, Is.Not.Null, prefabPath);
-                var icon = prefab.GetComponentInChildren<BarracksOrderIcon>(true);
-                Assert.That(icon, Is.Not.Null, prefabPath);
-                Assert.That(icon.GetComponent<BoxCollider>().enabled, Is.True, prefabPath);
-                Assert.That(icon.GetComponent<SpriteRenderer>().sprite, Is.Not.Null, prefabPath);
-            }
-
-            foreach (string scenePath in new[]
-                     {
-                         "Assets/Tower-Defense/Scenes/Level 1.unity",
-                         "Assets/Tower-Defense/Scenes/GameplayLab.unity"
-                     })
-            {
-                var scene = EditorSceneManager.OpenPreviewScene(scenePath);
-                try
-                {
-                    var controller = scene.GetRootGameObjects()
-                        .SelectMany(r => r.GetComponentsInChildren<SquadOrderController>(true)).Single();
-                    var data = new SerializedObject(controller);
-                    foreach (string field in new[]
-                             {
-                                 "gameplayCamera", "cameraBrain", "playerTarget", "orderSurface", "mapGrid",
-                                 "orderCanvas", "cancelButton", "routeLine"
-                             })
-                        Assert.That(data.FindProperty(field).objectReferenceValue, Is.Not.Null,
-                            scenePath + ": " + field);
-                    var canvas = (Canvas)data.FindProperty("orderCanvas").objectReferenceValue;
-                    var route = (LineRenderer)data.FindProperty("routeLine").objectReferenceValue;
-                    Assert.That(canvas.enabled, Is.False, scenePath);
-                    Assert.That(route.enabled, Is.False, scenePath);
-                    Assert.That(canvas.GetComponentInChildren<UnityEngine.UI.Button>(true),
-                        Is.SameAs(data.FindProperty("cancelButton").objectReferenceValue), scenePath);
-                }
-                finally { EditorSceneManager.ClosePreviewScene(scene); }
-            }
-        }
-
-        [Test]
-        public void GameplayPlayerUsesTheVisibleJoystick()
-        {
-            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");
-            try
-            {
-                var roots = scene.GetRootGameObjects();
-                var player = roots.SelectMany(r => r.GetComponentsInChildren<PlayerMovement>(true)).Single();
-                var joystick = roots.SelectMany(r => r.GetComponentsInChildren<MonoBehaviour>(true))
-                    .Single(c => c.GetType().Name == "FloatingJoystick");
-                var assigned = new SerializedObject(player).FindProperty("joystick").objectReferenceValue;
-
-                Assert.That(assigned, Is.SameAs(joystick),
-                    "PlayerMovement must read the joystick shown in the gameplay HUD.");
-            }
-            finally { EditorSceneManager.ClosePreviewScene(scene); }
-        }
-
-        [Test]
-        public void EveryPlacementProgressIndicatorBelongsToItsZone()
-        {
-            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");
-            try
-            {
-                var roots = scene.GetRootGameObjects();
-                var zones = roots.SelectMany(r => r.GetComponentsInChildren<TowerPlacementZone>(true)).ToArray();
-                var indicators = roots.SelectMany(r => r.GetComponentsInChildren<PlacementProgressIndicator>(true)).ToArray();
-                Assert.That(indicators, Has.Length.EqualTo(zones.Length));
-                foreach (var indicator in indicators)
-                {
-                    var data = new SerializedObject(indicator);
-                    var zone = data.FindProperty("zone").objectReferenceValue as TowerPlacementZone;
-                    var fill = data.FindProperty("fill").objectReferenceValue as UnityEngine.UI.Image;
-                    Assert.That(zone, Is.Not.Null, indicator.name);
-                    Assert.That(fill, Is.Not.Null, indicator.name);
-                    Assert.That(new SerializedObject(zone).FindProperty("placementCircleFill").objectReferenceValue,
-                        Is.SameAs(fill), indicator.name);
-                }
-            }
-            finally { EditorSceneManager.ClosePreviewScene(scene); }
-        }
-
-        [Test]
-        public void ButtonsInGameplayMenuAndTowerCardHaveNoMissingScripts()
-        {
-            foreach (string path in new[]
-                     {
-                         "Assets/Tower-Defense/Scenes/Level 1.unity",
-                         "Assets/Tower-Defense/Scenes/MainMenu.unity"
-                     })
+            foreach (string path in ScenePaths)
             {
                 var scene = EditorSceneManager.OpenPreviewScene(path);
                 try
                 {
-                    foreach (var button in scene.GetRootGameObjects().SelectMany(r =>
-                                 r.GetComponentsInChildren<UnityEngine.UI.Button>(true)))
-                        Assert.That(GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(button.gameObject),
-                            Is.Zero, $"{path}: {button.name}");
+                    var roots = scene.GetRootGameObjects();
+                    Assert.That(roots.SelectMany(r => r.GetComponentsInChildren<Canvas>(true)), Is.Empty, path);
+                    var document = roots.SelectMany(r => r.GetComponentsInChildren<UIDocument>(true)).Single();
+                    Assert.That(document.panelSettings, Is.SameAs(panel), path);
+                    Assert.That(document.visualTreeAsset, Is.Not.Null, path);
+                    Assert.That(document.GetComponent<MenuToolkitView>() != null ||
+                        document.GetComponent<GameplayToolkitView>() != null, Is.True, path);
                 }
                 finally { EditorSceneManager.ClosePreviewScene(scene); }
             }
-
-            var card = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Tower-Defense/Prefabs/UI/TowerCard.prefab");
-            foreach (var button in card.GetComponentsInChildren<UnityEngine.UI.Button>(true))
-                Assert.That(GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(button.gameObject),
-                    Is.Zero, $"TowerCard: {button.name}");
         }
 
         [Test]
-        public void BuildingPanelsLeaveWorldInputAvailableAndHaveNoCloseButtons()
+        public void MigratedScenesAndPrefabsHaveNoMissingScripts()
         {
-            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");
+            foreach (string path in ScenePaths)
+            {
+                var scene = EditorSceneManager.OpenPreviewScene(path);
+                try
+                {
+                    foreach (Transform node in scene.GetRootGameObjects().SelectMany(r =>
+                                 r.GetComponentsInChildren<Transform>(true)))
+                        Assert.That(GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(node.gameObject),
+                            Is.Zero, path + ": " + node.name);
+                }
+                finally { EditorSceneManager.ClosePreviewScene(scene); }
+            }
+            foreach (string guid in AssetDatabase.FindAssets("t:Prefab",
+                         new[] { "Assets/Tower-Defense/Prefabs" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                foreach (Transform node in prefab.GetComponentsInChildren<Transform>(true))
+                    Assert.That(GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(node.gameObject),
+                        Is.Zero, path + ": " + node.name);
+            }
+        }
+
+        [Test]
+        public void GameplayScenesKeepControllersAndWorldPresentation()
+        {
+            foreach (string path in ScenePaths.Skip(1))
+            {
+                var scene = EditorSceneManager.OpenPreviewScene(path);
+                try
+                {
+                    var roots = scene.GetRootGameObjects();
+                    var view = roots.SelectMany(r => r.GetComponentsInChildren<GameplayToolkitView>(true)).Single();
+                    var data = new SerializedObject(view);
+                    foreach (string field in new[] { "responsiveHud", "spawner", "wallet", "timer",
+                                 "movement", "ultimate", "teleport", "pauseMenu", "victory", "defeat",
+                                 "levelSetup", "buildModal", "orders", "slowAmmo", "playerHealth",
+                                 "companionTurrets" })
+                        Assert.That(data.FindProperty(field).objectReferenceValue, Is.Not.Null, path + ": " + field);
+                    Assert.That(roots.SelectMany(r => r.GetComponentsInChildren<HealthBarManager>(true)).Count(), Is.EqualTo(1), path);
+                    Assert.That(roots.SelectMany(r => r.GetComponentsInChildren<UnityEngine.UI.Button>(true)),
+                        Is.Empty, path);
+                }
+                finally { EditorSceneManager.ClosePreviewScene(scene); }
+            }
+        }
+
+        [Test]
+        public void GameplayToolkitContainsBuildCombatAndOrderControls()
+        {
+            var tree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
+                "Assets/Tower-Defense/UI/Toolkit/Gameplay.uxml");
+            var root = tree.CloneTree();
+            foreach (string name in new[] { "spawnPreview", "buildPanel", "buildCards",
+                         "startWaveButton", "joystick", "ultimateButton", "desktopUltimate", "orderCancel",
+                         "pausePanel", "victoryPanel", "defeatPanel", "fpsToggle", "fpsLabel" })
+                Assert.That(root.Q(name), Is.Not.Null, name);
+            Assert.That(root.Q("zoneLayer"), Is.Null, "Building markers belong on the floor, not in the HUD.");
+        }
+
+        [Test]
+        public void LevelOneHasZoneIconsAndToolkitMovement()
+        {
+            var scene = EditorSceneManager.OpenPreviewScene(ScenePaths[1]);
             try
             {
-                var components = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<MonoBehaviour>(true));
-                var modals = components.Where(c => c is TowerSelectionModal).ToArray();
-                Assert.That(modals, Has.Length.EqualTo(1));
-                foreach (var controller in modals)
+                var roots = scene.GetRootGameObjects();
+                var zones = roots.SelectMany(r => r.GetComponentsInChildren<TowerPlacementZone>(true)).ToArray();
+                Assert.That(zones, Is.Not.Empty);
+                foreach (var zone in zones)
                 {
-                    var data = new SerializedObject(controller);
-                    var root = (GameObject)data.FindProperty("modalRoot").objectReferenceValue;
-                    Assert.That(root, Is.Not.Null);
-                    Assert.That(root.GetComponentsInChildren<UnityEngine.UI.Button>(true).Any(b => b.name == "Close"), Is.False);
-                    var backdrop = root.GetComponent<UnityEngine.UI.Image>();
-                    Assert.That(backdrop.enabled, Is.False, "The world must not be dimmed.");
-                    Assert.That(backdrop.raycastTarget, Is.False, "The fullscreen root must not intercept joystick input.");
-                    string[] fields = { "content", "heading" };
-                    foreach (string field in fields)
-                    {
-                        var child = (Component)data.FindProperty(field).objectReferenceValue;
-                        Assert.That(child, Is.Not.Null, field);
-                        Assert.That(child.transform.IsChildOf(root.transform), Is.True, field);
-                    }
+                    var data = new SerializedObject(zone);
+                    Assert.That(data.FindProperty("townHallIcon").objectReferenceValue, Is.Not.Null);
+                    Assert.That(data.FindProperty("defenseIcon").objectReferenceValue, Is.Not.Null);
                 }
+                var player = roots.SelectMany(r => r.GetComponentsInChildren<PlayerMovement>(true)).Single();
+                var view = roots.SelectMany(r => r.GetComponentsInChildren<GameplayToolkitView>(true)).Single();
+                Assert.That(new SerializedObject(view).FindProperty("movement").objectReferenceValue,
+                    Is.SameAs(player));
+                Assert.That(typeof(PlayerMovement).GetField("joystick",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic),
+                    Is.Null, "Touch movement must only come from UI Toolkit.");
             }
             finally { EditorSceneManager.ClosePreviewScene(scene); }
         }
 
         [Test]
-        public void MainMenuHasLevelReferencesAndWorkingPersistentActions()
+        public void MenuKeepsLevelAndSandboxEntryData()
         {
-            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/MainMenu.unity");
+            var scene = EditorSceneManager.OpenPreviewScene(ScenePaths[0]);
             try
             {
                 var menu = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<MainMenu>(true)).Single();
                 var data = new SerializedObject(menu);
-                foreach (string field in new[] { "levelLabel", "levelDescription", "wavePreview", "levelButtonTemplate", "levelButtonContainer", "startButton" })
-                    Assert.That(data.FindProperty(field).objectReferenceValue, Is.Not.Null, field);
-                var packs = data.FindProperty("levels");
-                Assert.That(packs.arraySize, Is.EqualTo(3));
-                for (int i = 0; i < packs.arraySize; i++)
-                    Assert.That(packs.GetArrayElementAtIndex(i).objectReferenceValue, Is.Not.Null);
-                var buttons = menu.GetComponentsInChildren<UnityEngine.UI.Button>(true);
-                foreach (string method in new[] { "StartGame", "ExitGame" })
-                    Assert.That(buttons.Any(b => Enumerable.Range(0, b.onClick.GetPersistentEventCount()).Any(i =>
-                        b.onClick.GetPersistentTarget(i) == menu && b.onClick.GetPersistentMethodName(i) == method)), Is.True, method);
-            }
-            finally { EditorSceneManager.ClosePreviewScene(scene); }
-        }
-
-        [Test]
-        public void GameplayLabEntryPointsToConfiguredBuildScene()
-        {
-            var menuScene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/MainMenu.unity");
-            try
-            {
-                var menu = menuScene.GetRootGameObjects()
-                    .SelectMany(r => r.GetComponentsInChildren<MainMenu>(true)).Single();
-                var menuData = new SerializedObject(menu);
-                var level = menuData.FindProperty("gameplayLabLevel").objectReferenceValue as LevelDefinition;
-                string sceneName = menuData.FindProperty("gameplayLabSceneName").stringValue;
-                Assert.That(level, Is.Not.Null);
-                Assert.That(level.progressionId, Is.EqualTo("gameplay-lab"));
-                Assert.That(level.moneyReward, Is.Zero);
-                level.Validate(4);
-
-                var button = menuScene.GetRootGameObjects()
-                    .SelectMany(r => r.GetComponentsInChildren<UnityEngine.UI.Button>(true))
-                    .Single(b => b.name == "TestLevel");
-                Assert.That(Enumerable.Range(0, button.onClick.GetPersistentEventCount()).Any(i =>
-                    button.onClick.GetPersistentTarget(i) == menu &&
-                    button.onClick.GetPersistentMethodName(i) == nameof(MainMenu.StartGameplayLab)), Is.True);
-
-                string path = $"Assets/Tower-Defense/Scenes/{sceneName}.unity";
-                Assert.That(EditorBuildSettings.scenes.Any(s => s.enabled && s.path == path), Is.True);
-                var labScene = EditorSceneManager.OpenPreviewScene(path);
-                try
-                {
-                    var setup = labScene.GetRootGameObjects()
-                        .SelectMany(r => r.GetComponentsInChildren<LevelSetup>(true)).Single();
-                    Assert.That(new SerializedObject(setup).FindProperty("directPlayLevel").objectReferenceValue,
-                        Is.SameAs(level));
-                }
-                finally { EditorSceneManager.ClosePreviewScene(labScene); }
-            }
-            finally { EditorSceneManager.ClosePreviewScene(menuScene); }
-        }
-
-        [Test]
-        public void UltimateProgressIsWiredToTheButton()
-        {
-            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");
-            try
-            {
-                var control = scene.GetRootGameObjects()
-                    .SelectMany(r => r.GetComponentsInChildren<UltimateButton>(true)).Single();
-                var data = new SerializedObject(control);
-                var fill = (UnityEngine.UI.Image)data.FindProperty("fill").objectReferenceValue;
-                Assert.That(fill, Is.Not.Null);
-                Assert.That(fill.transform.parent, Is.EqualTo(control.transform));
-                Assert.That(fill.transform.GetSiblingIndex(), Is.Zero,
-                    "The charge fill must render behind the icon.");
-                Assert.That(fill.rectTransform.anchoredPosition, Is.EqualTo(Vector2.zero));
-                Assert.That(fill.rectTransform.sizeDelta,
-                    Is.EqualTo(((RectTransform)control.transform).rect.size));
+                var levels = data.FindProperty("levels");
+                Assert.That(levels.arraySize, Is.EqualTo(3));
+                for (int i = 0; i < levels.arraySize; i++)
+                    Assert.That(levels.GetArrayElementAtIndex(i).objectReferenceValue, Is.Not.Null);
+                var lab = data.FindProperty("gameplayLabLevel").objectReferenceValue as LevelDefinition;
+                Assert.That(lab, Is.Not.Null);
+                Assert.That(lab.progressionId, Is.EqualTo("gameplay-lab"));
+                Assert.That(EditorBuildSettings.scenes.Any(s => s.enabled && s.path == ScenePaths[2]), Is.True);
+                var tree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
+                    "Assets/Tower-Defense/UI/Toolkit/Menu.uxml");
+                Assert.That(tree.CloneTree().Q<Button>("labButton"), Is.Not.Null);
             }
             finally { EditorSceneManager.ClosePreviewScene(scene); }
         }

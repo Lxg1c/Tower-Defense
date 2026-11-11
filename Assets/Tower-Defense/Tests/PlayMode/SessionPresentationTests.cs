@@ -4,6 +4,7 @@ using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.UIElements;
 
 namespace TowerDefense.Tests
 {
@@ -47,51 +48,49 @@ namespace TowerDefense.Tests
         }
 
         [UnityTest]
-        public IEnumerator ManagerBeforeBindingTracksDamageDeathAndRevival()
+        public IEnumerator ManagerBeforeBindingRendersInToolkitWithoutCanvas()
         {
             var manager = Manager();
             manager.gameObject.SetActive(true);
+            var root = new VisualElement();
+            manager.SetPresentationRoot(root);
             var binding = Binding();
             binding.gameObject.SetActive(true);
             yield return null;
             Assert.That(manager.ActiveBarCount, Is.EqualTo(1));
+            Assert.That(root.Q<VisualElement>(className: "entity-health-bar"), Is.Not.Null);
             binding.Target.TakeDamage(25);
             yield return null;
-            var bars = Object.FindObjectsByType<HealthBar>(FindObjectsSortMode.None);
-            Assert.That(bars.Length, Is.EqualTo(1));
-            Assert.That((float)Get(bars[0], "_targetFill"), Is.EqualTo(0.75f));
             binding.Target.TakeDamage(1000);
-            Assert.That(bars[0].gameObject.activeSelf, Is.False);
             binding.Target.ResetToMaxHealth();
             binding.Target.TakeDamage(10);
-            Assert.That(bars[0].gameObject.activeSelf, Is.True);
-            Assert.That((float)Get(bars[0], "_targetFill"), Is.EqualTo(0.9f).Within(0.001f));
+            Assert.That(manager.ActiveBarCount, Is.EqualTo(1));
+            Assert.That(Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None), Is.Empty);
         }
 
         [UnityTest]
-        public IEnumerator DestroyedBarIsNotReturnedToThePoolDuringTeardown()
+        public IEnumerator BindingReplacementReleasesOldToolkitElement()
         {
             var manager = Manager();
             manager.gameObject.SetActive(true);
+            var root = new VisualElement();
+            manager.SetPresentationRoot(root);
             var binding = Binding();
             binding.gameObject.SetActive(true);
-            binding.Target.TakeDamage(25);
             yield return null;
-            var bar = Object.FindFirstObjectByType<HealthBar>();
-            Assert.That(bar, Is.Not.Null);
-            Object.Destroy(bar.gameObject);
-            yield return null;
+            Assert.That(root.Q<VisualElement>(className: "entity-health-bar"), Is.Not.Null);
             binding.gameObject.SetActive(false);
             Assert.That(manager.ActiveBarCount, Is.Zero);
-            binding.gameObject.SetActive(true);
-            binding.Target.TakeDamage(5);
+            Assert.That(root.Q<VisualElement>(className: "entity-health-bar"), Is.Null);
+            var replacement = Binding();
+            replacement.gameObject.SetActive(true);
             yield return null;
             Assert.That(manager.ActiveBarCount, Is.EqualTo(1));
-            Assert.That(Object.FindFirstObjectByType<HealthBar>(), Is.Not.Null);
+            Assert.That(root.Q<VisualElement>(className: "entity-health-bar"), Is.Not.Null);
         }
 
         [UnityTest]
-        public IEnumerator SceneUnloadReleasesBindingsAndOwnedCanvas()
+        public IEnumerator SceneUnloadReleasesBindingsAndToolkitPresentation()
         {
             var scene = UnityEngine.SceneManagement.SceneManager.CreateScene("Health presentation teardown");
             var manager = Manager();
@@ -99,12 +98,13 @@ namespace TowerDefense.Tests
             UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(manager.gameObject, scene);
             UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(binding.gameObject, scene);
             manager.gameObject.SetActive(true);
+            var root = new VisualElement();
+            manager.SetPresentationRoot(root);
             binding.gameObject.SetActive(true);
             yield return null;
-            var canvas = (Canvas)Get(manager, "worldCanvas");
             Assert.That(manager.ActiveBarCount, Is.EqualTo(1));
             yield return UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(scene);
-            Assert.That(canvas == null, Is.True);
+            Assert.That(root.Q<VisualElement>(className: "health-bar-layer"), Is.Null);
             Assert.That(System.Linq.Enumerable.Contains(HealthBarBinding.Active, binding), Is.False);
         }
 
@@ -138,179 +138,17 @@ namespace TowerDefense.Tests
         }
 
         [UnityTest]
-        public IEnumerator BuildGuideTracksBaseAndHidesOnCombatAndDefeat()
-        {
-            var wallet = New("Wallet").AddComponent<PlayerWallet>();
-            wallet.ConfigureStartingCoins(0);
-            wallet.gameObject.SetActive(true);
-            var spawner = New("Spawner").AddComponent<WaveSpawner>();
-            Set(spawner, "wallet", wallet);
-            Set(spawner, "waves", new[] { new WaveSpawner.Wave() });
-            spawner.gameObject.SetActive(true);
-            var panel = New("Guide panel");
-            var label = panel.AddComponent<TMPro.TextMeshProUGUI>();
-            var guide = New("Guide owner").AddComponent<BuildPhaseGuide>();
-            Set(guide, "spawner", spawner);
-            Set(guide, "label", label);
-            Set(guide, "panel", panel);
-            guide.gameObject.SetActive(true);
-            yield return null;
-            Assert.That(panel.activeSelf, Is.True);
-            Assert.That(label.text, Is.EqualTo("Stand on the home marker to build your base"));
-
-            guide.enabled = false;
-            var townHall = New("Base").AddComponent<Base>();
-            townHall.gameObject.SetActive(true);
-            Assert.That(label.text, Is.EqualTo("Stand on the home marker to build your base"), "Disabled guide must detach its listeners.");
-            guide.enabled = true;
-            Assert.That(label.text, Does.StartWith("Prepare your defenses"));
-            bool hiddenDuringCombat = false;
-            spawner.onCombatPhaseStarted.AddListener((_, __, ___) =>
-            {
-                hiddenDuringCombat = !panel.activeSelf;
-                townHall.TakeDamage(1000);
-            });
-            spawner.StartNextWave();
-            Assert.That(hiddenDuringCombat, Is.True);
-            Assert.That(panel.activeSelf, Is.False);
-            Assert.That(spawner.CurrentPhase, Is.EqualTo(WaveSpawner.Phase.Defeated));
-        }
-
-        [UnityTest]
-        public IEnumerator OffscreenWavePreviewStaysNearEdgeAndPointsToSpawn()
-        {
-            var camera = New("Preview camera").AddComponent<Camera>();
-            camera.tag = "MainCamera";
-            camera.gameObject.SetActive(true);
-            var canvas = New("Preview canvas").AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.gameObject.SetActive(true);
-            var marker = New("Wave marker");
-            var rect = marker.AddComponent<RectTransform>();
-            rect.SetParent(canvas.transform, false);
-            var indicator = marker.AddComponent<WaveDirectionIndicator>();
-            var arrow = New("Direction arrow").AddComponent<RectTransform>();
-            arrow.SetParent(rect, false);
-            Set(indicator, "directionArrow", arrow);
-            Set(indicator, "worldCamera", camera);
-            marker.SetActive(true);
-            var spawn = New("Spawn").transform;
-            foreach (var position in new[] { new Vector3(10, -100, 10), new Vector3(-10, -100, 10) })
-            {
-                spawn.position = position;
-                indicator.Bind(new WaveSpawner.WavePreviewEntry { spawnPoint = spawn, count = 10 });
-                yield return null;
-                Vector2 screen = RectTransformUtility.WorldToScreenPoint(null, rect.position);
-                // At short Game View heights the badge and arrow need more than a quarter
-                // of the screen to remain fully visible.
-                Assert.That(screen.y, Is.LessThan(Screen.safeArea.yMin + Screen.safeArea.height * 0.30f));
-                Vector2 desired = (Vector2)camera.WorldToScreenPoint(position) - screen;
-                Assert.That(Vector2.Dot(arrow.up, desired.normalized), Is.GreaterThan(0.99f));
-            }
-        }
-
-        [UnityTest]
-        public IEnumerator WavePreviewShowsEnemyTypesInViewAndOneTotalAtScreenEdge()
-        {
-            var camera = New("Preview camera").AddComponent<Camera>();
-            camera.tag = "MainCamera";
-            camera.gameObject.SetActive(true);
-            var canvas = New("Preview canvas").AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.gameObject.SetActive(true);
-            var spawn = New("Spawn").transform;
-            spawn.position = new Vector3(0f, 0f, 10f);
-
-            var indicators = new WaveDirectionIndicator[2];
-            var labels = new TMPro.TextMeshProUGUI[2];
-            var arrows = new RectTransform[2];
-            for (int i = 0; i < 2; i++)
-            {
-                var marker = New("Wave marker " + i);
-                marker.AddComponent<RectTransform>().SetParent(canvas.transform, false);
-                marker.AddComponent<UnityEngine.UI.Image>();
-                indicators[i] = marker.AddComponent<WaveDirectionIndicator>();
-                var label = New("Count");
-                label.AddComponent<RectTransform>().SetParent(marker.transform, false);
-                labels[i] = label.AddComponent<TMPro.TextMeshProUGUI>();
-                var arrow = New("Direction arrow");
-                arrows[i] = arrow.AddComponent<RectTransform>();
-                arrows[i].SetParent(marker.transform, false);
-                Set(indicators[i], "countLabel", labels[i]);
-                Set(indicators[i], "directionArrow", arrows[i]);
-                Set(indicators[i], "worldCamera", camera);
-                marker.SetActive(true);
-                indicators[i].Bind(new WaveSpawner.WavePreviewEntry
-                {
-                    spawnPoint = spawn,
-                    count = i == 0 ? 3 : 8,
-                    stackIndex = i,
-                    stackCount = 2
-                }, 11);
-            }
-
-            yield return null;
-            Assert.That(labels[0].text, Is.EqualTo("x3"));
-            Assert.That(labels[1].text, Is.EqualTo("x8"));
-            Assert.That(arrows[0].gameObject.activeSelf, Is.False);
-            Assert.That(arrows[1].gameObject.activeSelf, Is.False);
-
-            spawn.position = new Vector3(100f, 0f, 10f);
-            yield return null;
-            Assert.That(labels[0].text, Is.EqualTo("11"));
-            Assert.That(arrows[0].gameObject.activeSelf, Is.True);
-            Assert.That(indicators[0].GetComponent<CanvasGroup>().alpha, Is.EqualTo(1f));
-            Assert.That(indicators[1].GetComponent<CanvasGroup>().alpha, Is.Zero);
-
-            spawn.position = new Vector3(0f, 0f, 10f);
-            yield return null;
-            Assert.That(labels[0].text, Is.EqualTo("x3"));
-            Assert.That(indicators[1].GetComponent<CanvasGroup>().alpha, Is.EqualTo(1f));
-        }
-
-        [UnityTest]
-        public IEnumerator DesktopPreviewHidesJoystickAndMobilePreviewRestoresLayout()
+        public IEnumerator PlatformPreviewSwitchesToolkitLayout()
         {
             var root = New("Gameplay HUD");
-            root.AddComponent<RectTransform>();
             var layout = root.AddComponent<ResponsiveGameplayHud>();
-
-            RectTransform Child(string name)
-            {
-                var child = New(name).AddComponent<RectTransform>();
-                child.SetParent(root.transform, false);
-                return child;
-            }
-
-            var joystick = Child("Floating Joystick");
-            joystick.gameObject.SetActive(true);
-            var rightSide = Child("Right Side");
-            rightSide.sizeDelta = new Vector2(800f, 600f);
-            Set(layout, "floatingJoystick", joystick);
-            Set(layout, "rightSide", rightSide);
-            Set(layout, "ultimateButton", Child("Ultimate"));
-            Set(layout, "homeButton", Child("Home"));
-            Set(layout, "rallyButton", Child("Rally"));
-            Set(layout, "effectStatusRow", Child("Effects"));
-            Set(layout, "desktopHint", Child("Desktop Hint").gameObject);
             Set(layout, "editorPreview", ResponsiveGameplayHud.EditorPreviewMode.Desktop);
-
             root.SetActive(true);
             yield return null;
             Assert.That(layout.IsDesktopLayout, Is.True);
-            Assert.That(joystick.gameObject.activeSelf, Is.False);
-            Assert.That(rightSide.sizeDelta, Is.EqualTo(new Vector2(420f, 420f)));
-
-            joystick.gameObject.SetActive(true);
-            yield return null;
-            Assert.That(joystick.gameObject.activeSelf, Is.False,
-                "Desktop layout must keep the touch joystick hidden.");
-
             Set(layout, "editorPreview", ResponsiveGameplayHud.EditorPreviewMode.Mobile);
             yield return null;
             Assert.That(layout.IsDesktopLayout, Is.False);
-            Assert.That(joystick.gameObject.activeSelf, Is.True);
-            Assert.That(rightSide.sizeDelta, Is.EqualTo(new Vector2(800f, 600f)));
         }
 
         private GameObject New(string name)
@@ -332,11 +170,7 @@ namespace TowerDefense.Tests
 
         private HealthBarManager Manager()
         {
-            var template = New("Health bar template");
-            template.AddComponent<RectTransform>();
-            var bar = template.AddComponent<HealthBar>();
             var manager = New("Health bar manager").AddComponent<HealthBarManager>();
-            Set(manager, "defaultHealthBarPrefab", bar);
             var camera = New("World camera").AddComponent<Camera>();
             camera.gameObject.SetActive(true);
             Set(manager, "worldCamera", camera);
@@ -345,7 +179,5 @@ namespace TowerDefense.Tests
 
         private static void Set(object target, string name, object value) =>
             target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(target, value);
-        private static object Get(object target, string name) =>
-            target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(target);
     }
 }

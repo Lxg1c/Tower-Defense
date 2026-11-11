@@ -14,8 +14,6 @@ public sealed class SquadOrderController : MonoBehaviour
     [SerializeField] private Transform playerTarget;
     [SerializeField] private Collider orderSurface;
     [SerializeField] private LevelGrid mapGrid;
-    [SerializeField] private Canvas orderCanvas;
-    [SerializeField] private UnityEngine.UI.Button cancelButton;
     [SerializeField] private LineRenderer routeLine;
 
     [Header("Input and feedback")]
@@ -24,7 +22,6 @@ public sealed class SquadOrderController : MonoBehaviour
     [SerializeField] private float mapViewPadding = 1.2f;
     [Min(1f)] [SerializeField] private float cameraDistanceMultiplier = 1.8f;
 
-    private readonly List<Canvas> hiddenCanvases = new();
     private BarracksBuilding selected;
     private GameObject selectionMarker;
     private Coroutine routeHideRoutine;
@@ -42,9 +39,9 @@ public sealed class SquadOrderController : MonoBehaviour
     private void Awake()
     {
         if (gameplayCamera == null || playerTarget == null || orderSurface == null || mapGrid == null ||
-            orderCanvas == null || cancelButton == null || routeLine == null || cameraBrain == null)
+            routeLine == null || cameraBrain == null)
         {
-            Debug.LogError("[SquadOrderController] Assign the camera with CinemachineBrain, level grid, order surface, order canvas, cancel button and route line.", this);
+            Debug.LogError("[SquadOrderController] Assign the camera with CinemachineBrain, level grid, order surface and route line.", this);
             enabled = false;
             return;
         }
@@ -57,21 +54,13 @@ public sealed class SquadOrderController : MonoBehaviour
             return;
         }
 
-        orderCanvas.enabled = false;
         routeLine.enabled = false;
-        cancelButton.onClick.AddListener(CancelOrder);
     }
 
     private void OnDisable()
     {
         StopRouteFeedback();
         EndOrderMode();
-    }
-
-    private void OnDestroy()
-    {
-        if (cancelButton != null)
-            cancelButton.onClick.RemoveListener(CancelOrder);
     }
 
     private void Update()
@@ -115,7 +104,6 @@ public sealed class SquadOrderController : MonoBehaviour
             selectionMarker = Instantiate(barracks.OrderMarkerPrefab);
             selectionMarker.transform.position = barracks.SelectionMarkerPosition;
         }
-        HideGameplayCanvases();
         EnterMapView();
     }
 
@@ -189,20 +177,6 @@ public sealed class SquadOrderController : MonoBehaviour
         }
     }
 
-    private void HideGameplayCanvases()
-    {
-        hiddenCanvases.Clear();
-        foreach (Canvas canvas in FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-        {
-            if (canvas == null || canvas == orderCanvas || !canvas.isActiveAndEnabled ||
-                !canvas.gameObject.scene.IsValid())
-                continue;
-            hiddenCanvases.Add(canvas);
-            canvas.enabled = false;
-        }
-        orderCanvas.enabled = true;
-    }
-
     private void EnterMapView()
     {
         cameraPosition = gameplayCamera.transform.position;
@@ -245,12 +219,6 @@ public sealed class SquadOrderController : MonoBehaviour
         if (cameraBrain != null)
             cameraBrain.enabled = brainWasEnabled;
 
-        if (orderCanvas != null)
-            orderCanvas.enabled = false;
-        foreach (Canvas canvas in hiddenCanvases)
-            if (canvas != null)
-                canvas.enabled = true;
-        hiddenCanvases.Clear();
     }
 
     private void ShowRoute(Vector3[] corners)

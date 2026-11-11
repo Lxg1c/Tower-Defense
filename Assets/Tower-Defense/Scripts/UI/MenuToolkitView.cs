@@ -8,9 +8,9 @@ using UnityEngine.UIElements;
 [RequireComponent(typeof(UIDocument))]
 public sealed class MenuToolkitView : MonoBehaviour
 {
-    [SerializeField] private Canvas legacyCanvas;
     [SerializeField] private MainMenu menu;
-    [SerializeField] private MainMenuScreens legacyScreens;
+    [UnityEngine.Serialization.FormerlySerializedAs("legacyScreens")]
+    [SerializeField] private MainMenuScreens screens;
 
     private readonly List<Button> levelButtons = new();
     private readonly List<Button> skillButtons = new();
@@ -25,9 +25,23 @@ public sealed class MenuToolkitView : MonoBehaviour
     private Label wavePreview;
     private Label moneyLabel;
     private Label loadoutMoney;
-    private Label equippedModule;
-    private Label moduleDamage;
-    private Label moduleFireRate;
+    private VisualElement loadoutPortrait;
+    private VisualElement armorCatalog;
+    private VisualElement weaponCatalog;
+    private VisualElement moduleCatalog;
+    private Button armorTab;
+    private Button weaponTab;
+    private Button moduleTab;
+    private Button armorSlot;
+    private Button leftWeaponSlot;
+    private Button rightWeaponSlot;
+    private Button moduleSlot;
+    private Button baseArmorPreview;
+    private Button assaultArmorPreview;
+    private Button leftStandardPreview;
+    private Button leftHeavyPreview;
+    private Button rightStandardPreview;
+    private Button rightHeavyPreview;
     private Button standardModule;
     private Button overdriveModule;
     private Label musicValue;
@@ -39,6 +53,9 @@ public sealed class MenuToolkitView : MonoBehaviour
     private Button startButton;
     private Button[] difficultyButtons;
     private bool bound;
+    private bool previewArmor;
+    private bool previewLeftHeavy;
+    private bool previewRightHeavy;
     private float fpsElapsed;
     private int fpsFrames;
 
@@ -52,10 +69,10 @@ public sealed class MenuToolkitView : MonoBehaviour
     {
         if (bound) return;
         var document = GetComponent<UIDocument>();
-        if (legacyCanvas == null || menu == null || legacyScreens == null ||
+        if (menu == null || screens == null ||
             document.panelSettings == null || document.visualTreeAsset == null)
         {
-            Debug.LogError("[MenuToolkitView] Assign the legacy canvas, menu, screens and UI Toolkit assets.", this);
+            Debug.LogError("[MenuToolkitView] Assign the menu, screens and UI Toolkit assets.", this);
             enabled = false;
             return;
         }
@@ -72,9 +89,23 @@ public sealed class MenuToolkitView : MonoBehaviour
         wavePreview = root.Q<Label>("wavePreview");
         moneyLabel = root.Q<Label>("moneyLabel");
         loadoutMoney = root.Q<Label>("loadoutMoney");
-        equippedModule = root.Q<Label>("equippedModule");
-        moduleDamage = root.Q<Label>("moduleDamage");
-        moduleFireRate = root.Q<Label>("moduleFireRate");
+        loadoutPortrait = root.Q("loadoutPortrait");
+        armorCatalog = root.Q("armorCatalog");
+        weaponCatalog = root.Q("weaponCatalog");
+        moduleCatalog = root.Q("moduleCatalog");
+        armorTab = root.Q<Button>("armorTab");
+        weaponTab = root.Q<Button>("weaponTab");
+        moduleTab = root.Q<Button>("moduleTab");
+        armorSlot = root.Q<Button>("armorSlot");
+        leftWeaponSlot = root.Q<Button>("leftWeaponSlot");
+        rightWeaponSlot = root.Q<Button>("rightWeaponSlot");
+        moduleSlot = root.Q<Button>("moduleSlot");
+        baseArmorPreview = root.Q<Button>("baseArmorPreview");
+        assaultArmorPreview = root.Q<Button>("assaultArmorPreview");
+        leftStandardPreview = root.Q<Button>("leftStandardPreview");
+        leftHeavyPreview = root.Q<Button>("leftHeavyPreview");
+        rightStandardPreview = root.Q<Button>("rightStandardPreview");
+        rightHeavyPreview = root.Q<Button>("rightHeavyPreview");
         standardModule = root.Q<Button>("standardModule");
         overdriveModule = root.Q<Button>("overdriveModule");
         musicValue = root.Q<Label>("musicValue");
@@ -88,7 +119,11 @@ public sealed class MenuToolkitView : MonoBehaviour
             root.Q<Button>("nightmareButton") };
         if (homePage == null || levelsPage == null || settingsPage == null || skillsPage == null || loadoutPage == null ||
             levelTitle == null || levelDescription == null || wavePreview == null || moneyLabel == null ||
-            loadoutMoney == null || equippedModule == null || moduleDamage == null || moduleFireRate == null ||
+            loadoutMoney == null || loadoutPortrait == null || armorCatalog == null || weaponCatalog == null ||
+            moduleCatalog == null || armorTab == null || weaponTab == null || moduleTab == null ||
+            armorSlot == null || leftWeaponSlot == null || rightWeaponSlot == null || moduleSlot == null ||
+            baseArmorPreview == null || assaultArmorPreview == null || leftStandardPreview == null ||
+            leftHeavyPreview == null || rightStandardPreview == null || rightHeavyPreview == null ||
             standardModule == null || overdriveModule == null || root.Q<Button>("loadoutButton") == null ||
             root.Q<Button>("loadoutBack") == null ||
             musicValue == null || effectsValue == null || fpsLabel == null || fpsToggle == null ||
@@ -105,6 +140,19 @@ public sealed class MenuToolkitView : MonoBehaviour
         root.Q<Button>("skillsButton").clicked += ShowSkills;
         root.Q<Button>("loadoutButton").clicked += ShowLoadout;
         root.Q<Button>("loadoutBack").clicked += ShowHome;
+        armorTab.clicked += () => ShowLoadoutCatalog("armor");
+        weaponTab.clicked += () => ShowLoadoutCatalog("weapon");
+        moduleTab.clicked += () => ShowLoadoutCatalog("module");
+        armorSlot.clicked += () => ShowLoadoutCatalog("armor");
+        leftWeaponSlot.clicked += () => ShowLoadoutCatalog("weapon", true);
+        rightWeaponSlot.clicked += () => ShowLoadoutCatalog("weapon", false);
+        moduleSlot.clicked += () => ShowLoadoutCatalog("module");
+        baseArmorPreview.clicked += () => SelectArmorPreview(false);
+        assaultArmorPreview.clicked += () => SelectArmorPreview(true);
+        leftStandardPreview.clicked += () => SelectWeaponPreview(true, false);
+        leftHeavyPreview.clicked += () => SelectWeaponPreview(true, true);
+        rightStandardPreview.clicked += () => SelectWeaponPreview(false, false);
+        rightHeavyPreview.clicked += () => SelectWeaponPreview(false, true);
         standardModule.clicked += () => PlayerProgression.TryEquipWeaponModule(PlayerWeaponModule.Standard);
         overdriveModule.clicked += SelectOverdrive;
         root.Q<Button>("settingsButton").clicked += ShowSettings;
@@ -127,6 +175,8 @@ public sealed class MenuToolkitView : MonoBehaviour
         PlayerProgression.Changed += RefreshAll;
         GameAudioSettings.Changed += RefreshAudio;
         GamePerformanceSettings.Changed += RefreshFps;
+        root.RegisterCallback<GeometryChangedEvent>(evt =>
+            root.Q("menuRoot").EnableInClassList("loadout-narrow", evt.newRect.width < 1180f));
         bound = true;
     }
 
@@ -134,14 +184,13 @@ public sealed class MenuToolkitView : MonoBehaviour
     {
         if (!bound) return;
         RefreshAll();
-        switch (legacyScreens.CurrentScreen)
+        switch (screens.CurrentScreen)
         {
             case MainMenuScreens.Screen.Skills: ShowSkills(); break;
             case MainMenuScreens.Screen.Levels: ShowLevels(); break;
             case MainMenuScreens.Screen.Settings: ShowSettings(); break;
             default: ShowHome(); break;
         }
-        legacyCanvas.enabled = false;
     }
 
     private void OnDisable()
@@ -278,23 +327,73 @@ public sealed class MenuToolkitView : MonoBehaviour
     private void RefreshLoadout()
     {
         SkillTreeState state = PlayerProgression.State;
-        loadoutMoney.text = $"◆  {state.Money}";
+        loadoutMoney.text = $"◆  КРЕДИТЫ  {state.Money}";
         bool overdrive = state.EquippedWeaponModule == PlayerWeaponModule.Overdrive;
-        equippedModule.text = overdrive ? "OVERDRIVE" : "STANDARD";
-        moduleDamage.text = $"×{state.WeaponDamageMultiplier:0.##}";
-        moduleFireRate.text = $"×{state.WeaponFireRateMultiplier:0.##}";
-        standardModule.text = overdrive ? "EQUIP" : "EQUIPPED";
+        moduleSlot.text = overdrive ? "БОЕВОЙ МОДУЛЬ  ·  ФОРСАЖ" : "БОЕВОЙ МОДУЛЬ  ·  СТАНДАРТ";
+        standardModule.text = overdrive ? "ВЫБРАТЬ" : "НАДЕТО";
         standardModule.SetEnabled(overdrive);
         if (!state.IsWeaponModuleUnlocked(PlayerWeaponModule.Overdrive))
         {
-            overdriveModule.text = $"BUY  {SkillTreeState.OverdriveCost}";
+            overdriveModule.text = $"КУПИТЬ  {SkillTreeState.OverdriveCost}";
             overdriveModule.SetEnabled(state.Money >= SkillTreeState.OverdriveCost);
         }
         else
         {
-            overdriveModule.text = overdrive ? "EQUIPPED" : "EQUIP";
+            overdriveModule.text = overdrive ? "НАДЕТО" : "ВЫБРАТЬ";
             overdriveModule.SetEnabled(!overdrive);
         }
+    }
+
+    private void ShowLoadoutCatalog(string category, bool leftWeapon = true)
+    {
+        armorCatalog.EnableInClassList("is-hidden", category != "armor");
+        weaponCatalog.EnableInClassList("is-hidden", category != "weapon");
+        moduleCatalog.EnableInClassList("is-hidden", category != "module");
+        armorTab.EnableInClassList("is-selected", category == "armor");
+        weaponTab.EnableInClassList("is-selected", category == "weapon");
+        moduleTab.EnableInClassList("is-selected", category == "module");
+        armorSlot.EnableInClassList("is-focused", category == "armor");
+        leftWeaponSlot.EnableInClassList("is-focused", category == "weapon" && leftWeapon);
+        rightWeaponSlot.EnableInClassList("is-focused", category == "weapon" && !leftWeapon);
+        moduleSlot.EnableInClassList("is-focused", category == "module");
+        root.Q("leftWeaponColumn").EnableInClassList("is-focused", leftWeapon);
+        root.Q("rightWeaponColumn").EnableInClassList("is-focused", !leftWeapon);
+    }
+
+    private void SelectArmorPreview(bool assault)
+    {
+        previewArmor = assault;
+        armorSlot.text = assault ? "КОРПУС  ·  ШТУРМОВОЙ" : "КОРПУС  ·  БАЗОВЫЙ";
+        baseArmorPreview.EnableInClassList("is-selected", !assault);
+        assaultArmorPreview.EnableInClassList("is-selected", assault);
+        root.Q<Label>("baseArmorStatus").text = assault ? "ПРИМЕРИТЬ" : "ПОКАЗАНО";
+        root.Q<Label>("assaultArmorStatus").text = assault ? "ПОКАЗАНО" : "ПРИМЕРИТЬ";
+        RefreshAppearancePreview();
+    }
+
+    private void SelectWeaponPreview(bool left, bool heavy)
+    {
+        if (left) previewLeftHeavy = heavy;
+        else previewRightHeavy = heavy;
+        Button standard = left ? leftStandardPreview : rightStandardPreview;
+        Button heavyButton = left ? leftHeavyPreview : rightHeavyPreview;
+        standard.EnableInClassList("is-selected", !heavy);
+        heavyButton.EnableInClassList("is-selected", heavy);
+        (left ? leftWeaponSlot : rightWeaponSlot).text =
+            (left ? "ЛЕВАЯ ПУШКА" : "ПРАВАЯ ПУШКА") + (heavy ? "  ·  ТЯЖЁЛАЯ" : "  ·  СТАНДАРТ");
+        ShowLoadoutCatalog("weapon", left);
+        RefreshAppearancePreview();
+    }
+
+    private void RefreshAppearancePreview()
+    {
+        string selected = previewArmor ? "preview-armor" : "preview-base";
+        if (previewLeftHeavy && previewRightHeavy) selected = previewArmor ? "preview-armor-both" : "preview-both";
+        else if (previewLeftHeavy) selected = previewArmor ? "preview-armor-left" : "preview-left";
+        else if (previewRightHeavy) selected = previewArmor ? "preview-armor-right" : "preview-right";
+        string[] variants = { "preview-base", "preview-armor", "preview-left", "preview-right", "preview-both",
+            "preview-armor-left", "preview-armor-right", "preview-armor-both" };
+        foreach (string variant in variants) loadoutPortrait.EnableInClassList(variant, variant == selected);
     }
 
     private void RefreshAudio()
@@ -313,15 +412,16 @@ public sealed class MenuToolkitView : MonoBehaviour
         fpsFrames = 0;
     }
 
-    private void ShowHome() { legacyScreens.ShowHome(); Show(homePage); }
-    private void ShowLevels() { legacyScreens.ShowLevels(); RefreshLevel(); Show(levelsPage); }
-    private void ShowSettings() { legacyScreens.ShowSettings(); RefreshAudio(); Show(settingsPage); }
-    private void ShowSkills() { legacyScreens.ShowSkills(); RefreshSkills(); Show(skillsPage); }
-    private void ShowLoadout() { legacyScreens.ShowHome(); RefreshLoadout(); Show(loadoutPage); }
+    private void ShowHome() { screens.ShowHome(); Show(homePage); }
+    private void ShowLevels() { screens.ShowLevels(); RefreshLevel(); Show(levelsPage); }
+    private void ShowSettings() { screens.ShowSettings(); RefreshAudio(); Show(settingsPage); }
+    private void ShowSkills() { screens.ShowSkills(); RefreshSkills(); Show(skillsPage); }
+    private void ShowLoadout() { screens.ShowHome(); RefreshLoadout(); ShowLoadoutCatalog("armor"); Show(loadoutPage); }
 
     private void Show(VisualElement page)
     {
         root.Q("menuRoot").EnableInClassList("compact-header", page != homePage);
+        root.Q("menuRoot").EnableInClassList("loadout-open", page == loadoutPage);
         homePage.EnableInClassList("is-hidden", page != homePage);
         levelsPage.EnableInClassList("is-hidden", page != levelsPage);
         settingsPage.EnableInClassList("is-hidden", page != settingsPage);

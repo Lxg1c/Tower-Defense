@@ -4,7 +4,6 @@ using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
-using UnityEngine.UI;
 
 namespace TowerDefense.Tests
 {
@@ -27,12 +26,6 @@ namespace TowerDefense.Tests
         public IEnumerator UltimateAddsFixedDelayAfterShortCharge()
         {
             PlayerUltimate ultimate = CreatePlayer();
-            GameObject buttonObject = new GameObject("Ultimate button", typeof(RectTransform), typeof(Image), typeof(UltimateButton));
-            created.Add(buttonObject);
-            var button = buttonObject.GetComponent<UltimateButton>();
-            var fill = buttonObject.GetComponent<Image>();
-            Set(button, "ultimate", ultimate);
-            Set(button, "fill", fill);
             ultimate.BeginCharge();
             ultimate.Release();
             yield return null;
@@ -43,7 +36,6 @@ namespace TowerDefense.Tests
             Assert.That(ultimate.CooldownProgress, Is.LessThan(0.1f),
                 "A short charge must not jump to a full radial indicator after firing.");
             Assert.That(ultimate.CanReceiveInput, Is.False);
-            Assert.That(fill.fillAmount, Is.EqualTo(ultimate.CooldownProgress).Within(0.02f));
             ultimate.BeginCharge();
             Assert.That(ultimate.IsCharging, Is.False);
             yield return new WaitForSeconds(3.05f);
@@ -53,7 +45,6 @@ namespace TowerDefense.Tests
             yield return null;
             Assert.That(ultimate.IsOnCooldown, Is.False);
             Assert.That(ultimate.CanReceiveInput, Is.True);
-            Assert.That(fill.fillAmount, Is.EqualTo(0f).Within(0.01f));
         }
 
         [UnityTest]
@@ -92,14 +83,8 @@ namespace TowerDefense.Tests
             Set(ultimate, "maxChargeTime", 0.2f);
             Set(ultimate, "autoChargeLevel", 0.6f);
 
-            GameObject buttonObject = new GameObject("Automatic ultimate button", typeof(RectTransform),
-                typeof(Image), typeof(UltimateButton));
-            created.Add(buttonObject);
-            var button = buttonObject.GetComponent<UltimateButton>();
-            Set(button, "ultimate", ultimate);
-
-            button.OnPointerDown(null);
-            button.OnPointerUp(null);
+            ultimate.BeginCharge();
+            ultimate.Release();
             Assert.That(ultimate.IsCharging, Is.True,
                 "Releasing a tap must not fire an uncharged orb in automatic mode.");
 

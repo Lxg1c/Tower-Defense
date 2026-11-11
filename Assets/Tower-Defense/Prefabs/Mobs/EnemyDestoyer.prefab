@@ -711,7 +711,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 4094364369057517814}
-  prefab: {fileID: 9125502953916134260, guid: 59a700be103929a429096864c84d1441, type: 3}
   anchor: {fileID: 8530073311528646060}
   hideOnDeath: 1
 --- !u!114 &2012751630087371236

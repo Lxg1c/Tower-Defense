@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
 
 /// <summary>
 /// Tower placement zone.
@@ -41,16 +39,10 @@ public class TowerPlacementZone : MonoBehaviour
     [SerializeField] private Color buildingColor  = new Color(1f, 0.7f, 0f, 0.6f);
 
     [Header("Visuals (toggled off during combat)")]
-    [Tooltip("Parent GO holding the zone's meshes, world-space UI, collider — everything player should not see / touch during a wave.")]
+    [Tooltip("Parent GO holding the zone's mesh and collider, hidden during a wave.")]
     [SerializeField] private GameObject visualRoot;
 
-    [Header("Screen-space progress circle")]
-    [Tooltip("HUD progress Image. Set Image Type = Filled and Fill Method = Radial 360.")]
-    [FormerlySerializedAs("progressFill")]
-    [SerializeField] private Image placementCircleFill;
-
     [Header("Zone Icon")]
-    [SerializeField] private Image zoneIcon;
     [SerializeField] private Sprite townHallIcon;
     [SerializeField] private Sprite defenseIcon;
     [SerializeField] private Sprite mineIcon;
@@ -62,6 +54,17 @@ public class TowerPlacementZone : MonoBehaviour
     public BaseUpgrade BuiltBase => Slot.BuiltBase;
     /// <summary>True after the player has used this zone (built or upgraded) in the current build phase.</summary>
     public bool UsedThisPhase => Slot.UsedThisPhase;
+    public bool IsAvailable => CanInteractNow;
+    public float PlacementProgress => enterDelay > 0f ? Mathf.Clamp01(enterTimer / enterDelay) : 0f;
+    public Sprite ZoneIconSprite => allowedType switch
+    {
+        BuildSlotType.TownHall => townHallIcon,
+        BuildSlotType.Defense => defenseIcon,
+        BuildSlotType.Mine => mineIcon,
+        BuildSlotType.Barracks => barracksIcon,
+        BuildSlotType.Wall => wallIcon,
+        _ => null
+    };
 
     public UnityEvent onTowerBuilt;
 
@@ -71,6 +74,9 @@ public class TowerPlacementZone : MonoBehaviour
     private float enterTimer;
     private bool modalOpenedByMe;
     private Color currentColor;
+    private SpriteRenderer worldIcon;
+    private LineRenderer worldProgressTrack;
+    private LineRenderer worldProgressFill;
     private BuildingSlot slot;
     private LevelSetup levelSetup;
     private bool IsFirstLocation => (levelSetup ??= FindFirstObjectByType<LevelSetup>()) != null &&
@@ -111,11 +117,8 @@ public class TowerPlacementZone : MonoBehaviour
 
     private void Start()
     {
-        if (placementCircleFill != null)
-            placementCircleFill.fillAmount = 0f;
-        UpdateZoneIcon();
-
         currentColor = idleColor;
+        CreateWorldMarker();
         SyncWithPhase();
 
         if (WaveSpawner.Instance != null)
@@ -144,12 +147,13 @@ public class TowerPlacementZone : MonoBehaviour
     {
         CloseModal();
         CancelProgress();
+        if (worldIcon != null) worldIcon.enabled = false;
         wasPlayerInZone = false;
     }
 
-    private void OnValidate()
+    private void OnEnable()
     {
-        UpdateZoneIcon();
+        if (worldIcon != null) SyncWithPhase();
     }
 
     private void OnBuildPhase(int nextIdx, int total, int reward)
@@ -183,7 +187,10 @@ public class TowerPlacementZone : MonoBehaviour
 
     private void SetVisualActive(bool on)
     {
-        if (visualRoot != null) visualRoot.SetActive(on);
+        // LevelGrid points use this GameObject as visualRoot. Disabling it would
+        // also disable the controller, preventing a later unlock from appearing.
+        if (visualRoot != null && visualRoot != gameObject) visualRoot.SetActive(on);
+        if (worldIcon != null) worldIcon.enabled = on;
         if (!on) CancelProgress();
     }
 
@@ -197,7 +204,8 @@ public class TowerPlacementZone : MonoBehaviour
             return;
         }
 
-        if (visualRoot != null && !visualRoot.activeSelf)
+        if ((visualRoot != null && visualRoot != gameObject && !visualRoot.activeSelf) ||
+            (worldIcon != null && !worldIcon.enabled))
             SetVisualActive(true);
 
         DetectPlayer();
@@ -219,12 +227,13 @@ public class TowerPlacementZone : MonoBehaviour
         if (modalOpenedByMe)
         {
             currentColor = buildingColor;
+            UpdateWorldProgress();
             return;
         }
 
         currentColor = highlightColor;
         enterTimer  += Time.deltaTime;
-        UpdateProgressCircle();
+        UpdateWorldProgress();
 
         if (enterTimer >= enterDelay)
         {
@@ -233,12 +242,6 @@ public class TowerPlacementZone : MonoBehaviour
             if (IsBuilt) OpenBuiltObjectModal();
             else         OpenModal();
         }
-    }
-
-    private void UpdateProgressCircle()
-    {
-        if (placementCircleFill != null)
-            placementCircleFill.fillAmount = Mathf.Clamp01(enterTimer / enterDelay);
     }
 
     private void DetectPlayer()
@@ -323,8 +326,69 @@ public class TowerPlacementZone : MonoBehaviour
     private void CancelProgress()
     {
         enterTimer = 0f;
-        if (placementCircleFill != null)
-            placementCircleFill.fillAmount = 0f;
+        if (worldProgressTrack != null) worldProgressTrack.enabled = false;
+        if (worldProgressFill != null) worldProgressFill.enabled = false;
+    }
+
+    private void CreateWorldMarker()
+    {
+        Sprite icon = ZoneIconSprite;
+        if (icon == null) return;
+
+        var iconObject = new GameObject("Building point icon");
+        iconObject.transform.SetParent(transform, false);
+        iconObject.transform.localPosition = Vector3.up * 0.04f;
+        iconObject.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
+        worldIcon = iconObject.AddComponent<SpriteRenderer>();
+        worldIcon.sprite = icon;
+        worldIcon.sortingOrder = 10;
+
+        worldProgressTrack = CreateWorldRing("Building point progress track", 0.07f,
+            new Color(0.04f, 0.16f, 0.22f, 0.9f), 11);
+        worldProgressFill = CreateWorldRing("Building point progress fill", 0.10f,
+            new Color(0.51f, 1f, 0.88f, 1f), 12);
+        worldProgressTrack.positionCount = 65;
+        for (int i = 0; i < 65; i++)
+            worldProgressTrack.SetPosition(i, RingPoint(i / 64f));
+        worldProgressTrack.enabled = false;
+        worldProgressFill.enabled = false;
+    }
+
+    private LineRenderer CreateWorldRing(string ringName, float width, Color color, int order)
+    {
+        var ringObject = new GameObject(ringName);
+        ringObject.transform.SetParent(transform, false);
+        ringObject.transform.localPosition = Vector3.up * 0.10f;
+        ringObject.transform.rotation = Quaternion.identity;
+        var ring = ringObject.AddComponent<LineRenderer>();
+        ring.sharedMaterial = worldIcon.sharedMaterial;
+        ring.useWorldSpace = false;
+        ring.widthMultiplier = width;
+        ring.startColor = color;
+        ring.endColor = color;
+        ring.sortingOrder = order;
+        ring.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        ring.receiveShadows = false;
+        return ring;
+    }
+
+    private void UpdateWorldProgress()
+    {
+        if (worldProgressTrack == null) return;
+        worldProgressTrack.enabled = true;
+        float progress = PlacementProgress;
+        worldProgressFill.enabled = progress > 0f;
+        if (!worldProgressFill.enabled) return;
+        int count = Mathf.Max(2, Mathf.CeilToInt(progress * 64f) + 1);
+        worldProgressFill.positionCount = count;
+        for (int i = 0; i < count; i++)
+            worldProgressFill.SetPosition(i, RingPoint(progress * i / (count - 1)));
+    }
+
+    private static Vector3 RingPoint(float fraction)
+    {
+        float angle = fraction * Mathf.PI * 2f;
+        return new Vector3(Mathf.Sin(angle) * 1.39f, 0f, Mathf.Cos(angle) * 1.39f);
     }
 
     private void HandleOptionPicked(TowerOption opt)
@@ -388,25 +452,6 @@ public class TowerPlacementZone : MonoBehaviour
             return BaseUpgrade.Instance.TownHallLevel;
 
         return Base.Instance != null ? 1 : 0;
-    }
-
-    private void UpdateZoneIcon()
-    {
-        if (zoneIcon == null)
-            return;
-
-        Sprite icon = allowedType switch
-        {
-            BuildSlotType.TownHall => townHallIcon,
-            BuildSlotType.Defense => defenseIcon,
-            BuildSlotType.Mine => mineIcon,
-            BuildSlotType.Barracks => barracksIcon,
-            BuildSlotType.Wall => wallIcon,
-            _ => null
-        };
-
-        zoneIcon.sprite = icon;
-        zoneIcon.enabled = icon != null;
     }
 
     private void OnDrawGizmos()

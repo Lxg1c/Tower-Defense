@@ -1,26 +1,15 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public abstract class MenuScreenBase : MonoBehaviour
 {
-    [Header("UI")]
-    [SerializeField] protected GameObject root;
-    [SerializeField] protected Button restartButton;
-    [SerializeField] protected Button mainMenuButton;
-
     [Header("Scenes")]
     [SerializeField] protected string mainMenuSceneName = "MainMenu";
+    public bool IsVisible { get; private set; }
 
     protected virtual void Awake()
     {
         Hide();
-
-        if (restartButton != null)
-            restartButton.onClick.AddListener(Restart);
-
-        if (mainMenuButton != null)
-            mainMenuButton.onClick.AddListener(GoToMainMenu);
     }
 
     protected virtual void OnDestroy()
@@ -28,17 +17,9 @@ public abstract class MenuScreenBase : MonoBehaviour
         Time.timeScale = 1f;
     }
 
-    public virtual void Show()
-    {
-        if (root != null)
-            root.SetActive(true);
-    }
+    public virtual void Show() => IsVisible = true;
 
-    public virtual void Hide()
-    {
-        if (root != null)
-            root.SetActive(false);
-    }
+    public virtual void Hide() => IsVisible = false;
 
     public virtual void Restart()
     {

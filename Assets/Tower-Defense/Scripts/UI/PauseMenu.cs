@@ -1,32 +1,16 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 [DisallowMultipleComponent]
 public class PauseMenu : MenuScreenBase
 {
     public enum ExitAction { None, Restart, MainMenu }
 
-    [Header("Pause Buttons")]
-    [SerializeField] private Button pauseButton;
-    [SerializeField] private Button resumeButton;
-    [SerializeField] private GameObject menuContent;
-    [SerializeField] private GameObject settingsContent;
     [SerializeField] private WaveSpawner spawner;
 
     public bool IsPaused { get; private set; }
+    public bool IsSettingsOpen { get; private set; }
     public ExitAction PendingExitAction { get; private set; }
     public bool IsConfirmingExit => PendingExitAction != ExitAction.None;
-
-    protected override void Awake()
-    {
-        base.Awake();
-
-        if (pauseButton != null)
-            pauseButton.onClick.AddListener(Pause);
-
-        if (resumeButton != null)
-            resumeButton.onClick.AddListener(Resume);
-    }
 
     public void Toggle()
     {
@@ -49,6 +33,7 @@ public class PauseMenu : MenuScreenBase
     {
         PendingExitAction = ExitAction.None;
         IsPaused = false;
+        IsSettingsOpen = false;
         Hide();
         Time.timeScale = 1f;
     }
@@ -57,14 +42,12 @@ public class PauseMenu : MenuScreenBase
     {
         if (!IsPaused) return;
         PendingExitAction = ExitAction.None;
-        menuContent.SetActive(false);
-        settingsContent.SetActive(true);
+        IsSettingsOpen = true;
     }
 
     public void ShowPauseOptions()
     {
-        settingsContent.SetActive(false);
-        menuContent.SetActive(true);
+        IsSettingsOpen = false;
         GameAudioSettings.Save();
     }
 

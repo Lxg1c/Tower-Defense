@@ -26,27 +26,20 @@ namespace TowerDefense.Tests
             var menuScene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/MainMenu.unity");
             try
             {
-                var menu = menuScene.GetRootGameObjects().SelectMany(root =>
-                    root.GetComponentsInChildren<MainMenuScreens>(true)).Single();
-                var menuFields = new SerializedObject(menu);
-                Assert.That(menuFields.FindProperty("skills").objectReferenceValue, Is.Not.Null);
-                Assert.That(menuFields.FindProperty("skillsButton").objectReferenceValue, Is.Not.Null);
+                var document = menuScene.GetRootGameObjects().SelectMany(root =>
+                    root.GetComponentsInChildren<UIDocument>(true)).Single();
+                var view = document.GetComponent<MenuToolkitView>();
+                Assert.That(view, Is.Not.Null);
+                var tree = document.visualTreeAsset.CloneTree();
+                Assert.That(tree.Q("skillsPage"), Is.Not.Null);
+                Assert.That(tree.Q<Button>("skillsButton"), Is.Not.Null);
+                Assert.That(tree.Q("skillList"), Is.Not.Null);
                 var levelMenu = menuScene.GetRootGameObjects().SelectMany(root =>
                     root.GetComponentsInChildren<MainMenu>(true)).Single();
-                var difficultyButtons = new SerializedObject(levelMenu).FindProperty("difficultyButtons");
-                Assert.That(difficultyButtons.arraySize, Is.EqualTo(3));
-                for (int i = 0; i < 3; i++)
-                    Assert.That(difficultyButtons.GetArrayElementAtIndex(i).objectReferenceValue, Is.Not.Null);
-                var tree = menuScene.GetRootGameObjects().SelectMany(root =>
-                    root.GetComponentsInChildren<SkillTreePanel>(true)).Single();
-                var treeFields = new SerializedObject(tree);
-                foreach (var field in new[] { "upgradeButtons", "details", "prices" })
-                {
-                    var items = treeFields.FindProperty(field);
-                    Assert.That(items.arraySize, Is.EqualTo(3));
-                    for (int i = 0; i < 3; i++)
-                        Assert.That(items.GetArrayElementAtIndex(i).objectReferenceValue, Is.Not.Null);
-                }
+                Assert.That(new SerializedObject(view).FindProperty("menu").objectReferenceValue,
+                    Is.SameAs(levelMenu));
+                foreach (string name in new[] { "normalButton", "hardButton", "nightmareButton" })
+                    Assert.That(tree.Q<Button>(name), Is.Not.Null, name);
             }
             finally { EditorSceneManager.ClosePreviewScene(menuScene); }
 

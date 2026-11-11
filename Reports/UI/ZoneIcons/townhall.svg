@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" style="color:#72F5EB">
+  <defs>
+    <linearGradient id="plate" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#173B4E"/><stop offset=".55" stop-color="#0A2231"/><stop offset="1" stop-color="#061521"/></linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="5"/></filter>
+  </defs>
+  <path d="M48 13h160l35 35v160l-35 35H48l-35-35V48z" fill="url(#plate)" stroke="#72F5EB" stroke-width="5"/>
+  <path d="M57 26h143l30 30v144l-30 30H57l-30-30V56z" fill="none" stroke="#72F5EB" stroke-opacity=".26" stroke-width="3"/>
+  <path d="M52 24h38M166 232h38" stroke="#72F5EB" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="128" cy="128" r="73" fill="#1AA4AC" opacity=".12"/>
+  <g style="color:#72F5EB" opacity=".5" filter="url(#glow)"><g stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M128 50v29M128 50l-11-11m11 11 11-11M65 126l31-19M191 126l-31-19M128 172v22"/>
+      <path d="M128 76 170 101v49l-42 26-42-26v-49z"/>
+      <path d="M128 91 155 107v33l-27 17-27-17v-33z" stroke-width="6"/>
+      <circle cx="128" cy="50" r="8" fill="currentColor" stroke="none"/><circle cx="61" cy="128" r="9" fill="currentColor" stroke="none"/><circle cx="195" cy="128" r="9" fill="currentColor" stroke="none"/>
+    </g></g>
+  <g style="color:#72F5EB"><g stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M128 50v29M128 50l-11-11m11 11 11-11M65 126l31-19M191 126l-31-19M128 172v22"/>
+      <path d="M128 76 170 101v49l-42 26-42-26v-49z"/>
+      <path d="M128 91 155 107v33l-27 17-27-17v-33z" stroke-width="6"/>
+      <circle cx="128" cy="50" r="8" fill="currentColor" stroke="none"/><circle cx="61" cy="128" r="9" fill="currentColor" stroke="none"/><circle cx="195" cy="128" r="9" fill="currentColor" stroke="none"/>
+    </g></g>
+</svg>

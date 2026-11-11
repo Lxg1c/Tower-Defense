@@ -168,18 +168,14 @@ namespace TowerDefense.Tests
             Assert.That(error, Does.Contain("Assign an ITargetSelector"));
         }
 
-        [TestCase("TowerSelectionModal")]
-        [TestCase("BaseUpgradeModal")]
-        public void BuildMenusRequireAWallet(string modalType)
+        [Test]
+        public void BuildMenuRequiresAWallet()
         {
             Assert.That(PlayerWallet.Instance == null, Is.True);
-            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("\\[" + modalType + "\\] A PlayerWallet is required"));
-            GameObject root = NewObject(modalType);
-            switch (modalType)
-            {
-                case "TowerSelectionModal": root.AddComponent<TowerSelectionModal>().Open(Array.Empty<TowerOption>(), null); break;
-                case "BaseUpgradeModal": root.AddComponent<BaseUpgradeModal>().Open(); break;
-            }
+            LogAssert.Expect(LogType.Error,
+                new System.Text.RegularExpressions.Regex("\\[TowerSelectionModal\\] A PlayerWallet is required"));
+            GameObject root = NewObject("TowerSelectionModal");
+            root.AddComponent<TowerSelectionModal>().Open(Array.Empty<TowerOption>(), null);
         }
 
         [TestCase("Assets/Tower-Defense/Prefabs/Player.prefab")]

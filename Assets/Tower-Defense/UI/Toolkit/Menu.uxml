@@ -77,48 +77,57 @@
       </ui:VisualElement>
       <ui:VisualElement name="loadoutPage" class="menu-page loadout-page is-hidden" picking-mode="Ignore">
         <ui:VisualElement class="loadout-heading" picking-mode="Ignore">
-          <ui:VisualElement picking-mode="Ignore">
-            <ui:Label text="04  /  PLAYER EQUIPMENT" class="section-label" />
-            <ui:Label text="COMBAT LOADOUT" class="page-title" />
-          </ui:VisualElement>
+          <ui:Button name="loadoutBack" text="←" class="loadout-back" />
+          <ui:Label text="СНАРЯЖЕНИЕ  Р-07" class="loadout-title" />
           <ui:Label name="loadoutMoney" class="loadout-money" />
         </ui:VisualElement>
         <ui:VisualElement class="loadout-body" picking-mode="Ignore">
-          <ui:VisualElement class="loadout-hero" picking-mode="Ignore">
-            <ui:Label text="FRONTLINE ROBOT" class="loadout-hero-caption" />
-            <ui:VisualElement class="loadout-portrait" picking-mode="Ignore" />
-            <ui:Label text="DUAL GUN PLATFORM" class="loadout-hero-name" />
-            <ui:Label text="EQUIPPED MODULE" class="loadout-micro" />
-            <ui:Label name="equippedModule" class="equipped-module" />
+          <ui:VisualElement class="loadout-stage" picking-mode="Ignore">
+            <ui:VisualElement class="loadout-orbit" picking-mode="Ignore" />
+            <ui:VisualElement name="loadoutPortrait" class="loadout-portrait preview-base" picking-mode="Ignore" />
+            <ui:Button name="armorSlot" class="loadout-slot armor-slot" text="КОРПУС  ·  БАЗОВЫЙ" />
+            <ui:Button name="leftWeaponSlot" class="loadout-slot left-weapon-slot" text="ЛЕВАЯ ПУШКА  ·  СТАНДАРТ" />
+            <ui:Button name="rightWeaponSlot" class="loadout-slot right-weapon-slot" text="ПРАВАЯ ПУШКА  ·  СТАНДАРТ" />
+            <ui:Button name="moduleSlot" class="loadout-slot module-slot" text="БОЕВОЙ МОДУЛЬ  ·  СТАНДАРТ" />
           </ui:VisualElement>
           <ui:VisualElement class="loadout-catalog" picking-mode="Ignore">
-            <ui:Label text="WEAPON MODULES" class="loadout-catalog-title" />
-            <ui:Label text="Choose before entering a level" class="loadout-catalog-copy" />
-            <ui:VisualElement class="module-card" picking-mode="Ignore">
-              <ui:VisualElement class="module-mark standard-mark" picking-mode="Ignore" />
-              <ui:VisualElement class="module-copy" picking-mode="Ignore">
-                <ui:Label text="STANDARD" class="module-name" />
-                <ui:Label text="Balanced damage and rate of fire" class="module-description" />
-              </ui:VisualElement>
-              <ui:Button name="standardModule" class="module-button" />
+            <ui:VisualElement class="loadout-tabs" picking-mode="Ignore">
+              <ui:Button name="armorTab" text="БРОНЯ" class="loadout-tab is-selected" />
+              <ui:Button name="weaponTab" text="ОРУЖИЕ" class="loadout-tab" />
+              <ui:Button name="moduleTab" text="МОДУЛЬ" class="loadout-tab" />
             </ui:VisualElement>
-            <ui:VisualElement class="module-card overdrive-card" picking-mode="Ignore">
-              <ui:VisualElement class="module-mark overdrive-mark" picking-mode="Ignore" />
-              <ui:VisualElement class="module-copy" picking-mode="Ignore">
-                <ui:Label text="OVERDRIVE" class="module-name" />
-                <ui:Label text="+40% fire rate  •  −15% shot damage" class="module-description" />
-              </ui:VisualElement>
-              <ui:Button name="overdriveModule" class="module-button" />
+            <ui:VisualElement name="armorCatalog" class="catalog-page" picking-mode="Ignore">
+              <ui:Label text="ПРЕДПРОСМОТР КОРПУСА" class="catalog-caption" />
+              <ui:Button name="baseArmorPreview" class="preview-card is-selected"><ui:VisualElement class="preview-art armor-base-art" picking-mode="Ignore" /><ui:Label text="БАЗОВЫЙ КОРПУС" class="preview-name" picking-mode="Ignore" /><ui:Label name="baseArmorStatus" text="ПОКАЗАНО" class="preview-status" picking-mode="Ignore" /></ui:Button>
+              <ui:Button name="assaultArmorPreview" class="preview-card"><ui:VisualElement class="preview-art armor-assault-art" picking-mode="Ignore" /><ui:Label text="ШТУРМОВАЯ БРОНЯ" class="preview-name" picking-mode="Ignore" /><ui:Label name="assaultArmorStatus" text="ПРИМЕРИТЬ" class="preview-status" picking-mode="Ignore" /></ui:Button>
             </ui:VisualElement>
-            <ui:VisualElement class="loadout-stat-strip" picking-mode="Ignore">
-              <ui:Label text="DAMAGE" class="stat-label" />
-              <ui:Label name="moduleDamage" class="stat-value" />
-              <ui:Label text="FIRE RATE" class="stat-label" />
-              <ui:Label name="moduleFireRate" class="stat-value" />
+            <ui:VisualElement name="weaponCatalog" class="catalog-page is-hidden" picking-mode="Ignore">
+              <ui:VisualElement class="weapon-columns" picking-mode="Ignore">
+                <ui:VisualElement name="leftWeaponColumn" class="weapon-column is-focused" picking-mode="Ignore">
+                  <ui:Label text="ЛЕВАЯ ПУШКА" class="weapon-column-title" />
+                  <ui:Button name="leftStandardPreview" class="preview-card weapon-preview is-selected"><ui:VisualElement class="preview-art weapon-standard-art" picking-mode="Ignore" /><ui:Label text="СТАНДАРТ" class="preview-name" picking-mode="Ignore" /></ui:Button>
+                  <ui:Button name="leftHeavyPreview" class="preview-card weapon-preview"><ui:VisualElement class="preview-art weapon-heavy-art" picking-mode="Ignore" /><ui:Label text="ТЯЖЁЛАЯ" class="preview-name" picking-mode="Ignore" /></ui:Button>
+                </ui:VisualElement>
+                <ui:VisualElement name="rightWeaponColumn" class="weapon-column" picking-mode="Ignore">
+                  <ui:Label text="ПРАВАЯ ПУШКА" class="weapon-column-title" />
+                  <ui:Button name="rightStandardPreview" class="preview-card weapon-preview is-selected"><ui:VisualElement class="preview-art weapon-standard-art" picking-mode="Ignore" /><ui:Label text="СТАНДАРТ" class="preview-name" picking-mode="Ignore" /></ui:Button>
+                  <ui:Button name="rightHeavyPreview" class="preview-card weapon-preview"><ui:VisualElement class="preview-art weapon-heavy-art" picking-mode="Ignore" /><ui:Label text="ТЯЖЁЛАЯ" class="preview-name" picking-mode="Ignore" /></ui:Button>
+                </ui:VisualElement>
+              </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="moduleCatalog" class="catalog-page is-hidden" picking-mode="Ignore">
+              <ui:Label text="МОДУЛЬ ПЕРЕД ЗАБЕГОМ" class="catalog-caption" />
+              <ui:VisualElement class="module-card" picking-mode="Ignore">
+                <ui:Label text="СТАНДАРТ" class="module-name" />
+                <ui:Button name="standardModule" class="module-button" />
+              </ui:VisualElement>
+              <ui:VisualElement class="module-card overdrive-card" picking-mode="Ignore">
+                <ui:Label text="ФОРСАЖ  ·  БЫСТРЕЕ СТРЕЛЬБА" class="module-name" />
+                <ui:Button name="overdriveModule" class="module-button" />
+              </ui:VisualElement>
             </ui:VisualElement>
           </ui:VisualElement>
         </ui:VisualElement>
-        <ui:Button name="loadoutBack" text="←  BACK TO MENU" class="back-button" />
       </ui:VisualElement>
     </ui:VisualElement>
     <ui:Label name="fpsLabel" class="fps-label is-hidden" />

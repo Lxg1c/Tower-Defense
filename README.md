@@ -83,21 +83,19 @@ shoots automatically on both platforms. The `Manual Charge` checkbox on
 automatic shot strength. The existing cooldown applies in either mode.
 `ResponsiveGameplayHud` selects the layout from the build target. In the Editor,
 `Automatic` previews the active build target; the `Editor Preview` field on
-`MainCanvas` can force Mobile or Desktop during Play Mode and updates the HUD
+`GameplayControllers` can force Mobile or Desktop during Play Mode and updates the HUD
 immediately. This is not a player setting. Stand in a building zone until its
 progress circle fills to choose a building or upgrade. Use Start Wave to begin
 combat after the town hall exists. The melee barracks opens at town hall level 2
 and the ranged barracks at level 3; the chosen type stays with that barracks.
 
-The Main Menu, campaign level and GameplayLab now use UI Toolkit for their
-screen-space menus and HUD. The UXML and USS files are in `UI/Toolkit`;
+The Main Menu, campaign level and GameplayLab use UI Toolkit for every gameplay
+screen and indicator. The UXML and USS files are in `UI/Toolkit`;
 `MenuToolkitView` and `GameplayToolkitView` in `Scripts/UI` connect them to the
-existing gameplay controllers. The old menu Canvas is disabled in the scene.
-The gameplay screen groups have invisible, non-interactive CanvasGroups in both
-gameplay scenes, while their controllers stay active. World-space placement
-progress, health bars and spawn indicators still use their existing presentation.
-Missing UI Toolkit references are logged as configuration errors. Keep the legacy
-Canvas until the new layout has been verified on the target device. The new
+existing gameplay controllers. The old Canvas objects and UI prefabs have been
+removed from playable scenes. Build-zone rings, spawn previews and health bars
+are projected onto the gameplay UI Toolkit panel. Missing UI Toolkit references
+are logged as configuration errors. The new
 on-screen joystick feeds `PlayerMovement` directly, while desktop movement
 still uses the existing keyboard path. The UI Toolkit building panel leaves
 movement available so stepping out of a zone closes the panel.
@@ -155,9 +153,8 @@ The hero passes through enemy colliders, so mobs cannot serve as platforms.
 Building panels leave movement available and do not darken the world. Walk out
 of the building zone to dismiss its panel; there is no Close button. A successful
 build or upgrade also closes the panel and consumes that zone's action for the phase.
-Construction and upgrades share `BuildingModal.prefab` and `TowerCard.prefab`.
-Each card lists every authored level (starting at 1), with health and damage icons;
-mines show income per wave instead of damage. The current level is highlighted,
+Construction and upgrades share one UI Toolkit build panel. Build choices show
+the role and price; upgrades show current and next-level stats. The current level is shown,
 and only buildings with an unlocked next upgrade show an interaction point.
 Upgrade the Town Hall to reveal newly eligible points. Maximum-level buildings
 have no upgrade point. Hold progress appears above each point on the HUD, so
@@ -298,7 +295,7 @@ To create or tune a level:
 4. Indices 0–3 refer to the four transforms in the scene WaveSpawner's
    **Spawn Points** array, in Inspector order. Groups execute sequentially.
 5. Set both **Additional Difficulties** entries with their own starting coins,
-   money rewards and waves. Add the asset to the Main Menu Canvas component's
+   money rewards and waves. Add the asset to the Main Menu `MenuControllers` component's
    **Levels** list.
    Its selection button is created automatically. No additional scene is needed.
 6. For direct iteration, assign that asset to **LevelSetup > Direct Play Level**
@@ -360,8 +357,8 @@ rather than editing generated code.
 - Game-over and victory screens require an assigned spawner; they observe session
   outcomes. The game-over screen does not decide whether the session is defeated.
 - Entities with health bars require `HealthBarBinding`, with their own `Damageable`
-  assigned. Prefab overrides, anchors and visibility on death belong on this binding.
-  `HealthBarManager` requires the scene camera and supplies the default bar prefab.
+  assigned. Anchors and visibility on death belong on this binding.
+  `HealthBarManager` requires the scene camera and draws bars on the gameplay UI Toolkit panel.
 - `Data/Loadouts/TowerLoadout.asset` lists buildings, costs and the town hall level
   required to show each build option. Town hall is available first; Cannon Tower
   and Mine unlock at level 1; Pulse Tower, a melee Barracks and Wall unlock at

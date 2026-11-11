@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tower Defense · UI direction / Stage 3</title>
+  <link rel="stylesheet" href="Stage3-Concept.css">
+</head>
+<body>
+  <header class="review-bar">
+    <div class="review-title"><span class="review-kicker">TOWER DEFENSE / UI STUDY 02</span><strong>Интерфейс вокруг боя и обороны</strong></div>
+    <nav aria-label="Состояния интерфейса">
+      <button class="review-tab active" data-view="desktop">Подготовка · ПК</button>
+      <button class="review-tab" data-view="mobile">Подготовка · телефон</button>
+      <button class="review-tab" data-view="building">Постройка</button>
+      <button class="review-tab" data-view="night">Волна · ПК</button>
+      <button class="review-tab" data-view="mobile-night">Волна · телефон</button>
+      <button class="review-tab" data-view="loadout">Лодаут</button>
+      <button class="spawn-state-toggle" type="button">Вход: виден</button>
+      <button class="build-state-toggle" type="button">Точка: открытие</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="screen screen-desktop is-active" id="desktop" data-spawn-state="near" data-spawn-x="0.5" data-spawn-y="-0.1" aria-label="Подготовка на ПК">
+      <div class="top-left">
+        <button class="pause icon-control" aria-label="Пауза"><span class="pause-bars"></span></button>
+        <div class="wave-unit">
+          <div class="micro">ПОДГОТОВКА К ВОЛНЕ</div>
+          <div class="wave-main"><span>ВОЛНА <b>02</b></span><small>/ 05</small></div>
+          <div class="wave-steps"><i class="done"></i><i class="done"></i><i></i><i></i><i></i></div>
+        </div>
+      </div>
+      <div class="currency"><span class="currency-icon">◆</span><div><small>РЕСУРСЫ</small><b>12</b></div><span class="currency-income">+2 / волна</span></div>
+      <div class="spawn-preview spawn-near" aria-label="Точка появления 1, в пяти метрах. 14 пауков и 4 летающих врага"><span class="spawn-number"><b>1</b><small>5 м</small></span><div class="spawn-enemies"><span class="enemy-badge"><img src="../../Assets/Tower-Defense/Art/UI/Previews/pavuk.png" alt="Паук"><b>14</b></span><span class="enemy-badge"><img src="../../Assets/Tower-Defense/Art/UI/Previews/flying_enemy.png" alt="Летающий враг"><b>4</b></span></div></div>
+      <div class="spawn-preview spawn-far" aria-label="Точка появления 1 за пределами экрана, в 21 метре"><span class="spawn-number"><b>1</b><small>21 м</small><span class="spawn-pointer" aria-hidden="true"></span></span></div>
+      <div class="context-hint"><span class="hint-number">02 / 04</span><div><b>Шахта или турель?</b><small>Шахта даст доход после волны. Турель защитит узел сейчас.</small></div><span class="hint-dismiss">✕</span></div>
+      <button class="fight-button" data-next="night"><strong>НАЧАТЬ ВОЛНУ</strong></button>
+      <button class="utility-action teleport-action" type="button" aria-label="Телепорт к месту появления Р-07"><span class="utility-disc"><img src="../../Assets/Tower-Defense/Art/UI/Images/UI/homeIcon.png" alt=""></span><span class="utility-caption">ТЕЛЕПОРТ</span></button>
+      <button class="utility-action rally-action" type="button" aria-label="Приказать союзникам следовать за Р-07" aria-pressed="false"><span class="utility-disc"><img src="../../Assets/Tower-Defense/Art/UI/Images/UI/FlagIcon.png" alt=""></span><span class="utility-caption">ЗА МНОЙ</span></button>
+      <button class="ultimate radial-ultimate desktop-ultimate" aria-label="Ультимейт, заряд 85%" style="--charge:85%"><span class="ult-outer"></span><span class="ult-charge"></span><span class="ult-face"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 5 43 20 59 24 47 37 49 54 32 47 15 54 17 37 5 24 21 20Z"/><path d="M34 13 23 33h9l-3 18 14-25H33Z"/></svg></span><span class="ult-percent">85<small>%</small></span></button>
+    </section>
+
+    <section class="screen screen-mobile" id="mobile" data-spawn-state="far" data-spawn-x="0.5" data-spawn-y="-0.1" aria-label="Подготовка на телефоне">
+      <div class="top-left"><button class="pause icon-control" aria-label="Пауза"><span class="pause-bars"></span></button><div class="wave-unit"><div class="micro">ПОДГОТОВКА К ВОЛНЕ</div><div class="wave-main"><span>ВОЛНА <b>02</b></span><small>/ 05</small></div><div class="wave-steps"><i class="done"></i><i class="done"></i><i></i><i></i><i></i></div></div></div>
+      <div class="currency"><span class="currency-icon">◆</span><div><small>РЕСУРСЫ</small><b>12</b></div><span class="currency-income">+2</span></div>
+      <div class="spawn-preview spawn-near" aria-label="Точка появления 1, в пяти метрах. 14 пауков и 4 летающих врага"><span class="spawn-number"><b>1</b><small>5 м</small></span><div class="spawn-enemies"><span class="enemy-badge"><img src="../../Assets/Tower-Defense/Art/UI/Previews/pavuk.png" alt="Паук"><b>14</b></span><span class="enemy-badge"><img src="../../Assets/Tower-Defense/Art/UI/Previews/flying_enemy.png" alt="Летающий враг"><b>4</b></span></div></div>
+      <div class="spawn-preview spawn-far" aria-label="Точка появления 1 за пределами экрана, в 21 метре"><span class="spawn-number"><b>1</b><small>21 м</small><span class="spawn-pointer" aria-hidden="true"></span></span></div>
+      <div class="mobile-hint"><span class="hint-number">2 / 4</span><b>Шахта даёт доход. Турель защищает.</b></div>
+      <div class="joystick" role="img" aria-label="Виртуальный джойстик движения"><span class="joy-grid"></span><span class="joy-limits"></span><span class="joy-thumb"><span class="joy-core"></span></span></div>
+      <button class="fight-button" data-next="mobile-night"><strong>НАЧАТЬ ВОЛНУ</strong></button>
+      <button class="utility-action teleport-action" type="button" aria-label="Телепорт к месту появления Р-07"><span class="utility-disc"><img src="../../Assets/Tower-Defense/Art/UI/Images/UI/homeIcon.png" alt=""></span><span class="utility-caption">ТЕЛЕПОРТ</span></button>
+      <button class="utility-action rally-action" type="button" aria-label="Приказать союзникам следовать за Р-07" aria-pressed="false"><span class="utility-disc"><img src="../../Assets/Tower-Defense/Art/UI/Images/UI/FlagIcon.png" alt=""></span><span class="utility-caption">ЗА МНОЙ</span></button>
+      <button class="ultimate radial-ultimate mobile-ultimate" aria-label="Ультимейт, заряд 85%" style="--charge:85%"><span class="ult-outer"></span><span class="ult-charge"></span><span class="ult-face"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 5 43 20 59 24 47 37 49 54 32 47 15 54 17 37 5 24 21 20Z"/><path d="M34 13 23 33h9l-3 18 14-25H33Z"/></svg></span><span class="ult-percent">85<small>%</small></span></button>
+    </section>
+
+    <section class="screen screen-mobile screen-building" id="building" data-build-state="progress" aria-label="Строительство после входа в точку">
+      <div class="build-scrim"></div>
+      <div class="top-left"><button class="pause icon-control" aria-label="Пауза"><span class="pause-bars"></span></button><div class="wave-unit"><div class="micro">ПОДГОТОВКА К ВОЛНЕ</div><div class="wave-main"><span>ВОЛНА <b>02</b></span><small>/ 05</small></div><div class="wave-steps"><i class="done"></i><i class="done"></i><i></i><i></i></div></div></div>
+      <div class="currency"><span class="currency-icon">◆</span><div><small>РЕСУРСЫ</small><b>12</b></div><span class="currency-income">+2</span></div>
+      <div class="build-anchor" aria-label="Р-07 вошёл в точку обороны; она открывается автоматически"><span class="build-ring"></span><img src="../../Assets/Tower-Defense/Art/UI/Images/ZoneIcons/defense.png" alt=""></div>
+      <div class="joystick" role="img" aria-label="Виртуальный джойстик движения"><span class="joy-grid"></span><span class="joy-limits"></span><span class="joy-thumb"><span class="joy-core"></span></span></div>
+      <button class="fight-button" data-next="mobile-night"><strong>НАЧАТЬ ВОЛНУ</strong></button>
+      <button class="utility-action teleport-action" type="button" aria-label="Телепорт к месту появления Р-07"><span class="utility-disc"><img src="../../Assets/Tower-Defense/Art/UI/Images/UI/homeIcon.png" alt=""></span><span class="utility-caption">ТЕЛЕПОРТ</span></button>
+      <button class="ultimate radial-ultimate mobile-ultimate" aria-label="Ультимейт, заряд 85%" style="--charge:85%"><span class="ult-outer"></span><span class="ult-charge"></span><span class="ult-face"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 5 43 20 59 24 47 37 49 54 32 47 15 54 17 37 5 24 21 20Z"/><path d="M34 13 23 33h9l-3 18 14-25H33Z"/></svg></span><span class="ult-percent">85<small>%</small></span></button>
+      <aside class="build-panel choice-panel">
+        <div class="panel-head"><h2>ВЫБЕРИТЕ ПОСТРОЙКУ</h2><button class="close-control" aria-label="Закрыть">✕</button></div>
+        <div class="build-cards">
+          <button class="build-card selected"><span class="build-art"><img src="../../Assets/Tower-Defense/Art/UI/Previews/shooting_tower.png" alt=""></span><span class="build-text"><b>ТУРЕЛЬ</b><small>Стреляет по наземным и летающим целям</small><em>Защита узла</em></span><span class="price"><i>◆</i> 3</span></button>
+          <button class="build-card"><span class="build-art"><img src="../../Assets/Tower-Defense/Art/UI/Previews/eco_build.png" alt=""></span><span class="build-text"><b>ШАХТА</b><small>Приносит монеты после каждой волны</small><em>Доход</em></span><span class="price"><i>◆</i> 2</span></button>
+        </div>
+      </aside>
+      <aside class="build-panel single-build-panel">
+        <div class="panel-head"><h2>ПОСТРОИТЬ ШАХТУ</h2><button class="close-control" aria-label="Закрыть">✕</button></div>
+        <div class="single-build-content"><span class="build-art"><img src="../../Assets/Tower-Defense/Art/UI/Previews/eco_build.png" alt="Шахта"></span><div><b>ДОХОД ПОСЛЕ ВОЛНЫ</b><small>Добавляет ресурсы для следующих построек.</small></div></div>
+        <button class="single-build-button" type="button">ПОСТРОИТЬ <span>◆ 2</span></button>
+      </aside>
+    </section>
+
+    <section class="screen screen-desktop screen-night" id="night" aria-label="Ночная волна">
+      <div class="danger-glow"></div>
+      <div class="top-left"><button class="pause icon-control" aria-label="Пауза"><span class="pause-bars"></span></button><div class="wave-unit"><div class="micro">НОЧНАЯ ОБОРОНА</div><div class="wave-main"><span>ВОЛНА <b>05</b></span><small>/ 05</small></div><div class="wave-steps"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i></i></div></div></div>
+      <div class="core-status under-attack"><span class="core-mark">⬡</span><div><small>СЕТЕВОЙ УЗЕЛ</small><b>К-7 <em>42%</em></b></div><div class="core-meter"><i></i></div></div>
+      <div class="currency"><span class="currency-icon">◆</span><div><small>РЕСУРСЫ</small><b>6</b></div></div>
+      <div class="attack-warning"><span>!</span><strong>СЕТЕВОЙ УЗЕЛ АТАКУЮТ</strong></div>
+      <div class="wave-progress"><small>ОСТАЛОСЬ ВРАГОВ</small><b>21 <span>/ 66</span></b><div><i></i></div></div>
+      <button class="utility-action rally-action" type="button" aria-label="Приказать союзникам следовать за Р-07" aria-pressed="false"><span class="utility-disc"><img src="../../Assets/Tower-Defense/Art/UI/Images/UI/FlagIcon.png" alt=""></span><span class="utility-caption">ЗА МНОЙ</span></button>
+      <button class="ultimate radial-ultimate desktop-ultimate ready" aria-label="Ультимейт готов" style="--charge:100%"><span class="ult-outer"></span><span class="ult-charge"></span><span class="ult-face"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 5 43 20 59 24 47 37 49 54 32 47 15 54 17 37 5 24 21 20Z"/><path d="M34 13 23 33h9l-3 18 14-25H33Z"/></svg></span><span class="ult-percent">100<small>%</small></span></button>
+    </section>
+
+    <section class="screen screen-mobile screen-night" id="mobile-night" aria-label="Ночная волна на телефоне">
+      <div class="danger-glow"></div>
+      <div class="top-left"><button class="pause icon-control" aria-label="Пауза"><span class="pause-bars"></span></button><div class="wave-unit"><div class="micro">НОЧНАЯ ОБОРОНА</div><div class="wave-main"><span>ВОЛНА <b>05</b></span><small>/ 05</small></div><div class="wave-steps"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i></i></div></div></div>
+      <div class="core-status under-attack"><span class="core-mark">⬡</span><div><small>СЕТЕВОЙ УЗЕЛ</small><b>К-7 <em>42%</em></b></div><div class="core-meter"><i></i></div></div>
+      <div class="currency"><span class="currency-icon">◆</span><div><small>РЕСУРСЫ</small><b>6</b></div></div>
+      <div class="attack-warning"><span>!</span><strong>СЕТЕВОЙ УЗЕЛ АТАКУЮТ</strong></div>
+      <div class="wave-progress"><small>ОСТАЛОСЬ ВРАГОВ</small><b>21 <span>/ 66</span></b><div><i></i></div></div>
+      <div class="joystick" role="img" aria-label="Виртуальный джойстик движения"><span class="joy-grid"></span><span class="joy-limits"></span><span class="joy-thumb"><span class="joy-core"></span></span></div>
+      <button class="utility-action rally-action" type="button" aria-label="Приказать союзникам следовать за Р-07" aria-pressed="false"><span class="utility-disc"><img src="../../Assets/Tower-Defense/Art/UI/Images/UI/FlagIcon.png" alt=""></span><span class="utility-caption">ЗА МНОЙ</span></button>
+      <button class="ultimate radial-ultimate mobile-ultimate ready" aria-label="Ультимейт готов" style="--charge:100%"><span class="ult-outer"></span><span class="ult-charge"></span><span class="ult-face"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 5 43 20 59 24 47 37 49 54 32 47 15 54 17 37 5 24 21 20Z"/><path d="M34 13 23 33h9l-3 18 14-25H33Z"/></svg></span><span class="ult-percent">100<small>%</small></span></button>
+    </section>
+
+    <section class="screen screen-desktop screen-loadout" id="loadout" aria-label="Лодаут Р-07">
+      <div class="loadout-grid"></div><div class="loadout-halo"></div>
+      <button class="back-button" type="button" aria-label="Назад">←</button>
+      <div class="loadout-heading"><h1>СНАРЯЖЕНИЕ <em>Р-07</em></h1></div>
+      <div class="loadout-money"><span>◆</span><small>КРЕДИТЫ</small><b>1 250</b></div>
+      <div class="loadout-stage" data-appearance="base" data-left-weapon="standard" data-right-weapon="standard">
+        <div class="stage-grid"></div><div class="stage-orbit"></div>
+        <button class="gear-slot armor-slot active" data-category="armor"><span class="slot-symbol">⬡</span><span><small>КОРПУС</small><b id="armor-slot-name">БАЗОВЫЙ</b></span></button>
+        <button class="gear-slot left-weapon-slot" data-category="weapon" data-side="left"><span class="slot-symbol">⌁</span><span><small>ЛЕВАЯ ПУШКА</small><b id="left-weapon-name">СТАНДАРТ</b></span></button>
+        <div class="hero-visual"><div class="hero-aura"></div><img src="r07-current.png" alt="Текущий облик робота Р-07"><span class="hero-shield"></span></div>
+        <button class="gear-slot right-weapon-slot" data-category="weapon" data-side="right"><span class="slot-symbol">⌁</span><span><small>ПРАВАЯ ПУШКА</small><b id="right-weapon-name">СТАНДАРТ</b></span></button>
+        <button class="gear-slot module-slot" data-category="module"><span class="slot-symbol">✦</span><span><small>БОЕВОЙ МОДУЛЬ</small><b id="module-slot-name">БАЗОВЫЙ</b></span></button>
+      </div>
+      <div class="inventory-panel"><div class="inventory-tabs"><button class="active" data-inventory="armor">БРОНЯ</button><button data-inventory="weapon">ОРУЖИЕ</button><button data-inventory="module">МОДУЛЬ</button></div><div class="inventory-list">
+        <div class="inventory-set is-active" data-set="armor"><button class="equipment-card selected" data-item="base"><span class="equipment-icon armor-base">⬡</span><span><b>БАЗОВЫЙ КОРПУС</b><small>Лёгкий силуэт · текущий вид</small></span><em>НАДЕТО</em></button><button class="equipment-card" data-item="assault"><span class="equipment-icon armor-assault">⬡</span><span><b>ШТУРМОВАЯ БРОНЯ</b><small>Усиленные пластины · вариант облика</small></span><em>ПРИМЕРИТЬ</em></button></div>
+        <div class="inventory-set weapon-columns" data-set="weapon">
+          <div class="weapon-column is-focused" data-side="left"><h3>ЛЕВАЯ ПУШКА</h3><button class="equipment-card weapon-card selected" data-item="standard"><span class="equipment-icon weapon-standard">⌁</span><span><b>СТАНДАРТ</b></span><em>НАДЕТО</em></button><button class="equipment-card weapon-card" data-item="heavy"><span class="equipment-icon weapon-heavy">✣</span><span><b>ТЯЖЁЛАЯ</b></span><em>ВЫБРАТЬ</em></button></div>
+          <div class="weapon-column" data-side="right"><h3>ПРАВАЯ ПУШКА</h3><button class="equipment-card weapon-card selected" data-item="standard"><span class="equipment-icon weapon-standard">⌁</span><span><b>СТАНДАРТ</b></span><em>НАДЕТО</em></button><button class="equipment-card weapon-card" data-item="heavy"><span class="equipment-icon weapon-heavy">✣</span><span><b>ТЯЖЁЛАЯ</b></span><em>ВЫБРАТЬ</em></button></div>
+        </div>
+        <div class="inventory-set" data-set="module"><button class="equipment-card selected" data-item="standard"><span class="equipment-icon module-standard">●</span><span><b>СТАНДАРТНЫЙ</b><small>Ровный урон и темп стрельбы</small></span><em>ВЫБРАН</em></button><button class="equipment-card" data-item="overdrive"><span class="equipment-icon module-overdrive">ϟ</span><span><b>ФОРСАЖ</b><small>Быстрее стреляет, слабее снаряд</small></span><em>ВЫБРАТЬ</em></button></div>
+      </div></div>
+    </section>
+  </main>
+  <footer class="review-footer">Локальный визуальный прототип · текущие игровые модели и снимок сцены · 8 ноября 2026</footer>
+  <script src="Stage3-Concept.js"></script>
+</body>
+</html>

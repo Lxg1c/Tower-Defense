@@ -1,11 +1,9 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 
 [DisallowMultipleComponent]
 public class PlayerHomeTeleportButton : MonoBehaviour
 {
-    [SerializeField] private Button button;
     [Tooltip("Optional. If empty, the button finds PlayerWallet in the scene.")]
     private Transform player;
     [Tooltip("Optional. If empty, the player's scene start position is used.")]
@@ -19,15 +17,6 @@ public class PlayerHomeTeleportButton : MonoBehaviour
     private bool homeCaptured;
     private WaveSpawner spawner;
 
-    private void Awake()
-    {
-        if (button == null)
-            button = GetComponent<Button>();
-
-        if (button != null)
-            button.onClick.AddListener(TeleportToHome);
-    }
-
     private void Start()
     {
         if (!CaptureHome())
@@ -39,9 +28,6 @@ public class PlayerHomeTeleportButton : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (button != null)
-            button.onClick.RemoveListener(TeleportToHome);
-
         UnbindSpawner();
     }
 
