@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Base : Damageable
@@ -6,6 +7,14 @@ public class Base : Damageable
     public static event System.Action OnBaseChanged;
 
     private bool subscribed;
+    private readonly HashSet<MobCore> attackers = new();
+    public bool IsUnderAttack => IsAlive && attackers.Count > 0;
+
+    internal void SetAttacker(MobCore attacker, bool attacking)
+    {
+        if (attacking && isActiveAndEnabled) attackers.Add(attacker);
+        else attackers.Remove(attacker);
+    }
 
     protected override void Awake()
     {
@@ -42,6 +51,7 @@ public class Base : Damageable
     protected override void OnDisable()
     {
         base.OnDisable();
+        attackers.Clear();
 
         if (subscribed && WaveSpawner.Instance != null)
             WaveSpawner.Instance.onWaveCompleted.RemoveListener(OnWaveCompleted);

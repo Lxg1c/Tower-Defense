@@ -89,6 +89,9 @@ progress circle fills to choose a building or upgrade. Use Start Wave to begin
 combat after the town hall exists. The melee barracks opens at town hall level 2
 and the ranged barracks at level 3; the chosen type stays with that barracks.
 
+Open the building guide from the Main Menu. To see the first-level hints again,
+select **Repeat hints** in the main menu settings and enter Level 01.
+
 The Main Menu, campaign level and GameplayLab use UI Toolkit for every gameplay
 screen and indicator. The UXML and USS files are in `UI/Toolkit`;
 `MenuToolkitView` and `GameplayToolkitView` in `Scripts/UI` connect them to the

@@ -94,10 +94,6 @@ MonoBehaviour:
     m_Localized: Tutorial
     m_Metadata:
       m_Items: []
-  - m_Id: 1584390161
-    m_Localized: Tutorial hints will be available in a future update
-    m_Metadata:
-      m_Items: []
   - m_Id: 1584390162
     m_Localized: Replay hints
     m_Metadata:
@@ -228,10 +224,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 1584390194
     m_Localized: WAVE PREPARATION
-    m_Metadata:
-      m_Items: []
-  - m_Id: 1584390195
-    m_Localized: RESOURCES
     m_Metadata:
       m_Items: []
   - m_Id: 1584390196
@@ -502,18 +494,6 @@ MonoBehaviour:
     m_Localized: 'ENEMIES: {0}'
     m_Metadata:
       m_Items: []
-  - m_Id: 1584390263
-    m_Localized: STAND ON THE CORE PAD TO BUILD IT
-    m_Metadata:
-      m_Items: []
-  - m_Id: 1584390264
-    m_Localized: PREPARE YOUR DEFENSES
-    m_Metadata:
-      m_Items: []
-  - m_Id: 1584390265
-    m_Localized: DEFEND THE NETWORK CORE
-    m_Metadata:
-      m_Items: []
   - m_Id: 1584390266
     m_Localized: "\u2744  SLOW  {0}s"
     m_Metadata:
@@ -615,7 +595,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 1588584462
-    m_Localized: Generates resources after each wave.
+    m_Localized: Earns credits after each wave.
     m_Metadata:
       m_Items: []
   - m_Id: 1588584463
@@ -636,6 +616,144 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 904706121728
     m_Localized: HP {0:0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026268508160
+    m_Localized: CREDITS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308800
+    m_Localized: Build the network core
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308801
+    m_Localized: Stand on the marked pad until the circle fills.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308802
+    m_Localized: Confirm construction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308803
+    m_Localized: Build the core to unlock the other building pads.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308804
+    m_Localized: Mine or turret?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308805
+    m_Localized: A mine earns credits after the wave. A turret protects the core
+      immediately.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308806
+    m_Localized: Confirm construction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308807
+    m_Localized: Build a mine to earn credits after waves.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308808
+    m_Localized: Confirm construction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308809
+    m_Localized: Build a turret to strengthen the core's defense.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308810
+    m_Localized: Start the wave
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308811
+    m_Localized: When you're ready, tap Start Wave at the bottom center.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308812
+    m_Localized: Keep enemies in range
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308813
+    m_Localized: R-07 fires automatically. Move close enough for the guns to engage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308814
+    m_Localized: Ultimate ready
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308815
+    m_Localized: Tap the ultimate button in the bottom-right corner.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308816
+    m_Localized: Press Space to use the ultimate.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308817
+    m_Localized: Hints will appear the next time you enter Level 01.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308818
+    m_Localized: Guide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308819
+    m_Localized: Building guide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308820
+    m_Localized: New
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308821
+    m_Localized: Defense
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308822
+    m_Localized: Income
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308823
+    m_Localized: Direct defense
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308824
+    m_Localized: Crowd control
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308825
+    m_Localized: Build cost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308826
+    m_Localized: Unlock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308827
+    m_Localized: Available immediately
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308828
+    m_Localized: After building the core
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308829
+    m_Localized: Core level {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308830
+    m_Localized: The main target to defend. The run ends if the core is destroyed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308831
+    m_Localized: Earns credits after each wave it survives. Build it early to strengthen
+      your defense later.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308832
+    m_Localized: Automatically attacks ground and flying enemies within range.
     m_Metadata:
       m_Items: []
   references:

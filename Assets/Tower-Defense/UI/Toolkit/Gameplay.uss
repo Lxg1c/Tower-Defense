@@ -8,7 +8,7 @@
   position: absolute; top: 20px; left: 27px; right: 26px;
   height: 99px; flex-direction: row; align-items: flex-start;
 }
-.guide-label, .effect-chip,
+.effect-chip,
 .side-panel, .screen-panel, .order-instruction {
   background-color: rgba(4, 18, 31, 0.90);
   border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-right-width: 1px;
@@ -89,9 +89,15 @@
 }
 .core-warning-text { color: #fff1f2; font-size: 13px; -unity-font-style: bold; }
 .core-warning-health { margin-left: 8px; color: #ffb5c0; font-size: 14px; -unity-font-style: bold; }
-.guide-label {
-  display: none;
+.tutorial-panel {
+  position: absolute; bottom: 22%; left: 26%; width: 48%;
+  padding: 11px 18px; background-color: #102535;
+  border-width: 1px; border-color: #315566; border-left-width: 4px;
+  border-left-color: #82ece4; border-radius: 12px;
 }
+.tutorial-title, .tutorial-text { margin: 0; padding: 0; white-space: normal; }
+.tutorial-title { font-size: 22px; color: #edf9fb; -unity-font-style: bold; }
+.tutorial-text { margin-top: 5px; font-size: 18px; color: #c8e1e8; }
 .fps-label {
   position: absolute; top: 110px; right: 26px; margin: 0; padding: 6px 11px;
   color: #8bd9e1; background-color: rgba(7, 29, 43, 0.94);
@@ -227,12 +233,18 @@
 }
 .ultimate-button:hover .ultimate-face { opacity: 0.94; }
 .ultimate-button:active .ultimate-face { opacity: 0.78; }
+.ultimate-ready-halo {
+  position: absolute; left: 2px; top: 2px; right: 2px; bottom: 2px;
+  border-width: 4px; border-color: #f4e2ff; border-radius: 90px; opacity: 0;
+  transition-property: opacity; transition-duration: 160ms;
+}
+.ultimate-ready .ultimate-ready-halo { opacity: 1; }
 .ultimate-charge-ring { position: absolute; left: 13px; top: 13px; right: 13px; bottom: 13px; }
 .ultimate-charge {
   position: absolute; left: 29%; right: 29%; top: 66%; height: 17%; margin: 0; padding: 0;
   color: #ffffff; font-size: 20px; -unity-font-style: bold; -unity-text-align: middle-center;
 }
-.editor-hud-preview #guideLabel,
+.editor-hud-preview #tutorialPanel,
 .editor-hud-preview #effectRow, .editor-hud-preview #spawnPreview { display: none; }
 .editor-hud-preview #startWaveButton, .editor-hud-preview-desktop #desktopActions { display: flex; }
 .editor-hud-preview-desktop #touchControls { display: none; }
@@ -427,4 +439,11 @@
 .build-card-title { height: auto; font-size: 19px; margin-bottom: 5px; }
 .build-card-description { color: #d5e6e9; font-size: 12px; white-space: normal; }
 .build-upgrade-summary { color: #8dedee; font-size: 12px; margin-bottom: 8px; white-space: normal; }
-.build-action { height: 52px; flex-shrink: 0; font-size: 20px; -unity-font-style: bold; background-color: #ffdb6e; color: #182435; border-top-color: #fff0a1; border-bottom-color: #ce9c35; border-top-left-radius: 8px; border-top-right-radius: 8px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
+.build-action {
+  height: 52px; flex-shrink: 0; flex-direction: row; align-items: center; justify-content: center;
+  background-color: #162f40; color: #edf9fb; border-width: 1px; border-color: #315566; border-radius: 10px;
+}
+.build-action:hover { background-color: #19414d; border-color: #82ece4; }
+.build-action-label { margin: 0; padding: 0; font-size: 18px; -unity-font-style: bold; white-space: normal; }
+.build-credit { position: relative; left: auto; top: auto; width: 16px; height: 16px; margin: 0 5px 0 10px; flex-shrink: 0; }
+.build-credit .economy-icon-center { width: 8px; height: 8px; }

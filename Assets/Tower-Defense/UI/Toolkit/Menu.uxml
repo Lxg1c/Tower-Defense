@@ -80,6 +80,13 @@
             </ui:VisualElement>
             <ui:Label text="Снаряжение" class="campaign-action-label l10n-equipment" picking-mode="Ignore" />
           </ui:Button>
+          <ui:Button name="guideButton" class="campaign-action campaign-guide l10n-tip-guide" tooltip="Справочник построек">
+            <ui:VisualElement class="campaign-action-disc" picking-mode="Ignore">
+              <ui:VisualElement class="campaign-action-icon" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label text="Справочник" class="campaign-action-label l10n-guide" picking-mode="Ignore" />
+            <ui:Label name="guideNewBadge" text="Новое" class="guide-badge guide-menu-badge l10n-guide-new is-hidden" picking-mode="Ignore" />
+          </ui:Button>
         </ui:VisualElement>
         <ui:VisualElement class="campaign-bottom-actions campaign-bottom-right" picking-mode="Ignore">
           <ui:Button name="labButton" class="campaign-action campaign-lab l10n-tip-lab" tooltip="Полигон">
@@ -147,11 +154,42 @@
                 <ui:VisualElement class="menu-fps-track" picking-mode="Ignore"><ui:VisualElement class="menu-fps-knob" picking-mode="Ignore" /></ui:VisualElement>
               </ui:Button>
             </ui:VisualElement>
-            <ui:VisualElement class="menu-extra-setting menu-extra-setting-last l10n-tip-tutorial-later" tooltip="Повтор обучения будет доступен после добавления подсказок">
+            <ui:VisualElement class="menu-extra-setting menu-extra-setting-last" picking-mode="Ignore">
               <ui:Label text="Обучение" class="menu-setting-label l10n-tutorial" picking-mode="Ignore" />
-              <ui:Label text="Повторить подсказки" class="menu-extra-button l10n-repeat-hints" picking-mode="Ignore" />
+              <ui:Button name="repeatHints" text="Повторить подсказки" class="menu-extra-button l10n-repeat-hints" />
             </ui:VisualElement>
+            <ui:Label name="repeatHintsStatus" text="Подсказки появятся при следующем входе на первый уровень." class="repeat-hints-status l10n-hints-queued is-hidden" picking-mode="Ignore" />
           </ui:VisualElement>
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement name="guidePage" class="menu-page menu-subpage guide-page is-hidden" picking-mode="Ignore">
+        <ui:VisualElement class="subpage-heading" picking-mode="Ignore">
+          <ui:Button name="guideBack" tooltip="Назад к выбору уровня" class="subpage-back l10n-tip-back-level"><ui:VisualElement class="subpage-back-icon" picking-mode="Ignore" /></ui:Button>
+          <ui:Label text="Справочник построек" class="subpage-title l10n-building-guide" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:VisualElement class="guide-layout" picking-mode="Ignore">
+          <ui:ScrollView name="guideEntries" class="subpage-panel guide-entries" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto" />
+          <ui:ScrollView class="subpage-panel guide-details" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto">
+            <ui:Label name="guideTitle" class="subpage-panel-title guide-title" picking-mode="Ignore" />
+            <ui:VisualElement class="guide-detail-body" picking-mode="Ignore">
+              <ui:Image name="guideArt" class="guide-art" picking-mode="Ignore" />
+              <ui:VisualElement class="guide-detail-copy" picking-mode="Ignore">
+                <ui:Label name="guideRole" class="guide-role guide-detail-role" picking-mode="Ignore" />
+                <ui:Label name="guideDescription" class="guide-description" picking-mode="Ignore" />
+                <ui:VisualElement class="guide-meta guide-meta-first" picking-mode="Ignore">
+                  <ui:Label text="Цена постройки" class="guide-meta-label l10n-guide-cost" picking-mode="Ignore" />
+                  <ui:VisualElement class="guide-credit-row" picking-mode="Ignore">
+                    <ui:VisualElement class="campaign-credit-icon guide-credit-icon" picking-mode="Ignore"><ui:VisualElement class="campaign-credit-center" picking-mode="Ignore" /></ui:VisualElement>
+                    <ui:Label name="guideCost" class="guide-meta-value" picking-mode="Ignore" />
+                  </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="guide-meta" picking-mode="Ignore">
+                  <ui:Label text="Открытие" class="guide-meta-label l10n-guide-unlock" picking-mode="Ignore" />
+                  <ui:Label name="guideRequirement" class="guide-meta-value" picking-mode="Ignore" />
+                </ui:VisualElement>
+              </ui:VisualElement>
+            </ui:VisualElement>
+          </ui:ScrollView>
         </ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement name="skillsPage" class="menu-page menu-subpage is-hidden" picking-mode="Ignore">

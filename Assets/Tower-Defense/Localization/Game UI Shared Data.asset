@@ -91,10 +91,6 @@ MonoBehaviour:
     m_Key: tutorial
     m_Metadata:
       m_Items: []
-  - m_Id: 1584390161
-    m_Key: tutorial-later
-    m_Metadata:
-      m_Items: []
   - m_Id: 1584390162
     m_Key: repeat-hints
     m_Metadata:
@@ -225,10 +221,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 1584390194
     m_Key: build-phase
-    m_Metadata:
-      m_Items: []
-  - m_Id: 1584390195
-    m_Key: resources
     m_Metadata:
       m_Items: []
   - m_Id: 1584390196
@@ -499,18 +491,6 @@ MonoBehaviour:
     m_Key: enemy-count
     m_Metadata:
       m_Items: []
-  - m_Id: 1584390263
-    m_Key: place-core
-    m_Metadata:
-      m_Items: []
-  - m_Id: 1584390264
-    m_Key: prepare-defense
-    m_Metadata:
-      m_Items: []
-  - m_Id: 1584390265
-    m_Key: defend-core
-    m_Metadata:
-      m_Items: []
   - m_Id: 1584390266
     m_Key: slow-effect
     m_Metadata:
@@ -633,6 +613,142 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 904706121728
     m_Key: building-hp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026268508160
+    m_Key: run-credits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308800
+    m_Key: hint-approach-title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308801
+    m_Key: hint-approach-text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308802
+    m_Key: hint-core-title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308803
+    m_Key: hint-core-text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308804
+    m_Key: hint-economy-title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308805
+    m_Key: hint-economy-text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308806
+    m_Key: hint-mine-title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308807
+    m_Key: hint-mine-text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308808
+    m_Key: hint-turret-title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308809
+    m_Key: hint-turret-text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308810
+    m_Key: hint-start-title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308811
+    m_Key: hint-start-text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308812
+    m_Key: hint-fire-title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308813
+    m_Key: hint-fire-text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308814
+    m_Key: hint-ultimate-title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308815
+    m_Key: hint-ultimate-text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308816
+    m_Key: hint-ultimate-desktop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308817
+    m_Key: hints-queued
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308818
+    m_Key: guide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308819
+    m_Key: building-guide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308820
+    m_Key: guide-new
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308821
+    m_Key: guide-role-core
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308822
+    m_Key: guide-role-mine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308823
+    m_Key: guide-role-cannon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308824
+    m_Key: guide-role-pulse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308825
+    m_Key: guide-cost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308826
+    m_Key: guide-unlock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308827
+    m_Key: guide-immediate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308828
+    m_Key: guide-after-core
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308829
+    m_Key: guide-core-level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308830
+    m_Key: guide-core-text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308831
+    m_Key: guide-mine-text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 36026415308832
+    m_Key: guide-cannon-text
     m_Metadata:
       m_Items: []
   m_Metadata:

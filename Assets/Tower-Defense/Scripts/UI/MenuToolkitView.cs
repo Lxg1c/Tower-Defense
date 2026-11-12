@@ -12,7 +12,9 @@ public sealed class MenuToolkitView : MonoBehaviour
     [UnityEngine.Serialization.FormerlySerializedAs("legacyScreens")]
     [SerializeField] private MainMenuScreens screens;
 
-    private enum PreviewPage { Campaign, Equipment, Settings, Talents }
+    [SerializeField] private TowerLoadout guideLoadout;
+
+    private enum PreviewPage { Campaign, Equipment, Settings, Talents, BuildingGuide }
     [SerializeField, Tooltip("Screen displayed in Game view outside Play Mode.")]
     private PreviewPage editorPreview = PreviewPage.Campaign;
 
@@ -21,6 +23,8 @@ public sealed class MenuToolkitView : MonoBehaviour
     private Button[] leftWeaponPreviews;
     private Button[] rightWeaponPreviews;
     private Button upgradeSkill;
+    private VisualElement guidePage;
+    private string selectedGuideBuilding = "Ratusha";
     private int selectedSkill;
     private int previewArmor;
     private int previewLeftWeapon;
@@ -133,6 +137,7 @@ public sealed class MenuToolkitView : MonoBehaviour
         settingsPage = root.Q("settingsPage");
         skillsPage = root.Q("skillsPage");
         loadoutPage = root.Q("loadoutPage");
+        guidePage = root.Q("guidePage");
         levelTitle = root.Q<Label>("levelTitle");
         levelDescription = root.Q<Label>("levelDescription");
         wavePreview = root.Q<Label>("wavePreview");
@@ -172,7 +177,7 @@ public sealed class MenuToolkitView : MonoBehaviour
         startButton = root.Q<Button>("startButton");
         difficultyButtons = new[] { root.Q<Button>("normalButton"), root.Q<Button>("hardButton"),
             root.Q<Button>("nightmareButton") };
-        if (homePage == null || settingsPage == null || skillsPage == null || loadoutPage == null ||
+        if (homePage == null || settingsPage == null || skillsPage == null || loadoutPage == null || guidePage == null ||
             levelTitle == null || levelDescription == null || wavePreview == null || moneyLabel == null ||
             levelIndex == null || levelAvailability == null || homeMoney == null || levelArt == null ||
             featuredLevelCard == null ||
@@ -256,6 +261,13 @@ public sealed class MenuToolkitView : MonoBehaviour
         overdriveModule.clicked += SelectOverdrive;
         root.Q<Button>("settingsButton").clicked += ShowSettings;
         root.Q<Button>("labButton").clicked += menu.StartGameplayLab;
+        root.Q<Button>("guideButton").clicked += ShowGuide;
+        root.Q<Button>("guideBack").clicked += ShowHome;
+        root.Q<Button>("repeatHints").clicked += () =>
+        {
+            FirstLevelTutorial.QueueReplay();
+            RefreshTutorialSettings();
+        };
         root.Q<Button>("exitButton").clicked += menu.ExitGame;
         root.Q<Button>("settingsBack").clicked += ShowHome;
         root.Q<Button>("skillsBack").clicked += ShowHome;
@@ -346,6 +358,8 @@ public sealed class MenuToolkitView : MonoBehaviour
         RefreshLevel();
         RefreshSkills();
         RefreshLoadout();
+        RefreshGuide();
+        RefreshTutorialSettings();
         RefreshVolumeControl(masterSlider, "master", 1f);
         RefreshVolumeControl(musicSlider, "music", .7f);
         RefreshVolumeControl(effectsSlider, "effects", .85f);
@@ -356,6 +370,7 @@ public sealed class MenuToolkitView : MonoBehaviour
             PreviewPage.Equipment => loadoutPage,
             PreviewPage.Settings => settingsPage,
             PreviewPage.Talents => skillsPage,
+            PreviewPage.BuildingGuide => guidePage,
             _ => homePage
         });
     }
@@ -374,6 +389,8 @@ public sealed class MenuToolkitView : MonoBehaviour
         RefreshLevel();
         RefreshSkills();
         RefreshLoadout();
+        RefreshGuide();
+        RefreshTutorialSettings();
         RefreshAudio();
         RefreshFps();
     }
@@ -711,6 +728,88 @@ public sealed class MenuToolkitView : MonoBehaviour
     private void ShowSettings() { screens.ShowSettings(); RefreshAudio(); Show(settingsPage); }
     private void ShowSkills() { screens.ShowSkills(); RefreshSkills(); Show(skillsPage); }
     private void ShowLoadout() { screens.ShowHome(); RefreshLoadout(); ShowLoadoutCatalog("armor"); Show(loadoutPage); }
+    private void ShowGuide() { screens.ShowHome(); RefreshGuide(); Show(guidePage); }
+
+    private void RefreshTutorialSettings()
+    {
+        bool queued = Application.isPlaying && FirstLevelTutorial.ReplayQueued;
+        root.Q<Button>("repeatHints").SetEnabled(!queued);
+        root.Q<Label>("repeatHintsStatus").EnableInClassList("is-hidden", !queued);
+    }
+
+    private void RefreshGuide()
+    {
+        bool preview = !Application.isPlaying;
+        bool pulseNew = preview || BuildingGuide.PulseIsNew;
+        root.Q("guideNewBadge").EnableInClassList("is-hidden", !pulseNew);
+
+        var entries = root.Q<ScrollView>("guideEntries");
+        entries.Clear();
+        if (guideLoadout == null || guideLoadout.options == null) return;
+        bool pulseAvailable = preview || BuildingGuide.PulseDiscovered;
+        foreach (string name in new[] { "Ratusha", "Mine", "Cannon Turret", "Pulse" })
+        {
+            if (name == "Pulse" && !pulseAvailable) continue;
+            var option = Array.Find(guideLoadout.options, item => item != null && item.displayName == name);
+            if (option == null) continue;
+            var row = new Button(() =>
+            {
+                selectedGuideBuilding = name;
+                if (!preview && name == "Pulse") BuildingGuide.ReadPulse();
+                RefreshGuide();
+                entries.Q<Button>(name)?.Focus();
+            }) { name = name, tooltip = GetBuildingName(option) };
+            row.AddToClassList("guide-entry");
+            row.EnableInClassList("is-selected", name == selectedGuideBuilding);
+            var icon = new Image { sprite = option.icon, pickingMode = PickingMode.Ignore };
+            icon.AddToClassList("guide-entry-icon");
+            row.Add(icon);
+            var labels = new VisualElement { pickingMode = PickingMode.Ignore };
+            labels.AddToClassList("guide-entry-labels");
+            var title = new Label(GetBuildingName(option)) { pickingMode = PickingMode.Ignore };
+            title.AddToClassList("guide-entry-title");
+            labels.Add(title);
+            var role = new Label(GuideRole(name)) { pickingMode = PickingMode.Ignore };
+            role.AddToClassList("guide-role");
+            labels.Add(role);
+            row.Add(labels);
+            if (name == "Pulse" && pulseNew)
+            {
+                var badge = new Label(GameLocalization.Text("guide-new", "Новое")) { pickingMode = PickingMode.Ignore };
+                badge.AddToClassList("guide-badge");
+                row.Add(badge);
+            }
+            entries.Add(row);
+            if (name != selectedGuideBuilding) continue;
+            root.Q<Label>("guideTitle").text = GetBuildingName(option);
+            root.Q<Image>("guideArt").sprite = option.icon;
+            root.Q<Label>("guideRole").text = GuideRole(name);
+            root.Q<Label>("guideDescription").text = name switch
+            {
+                "Ratusha" => GameLocalization.Text("guide-core-text", "Главная цель обороны. Если узел разрушат, забег закончится."),
+                "Mine" => GameLocalization.Text("guide-mine-text", "Приносит кредиты после каждой пережитой волны. Построй заранее, чтобы усилить оборону позже."),
+                "Cannon Turret" => GameLocalization.Text("guide-cannon-text", "Автоматически атакует наземных и летающих врагов в радиусе."),
+                _ => GameplayToolkitView.GetBuildingDescription(option)
+            };
+            root.Q<Label>("guideCost").text = option.cost.ToString();
+            root.Q<Label>("guideRequirement").text = option.requiredTownHallLevel switch
+            {
+                0 => GameLocalization.Text("guide-immediate", "Доступен сразу"),
+                1 => GameLocalization.Text("guide-after-core", "После постройки узла"),
+                _ => GameLocalization.Format("guide-core-level", "Узел {0} уровня", option.requiredTownHallLevel)
+            };
+        }
+    }
+
+    private static string GetBuildingName(TowerOption option) => GameplayToolkitView.GetBuildingName(option);
+
+    private static string GuideRole(string name) => name switch
+    {
+        "Ratusha" => GameLocalization.Text("guide-role-core", "Защита"),
+        "Mine" => GameLocalization.Text("guide-role-mine", "Доход"),
+        "Cannon Turret" => GameLocalization.Text("guide-role-cannon", "Прямая защита"),
+        _ => GameLocalization.Text("guide-role-pulse", "Контроль группы")
+    };
 
     private void Show(VisualElement page)
     {
@@ -722,5 +821,6 @@ public sealed class MenuToolkitView : MonoBehaviour
         settingsPage.EnableInClassList("is-hidden", page != settingsPage);
         skillsPage.EnableInClassList("is-hidden", page != skillsPage);
         loadoutPage.EnableInClassList("is-hidden", page != loadoutPage);
+        guidePage.EnableInClassList("is-hidden", page != guidePage);
     }
 }

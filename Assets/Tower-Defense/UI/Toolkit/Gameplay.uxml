@@ -19,7 +19,7 @@
         <ui:VisualElement class="economy-icon" picking-mode="Ignore">
           <ui:VisualElement class="economy-icon-center" picking-mode="Ignore" />
         </ui:VisualElement>
-        <ui:Label text="РЕСУРСЫ" class="economy-caption l10n-resources" />
+        <ui:Label text="КРЕДИТЫ" class="economy-caption l10n-run-credits" />
         <ui:Label name="coinsLabel" text="12" class="coins-label" />
         <ui:Label name="incomeLabel" text="+2" class="income-label" />
       </ui:VisualElement>
@@ -36,7 +36,10 @@
         <ui:Label name="coreHealthLabel" text="100%" class="core-warning-health" />
       </ui:VisualElement>
     </ui:VisualElement>
-    <ui:Label name="guideLabel" class="guide-label" />
+    <ui:VisualElement name="tutorialPanel" class="tutorial-panel is-hidden" picking-mode="Ignore">
+      <ui:Label name="tutorialTitle" class="tutorial-title" picking-mode="Ignore" />
+      <ui:Label name="tutorialText" class="tutorial-text" picking-mode="Ignore" />
+    </ui:VisualElement>
     <ui:Label name="fpsLabel" class="fps-label is-hidden" />
     <ui:VisualElement name="effectRow" class="effect-row" picking-mode="Ignore">
       <ui:Label name="slowEffect" class="effect-chip is-hidden" />
@@ -72,6 +75,7 @@
         </ui:Button>
         <ui:Button name="ultimateButton" class="ultimate-button">
           <ui:VisualElement class="ultimate-face" picking-mode="Ignore" />
+          <ui:VisualElement class="ultimate-ready-halo" picking-mode="Ignore" />
           <ui:Label name="ultimateCharge" class="ultimate-charge" picking-mode="Ignore" />
         </ui:Button>
       </ui:VisualElement>
@@ -95,6 +99,7 @@
       </ui:Button>
       <ui:Button name="desktopUltimate" class="ultimate-button">
         <ui:VisualElement class="ultimate-face" picking-mode="Ignore" />
+        <ui:VisualElement class="ultimate-ready-halo" picking-mode="Ignore" />
         <ui:Label name="desktopUltimateCharge" class="ultimate-charge" picking-mode="Ignore" />
       </ui:Button>
     </ui:VisualElement>

@@ -84,6 +84,11 @@ namespace TowerDefense.Tests
                     Assert.That(roots.SelectMany(r => r.GetComponentsInChildren<HealthBarManager>(true)).Count(), Is.EqualTo(1), path);
                     Assert.That(roots.SelectMany(r => r.GetComponentsInChildren<UnityEngine.UI.Button>(true)),
                         Is.Empty, path);
+                    var waveCue = data.FindProperty("waveStartAudio").objectReferenceValue as AudioSource;
+                    Assert.That(waveCue, Is.Not.Null, path);
+                    Assert.That(waveCue.clip, Is.Not.Null, path);
+                    Assert.That(waveCue.playOnAwake || waveCue.loop || waveCue.ignoreListenerVolume, Is.False, path);
+                    Assert.That(waveCue.spatialBlend, Is.Zero, path);
                 }
                 finally { EditorSceneManager.ClosePreviewScene(scene); }
             }
@@ -97,7 +102,8 @@ namespace TowerDefense.Tests
             var root = tree.CloneTree();
             foreach (string name in new[] { "spawnPreview", "buildPanel", "buildCards",
                          "startWaveButton", "joystick", "ultimateButton", "desktopUltimate", "orderCancel",
-                         "pausePanel", "victoryPanel", "defeatPanel", "fpsToggle", "fpsLabel" })
+                         "pausePanel", "victoryPanel", "defeatPanel", "fpsToggle", "fpsLabel",
+                         "tutorialPanel", "tutorialTitle", "tutorialText" })
                 Assert.That(root.Q(name), Is.Not.Null, name);
             Assert.That(root.Q("zoneLayer"), Is.Null, "Building markers belong on the floor, not in the HUD.");
         }
@@ -124,6 +130,32 @@ namespace TowerDefense.Tests
                 Assert.That(typeof(PlayerMovement).GetField("joystick",
                     System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic),
                     Is.Null, "Touch movement must only come from UI Toolkit.");
+            }
+            finally { EditorSceneManager.ClosePreviewScene(scene); }
+        }
+
+        [Test]
+        public void MainMenuHasRepeatHintsAndBuildingGuideData()
+        {
+            var scene = EditorSceneManager.OpenPreviewScene(ScenePaths[0]);
+            try
+            {
+                var view = scene.GetRootGameObjects()
+                    .SelectMany(gameObject => gameObject.GetComponentsInChildren<MenuToolkitView>(true)).Single();
+                var loadout = new SerializedObject(view).FindProperty("guideLoadout").objectReferenceValue as TowerLoadout;
+                Assert.That(loadout, Is.Not.Null);
+                var guideBuildings = new[] { "Ratusha", "Mine", "Cannon Turret", "Pulse" };
+                foreach (string name in guideBuildings)
+                {
+                    var option = loadout.options.SingleOrDefault(entry => entry?.displayName == name);
+                    Assert.That(option, Is.Not.Null, name);
+                    Assert.That(option.icon, Is.Not.Null, name);
+                }
+                var root = view.GetComponent<UIDocument>().visualTreeAsset.CloneTree();
+                Assert.That(root.Q<Button>("repeatHints"), Is.Not.Null);
+                Assert.That(root.Q<Button>("guideButton"), Is.Not.Null);
+                Assert.That(root.Q<Button>("guideBack"), Is.Not.Null);
+                Assert.That(root.Q<ScrollView>("guideEntries"), Is.Not.Null);
             }
             finally { EditorSceneManager.ClosePreviewScene(scene); }
         }

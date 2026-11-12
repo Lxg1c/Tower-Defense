@@ -56,6 +56,7 @@ public class MobCore : MonoBehaviour
 
     private float refreshTimer;
     private Collider currentTargetCollider;
+    private Base attackedCore;
 
     /// <summary>
     /// Returns the closest point on the target's collider, or its pivot if there is no collider.
@@ -123,6 +124,7 @@ public class MobCore : MonoBehaviour
 
     private void OnDisable()
     {
+        SetAttackedCore(null);
         if (Health != null)
             Health.OnDeathHandled -= HandleDeath;
     }
@@ -138,7 +140,7 @@ public class MobCore : MonoBehaviour
         }
 
         // Per-frame combat tick (behavior handles cooldowns internally)
-        if (CurrentTarget != null && CurrentTarget.IsAlive && CombatBehavior != null)
+        if (Health.IsAlive && CurrentTarget != null && CurrentTarget.IsAlive && CombatBehavior != null)
         {
             Vector3 targetPoint = GetTargetPoint(CurrentTarget);
             float dist = Vector3.Distance(transform.position, targetPoint);
@@ -146,8 +148,23 @@ public class MobCore : MonoBehaviour
             {
                 FaceTarget(targetPoint);
                 CombatBehavior.Tick(this, CurrentTarget);
+                return;
             }
         }
+        SetAttackedCore(null);
+    }
+
+    internal void ReportAttack(Damageable target)
+    {
+        SetAttackedCore(target as Base);
+        if (attackedCore != null) attackedCore.SetAttacker(this, true);
+    }
+
+    private void SetAttackedCore(Base next)
+    {
+        if (ReferenceEquals(attackedCore, next)) return;
+        if (attackedCore != null) attackedCore.SetAttacker(this, false);
+        attackedCore = next;
     }
 
     private void RefreshTarget()
@@ -162,6 +179,7 @@ public class MobCore : MonoBehaviour
 
         if (newTarget != CurrentTarget)
         {
+            SetAttackedCore(null);
             CurrentTarget = newTarget;
             currentTargetCollider = newTarget != null ? newTarget.GetComponentInChildren<Collider>() : null;
             CombatBehavior?.OnTargetChanged(this, newTarget);
@@ -182,6 +200,7 @@ public class MobCore : MonoBehaviour
 
     private void HandleDeath(MobHealth _)
     {
+        SetAttackedCore(null);
         // Spawner/pool will observe this via MobHealth.OnDeathHandled too.
         // Core just stops acting; actual despawn is handled externally so pooling
         // stays decoupled from gameplay.

@@ -247,6 +247,18 @@ The player placed directly in `Level` creates this visual from
 `HealthBarManager` projects HP and player shield bars into UI Toolkit and updates
 their position from scene anchors. It owns binding lifetimes and creates no Canvas.
 
+`FirstLevelTutorial` stores which first-level hints have appeared. `GameplayToolkitView`
+supplies the current build offer, phase and combat context. The settings screen queues
+a replay in local preferences and the next first-level entry consumes it. The main menu
+builds the guide from `TowerLoadout` and tracks discovery of the Pulse tower independently
+of run state.
+
+Enemy combat behaviors report attacks on the core through `MobCore`. The core
+keeps attackers registered between strikes and releases them when they leave
+attack range, change target, die, or return to the pool. `GameplayToolkitView`
+uses this state for the warning, plays the wave-start clip on the combat phase
+event, and highlights the ultimate when it becomes ready again.
+
 `ResponsiveGameplayHud` selects Mobile or Desktop UI Toolkit controls from the
 build target. Editor `Automatic` previews the active build target; the Inspector
 override can switch layouts during Play Mode. `PlayerMovement` accepts WASD/arrow input and

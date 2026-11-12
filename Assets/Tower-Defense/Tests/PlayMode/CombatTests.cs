@@ -441,6 +441,53 @@ namespace TowerDefense.Tests
         }
 
         [UnityTest]
+        public IEnumerator CoreRemainsUnderAttackBetweenHitsUntilTheLastAttackerLeavesOrDies()
+        {
+            var core = NewObject("Core").AddComponent<Base>();
+            MobCore first = CoreAttacker(Vector3.forward);
+            MobCore second = CoreAttacker(Vector3.back);
+            Assert.That(core.IsUnderAttack, Is.False);
+            yield return new WaitForSeconds(0.4f);
+
+            Assert.That(core.CurrentHealth, Is.LessThan(core.MaxHealth));
+            Assert.That(core.IsUnderAttack, Is.True);
+            float health = core.CurrentHealth;
+            first.transform.position = Vector3.forward * 10f;
+            yield return null;
+            Assert.That(core.CurrentHealth, Is.EqualTo(health), "Attackers are between strikes.");
+            Assert.That(core.IsUnderAttack, Is.True);
+
+            second.Health.TakeDamage(second.Health.MaxHealth);
+            Assert.That(core.IsUnderAttack, Is.False);
+        }
+
+        [UnityTest]
+        public IEnumerator DisablingAnAttackerClearsTheCoreWarning()
+        {
+            var core = NewObject("Core").AddComponent<Base>();
+            MobCore enemy = CoreAttacker(Vector3.forward);
+            yield return new WaitForSeconds(0.4f);
+            Assert.That(core.IsUnderAttack, Is.True);
+            enemy.gameObject.SetActive(false);
+            Assert.That(core.IsUnderAttack, Is.False);
+        }
+
+        private MobCore CoreAttacker(Vector3 position)
+        {
+            var enemy = NewObject("Core attacker", false);
+            enemy.transform.position = position;
+            var selector = enemy.AddComponent<BaseOnlySelector>();
+            var attack = enemy.AddComponent<StandardAttack>();
+            var navigation = enemy.AddComponent<DefaultNav>();
+            var mob = enemy.AddComponent<MobCore>();
+            Set(mob, "targetSelectorRef", selector);
+            Set(mob, "combatBehaviorRef", attack);
+            Set(mob, "navigationModifierRef", navigation);
+            enemy.SetActive(true);
+            return mob;
+        }
+
+        [UnityTest]
         public IEnumerator HealthEmitsDeathOnceAndRejectsFurtherDamage()
         {
             var target = Target(Vector3.zero);

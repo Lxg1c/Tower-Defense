@@ -9,6 +9,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
 {
     [SerializeField] private ResponsiveGameplayHud responsiveHud;
     [SerializeField] private WaveSpawner spawner;
+    [SerializeField] private AudioSource waveStartAudio;
     [SerializeField] private PlayerWallet wallet;
     [SerializeField] private LevelTimer timer;
     [SerializeField] private PlayerMovement movement;
@@ -56,7 +57,13 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private Label enemiesLabel;
     private Label coinsLabel;
     private Label incomeLabel;
-    private Label guideLabel;
+    private VisualElement tutorialPanel;
+    private Label tutorialTitle;
+    private Label tutorialText;
+    private FirstLevelTutorial tutorial;
+    private TowerPlacementZone[] tutorialZones;
+    private Shooter tutorialShooter;
+    private bool tutorialHasDefense;
     private Label coreHealthLabel;
     private Label slowEffect;
     private Label shieldEffect;
@@ -86,6 +93,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private Base observedCore;
     private float previousCoreHealth;
     private float coreAlertUntil;
+    private readonly UltimateReadyCue ultimateReadyCue = new();
     private readonly List<WaveSpawner.WavePreviewEntry> spawnEntries = new();
     private readonly List<SpawnMarker> spawnMarkers = new();
     private HealthBarManager healthBars;
@@ -155,7 +163,9 @@ public sealed class GameplayToolkitView : MonoBehaviour
         enemiesLabel = root.Q<Label>("enemiesLabel");
         coinsLabel = root.Q<Label>("coinsLabel");
         incomeLabel = root.Q<Label>("incomeLabel");
-        guideLabel = root.Q<Label>("guideLabel");
+        tutorialPanel = root.Q("tutorialPanel");
+        tutorialTitle = root.Q<Label>("tutorialTitle");
+        tutorialText = root.Q<Label>("tutorialText");
         slowEffect = root.Q<Label>("slowEffect");
         shieldEffect = root.Q<Label>("shieldEffect");
         turretEffect = root.Q<Label>("turretEffect");
@@ -182,7 +192,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
             buildCards == null || waveLabel == null || wavePhaseLabel == null ||
             waveTotalLabel == null || waveSteps == null || timerLabel == null ||
             enemiesLabel == null || coinsLabel == null || incomeLabel == null ||
-            guideLabel == null || coreAlert == null || coreHealthLabel == null ||
+            tutorialPanel == null || tutorialTitle == null || tutorialText == null ||
+            coreAlert == null || coreHealthLabel == null ||
             slowEffect == null || shieldEffect == null ||
             turretEffect == null || mobileUltimateCharge == null || desktopUltimateCharge == null ||
             fpsLabel == null || fpsToggle == null ||
@@ -238,6 +249,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
         GameAudioSettings.Changed += RefreshAudio;
         GamePerformanceSettings.Changed += RefreshFps;
         GameLocalization.Changed += RefreshLanguage;
+        BaseUpgrade.OnTownHallChanged += DiscoverGuideBuilding;
+        spawner.onCombatPhaseStarted.AddListener(PlayWaveStart);
         healthBars = FindFirstObjectByType<HealthBarManager>();
         if (healthBars != null) healthBars.SetPresentationRoot(root);
         bound = true;
@@ -249,6 +262,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         RefreshAudio();
         RefreshFps();
         RefreshLanguage();
+        DiscoverGuideBuilding();
     }
 
     private void RefreshLanguage()
@@ -268,6 +282,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
         GameAudioSettings.Changed -= RefreshAudio;
         GamePerformanceSettings.Changed -= RefreshFps;
         GameLocalization.Changed -= RefreshLanguage;
+        BaseUpgrade.OnTownHallChanged -= DiscoverGuideBuilding;
+        spawner.onCombatPhaseStarted.RemoveListener(PlayWaveStart);
         if (healthBars != null) healthBars.SetPresentationRoot(null);
         movement.ClearToolkitMoveInput();
         if (ultimatePointerHeld) ultimate.Release();
@@ -311,13 +327,15 @@ public sealed class GameplayToolkitView : MonoBehaviour
         }
         if (core != null)
         {
-            if (core.CurrentHealth < previousCoreHealth)
-                coreAlertUntil = Time.unscaledTime + 2f;
+            if (!spawner.IsCombatPhase)
+                coreAlertUntil = 0f;
+            else if (core.CurrentHealth < previousCoreHealth)
+                coreAlertUntil = Time.time + 0.6f;
             previousCoreHealth = core.CurrentHealth;
             SetText(coreHealthLabel, $"{Mathf.CeilToInt(100f * core.CurrentHealth / core.MaxHealth)}%");
         }
-        coreAlert.EnableInClassList("is-hidden", core == null || won || lost ||
-            Time.unscaledTime >= coreAlertUntil);
+        coreAlert.EnableInClassList("is-hidden", !spawner.IsCombatPhase || paused || core == null ||
+            (!core.IsUnderAttack && Time.time >= coreAlertUntil));
         fpsLabel.EnableInClassList("is-hidden", !GamePerformanceSettings.ShowFps || modal);
         bool desktop = responsiveHud.IsDesktopLayout;
         root.Q("topBar").EnableInClassList("is-hidden", order || won || lost);
@@ -368,11 +386,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         var preview = spawner.IsBuildPhase ? spawner.NextWave :
             spawner.GetWave(Mathf.Clamp(wave - 1, 0, spawner.WaveCount - 1));
         SetText(enemiesLabel, GameLocalization.Format("enemy-count", "ВРАГИ: {0}", CountEnemies(preview)));
-        SetText(guideLabel, spawner.IsBuildPhase ? Base.Instance == null
-            ? GameLocalization.Text("place-core", "ВСТАНЬТЕ НА ТОЧКУ УЗЛА, ЧТОБЫ ПОСТРОИТЬ ЕГО")
-            : GameLocalization.Text("prepare-defense", "ПОДГОТОВЬТЕ ОБОРОНУ")
-            : GameLocalization.Text("defend-core", "ЗАЩИЩАЙТЕ СЕТЕВОЙ УЗЕЛ"));
-        guideLabel.EnableInClassList("is-hidden", !spawner.IsBuildPhase || order || paused || modal || won || lost);
+        UpdateTutorial(!order && !paused && !won && !lost && !playerHealth.IsGhost, desktop);
         startWaveButton.EnableInClassList("is-hidden", !spawner.IsBuildPhase || Base.Instance == null ||
             modal || order || paused || won || lost);
 
@@ -386,8 +400,13 @@ public sealed class GameplayToolkitView : MonoBehaviour
         bool homeAvailable = teleport.gameObject.activeInHierarchy && spawner.IsBuildPhase && !playerHealth.IsGhost;
         homeButton.SetEnabled(homeAvailable);
         desktopHome.SetEnabled(homeAvailable);
-        ultimateButton.SetEnabled(ultimate.CanReceiveInput || ultimate.IsCharging);
-        desktopUltimate.SetEnabled(ultimate.CanReceiveInput || ultimate.IsCharging);
+        bool ultimateReady = ultimate.CanReceiveInput && !ultimate.IsCharging;
+        ultimateButton.SetEnabled(ultimateReady || ultimate.IsCharging);
+        desktopUltimate.SetEnabled(ultimateReady || ultimate.IsCharging);
+        bool readyHighlight = ultimateReadyCue.Update(ultimateReady,
+            !order && !paused && !won && !lost && !modal, Time.deltaTime);
+        ultimateButton.EnableInClassList("ultimate-ready", readyHighlight);
+        desktopUltimate.EnableInClassList("ultimate-ready", readyHighlight);
         float energy = ultimate.EnergyProgress;
         mobileUltimateRing.Progress = energy;
         desktopUltimateRing.Progress = energy;
@@ -399,6 +418,78 @@ public sealed class GameplayToolkitView : MonoBehaviour
         if (lost) SetText(defeatReward, GameLocalization.Format("reward", "+{0} КРЕДИТОВ", levelSetup.DefeatMoneyReward));
         if (buildModal.IsOpen && buildModal.Revision != lastModalRevision) RefreshBuildCards();
         UpdateSpawnPreview(spawner.IsBuildPhase && !order && !paused && !modal && !won && !lost);
+    }
+
+    private void PlayWaveStart(int waveIndex, int totalWaves, int reward)
+    {
+        if (waveStartAudio != null) waveStartAudio.Play();
+    }
+
+    private void DiscoverGuideBuilding()
+    {
+        if (levelSetup.IsFirstLocation && BaseUpgrade.Instance != null && BaseUpgrade.Instance.TownHallLevel >= 2)
+            BuildingGuide.DiscoverPulse();
+    }
+
+    private void UpdateTutorial(bool visible, bool desktop)
+    {
+        if (!levelSetup.IsFirstLocation) return;
+
+        if (tutorial == null)
+        {
+            tutorial = new FirstLevelTutorial();
+            tutorialZones = FindObjectsByType<TowerPlacementZone>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            tutorialShooter = movement.GetComponentInChildren<Shooter>();
+        }
+
+        bool hasCore = Base.Instance != null;
+        if (hasCore && !tutorialHasDefense && spawner.IsBuildPhase)
+        {
+            foreach (var zone in tutorialZones)
+                if (zone != null && zone.IsBuilt && zone.BuiltBase == null)
+                {
+                    tutorialHasDefense = true;
+                    break;
+                }
+        }
+
+        BuildSlotType? offer = null;
+        if (buildModal.IsOpen)
+        {
+            var offers = buildModal.ActiveOffers;
+            if (offers.Count == 1 && offers[0].CurrentLevel == 0 && offers[0].Option.displayName != "Pulse")
+                offer = offers[0].Option.slotType;
+            visible &= offer is BuildSlotType.TownHall or BuildSlotType.Mine or BuildSlotType.Defense;
+        }
+
+        bool hasTarget = tutorialShooter != null && tutorialShooter.HasTarget;
+        var hint = tutorial.Update(visible, spawner.IsBuildPhase, hasCore, tutorialHasDefense,
+            offer, hasTarget, ultimate.IsCharging, ultimate.CanReceiveInput, Time.deltaTime);
+        tutorialPanel.EnableInClassList("is-hidden", hint == FirstLevelTutorial.Hint.None);
+        if (hint == FirstLevelTutorial.Hint.None) return;
+        var copy = hint switch
+        {
+            FirstLevelTutorial.Hint.Approach => ("approach", "Построй сетевой узел",
+                "Встань на отмеченную точку и дождись заполнения круга."),
+            FirstLevelTutorial.Hint.Core => ("core", "Подтверди строительство",
+                "Построй узел, чтобы открыть остальные точки строительства."),
+            FirstLevelTutorial.Hint.Economy => ("economy", "Шахта или турель?",
+                "Шахта приносит кредиты после волны. Турель защищает узел сразу."),
+            FirstLevelTutorial.Hint.Mine => ("mine", "Подтверди строительство",
+                "Построй шахту, чтобы получать кредиты после волн."),
+            FirstLevelTutorial.Hint.Turret => ("turret", "Подтверди строительство",
+                "Построй турель, чтобы усилить оборону узла."),
+            FirstLevelTutorial.Hint.StartWave => ("start", "Начни волну",
+                "Когда будешь готов, нажми «Начать волну» внизу по центру."),
+            FirstLevelTutorial.Hint.AutoFire => ("fire", "Держи врагов в радиусе",
+                "Р-07 стреляет сам. Подойди к врагам, чтобы пушки открыли огонь."),
+            _ => ("ultimate", "Ультимейт готов",
+                "Нажми кнопку ультимейта в правом нижнем углу.")
+        };
+        SetText(tutorialTitle, GameLocalization.Text($"hint-{copy.Item1}-title", copy.Item2));
+        SetText(tutorialText, desktop && hint == FirstLevelTutorial.Hint.Ultimate
+            ? GameLocalization.Text("hint-ultimate-desktop", "Нажми пробел, чтобы применить ультимейт.")
+            : GameLocalization.Text($"hint-{copy.Item1}-text", copy.Item3));
     }
 
     private static void UpdateWaveSteps(VisualElement steps, int totalWaves, int currentWave)
@@ -649,11 +740,25 @@ public sealed class GameplayToolkitView : MonoBehaviour
                 progression.AddToClassList("build-upgrade-summary");
                 card.Add(progression);
             }
-            var action = new Button(source.Activate)
-            {
-                text = source.Cost.HasValue ? $"{source.ActionText}   •   {source.Cost.Value} ◆" : source.ActionText
-            };
+            var action = new Button(source.Activate) { tooltip = source.ActionText };
             action.AddToClassList("build-action");
+            var actionLabel = new Label(source.ActionText);
+            actionLabel.AddToClassList("build-action-label");
+            action.Add(actionLabel);
+            if (source.Cost.HasValue)
+            {
+                var credit = new VisualElement();
+                credit.AddToClassList("economy-icon");
+                credit.AddToClassList("build-credit");
+                var center = new VisualElement();
+                center.AddToClassList("economy-icon-center");
+                credit.Add(center);
+                action.Add(credit);
+                var price = new Label(source.Cost.Value.ToString());
+                price.AddToClassList("build-action-label");
+                action.Add(price);
+            }
+            foreach (var child in action.Children()) IgnorePicking(child);
             action.SetEnabled(source.Available);
             card.Add(action);
             buildCards.Add(card);
@@ -672,7 +777,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         return string.Join("  ·  ", values);
     }
 
-    private static string GetBuildingName(TowerOption option) => option.displayName switch
+    internal static string GetBuildingName(TowerOption option) => option.displayName switch
     {
         "Cannon Turret" => GameLocalization.Text("cannon", "Пушечная турель"),
         "Pulse" => GameLocalization.Text("pulse", "Импульсная башня"),
@@ -685,7 +790,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         _ => option.displayName
     };
 
-    private static string GetBuildingDescription(TowerOption option)
+    internal static string GetBuildingDescription(TowerOption option)
     {
         if (!string.IsNullOrWhiteSpace(option.description)) return option.description;
         string name = option.displayName?.ToLowerInvariant() ?? "";
@@ -693,7 +798,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         if (name.Contains("mortar")) return GameLocalization.Text("mortar-desc", "Поражает группы врагов с большого расстояния.");
         return option.slotType switch
         {
-            BuildSlotType.Mine => GameLocalization.Text("mine-desc", "Даёт ресурсы после каждой волны."),
+            BuildSlotType.Mine => GameLocalization.Text("mine-desc", "Даёт кредиты после каждой волны."),
             BuildSlotType.TownHall => GameLocalization.Text("core-desc", "Защищайте этот узел до конца забега."),
             BuildSlotType.Barracks => GameLocalization.Text("barracks-desc", "Выпускает союзников для удержания позиции."),
             BuildSlotType.Wall => GameLocalization.Text("wall-desc", "Перекрывает путь и задерживает врагов."),

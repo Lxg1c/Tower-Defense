@@ -93,7 +93,11 @@ public class RangedAttack : MonoBehaviour, ICombatBehavior
         GameObject go = Object.Instantiate(projectilePrefab, origin, rot);
         var proj = go.GetComponent<Projectile>();
         if (proj != null)
-            proj.Init(target, damage * mob.DamageMultiplier * GetMultiplierFor(target));
+        {
+            float finalDamage = damage * mob.DamageMultiplier * GetMultiplierFor(target);
+            if (finalDamage > 0f) mob.ReportAttack(target);
+            proj.Init(target, finalDamage);
+        }
 
         TriggerAttackAnimation();
         cooldown = 1f / Mathf.Max(0.01f, fireRate);

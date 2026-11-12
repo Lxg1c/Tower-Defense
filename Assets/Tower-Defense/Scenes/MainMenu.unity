@@ -243,6 +243,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   menu: {fileID: 1631001647}
   screens: {fileID: 1631001652}
+  guideLoadout: {fileID: 11400000, guid: bb90f16cf9711994e82a9f0eb2fc4685, type: 2}
+  editorPreview: 0
 --- !u!114 &728504445
 MonoBehaviour:
   m_ObjectHideFlags: 0
