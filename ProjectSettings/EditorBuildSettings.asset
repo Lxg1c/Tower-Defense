@@ -15,5 +15,7 @@ EditorBuildSettings:
     path: Assets/Tower-Defense/Scenes/GameplayLab.unity
     guid: b302618467cd3ae47bf39610a9f3e7e1
   m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: 7b157d3bd4d1ef8438277bb8cbd47070, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    com.unity.localization.settings: {fileID: 11400000, guid: a243bdba1d0a55349b8ee7ffa4aa1f6f, type: 2}
   m_UseUCBPForAssetBundles: 0

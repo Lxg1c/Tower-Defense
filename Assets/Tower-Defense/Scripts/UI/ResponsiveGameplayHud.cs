@@ -13,7 +13,7 @@ public sealed class ResponsiveGameplayHud : MonoBehaviour
     private void Awake() => IsDesktopLayout = UseDesktopLayout();
     private void Update() => IsDesktopLayout = UseDesktopLayout();
 
-    private bool UseDesktopLayout()
+    internal bool UseDesktopLayout()
     {
 #if UNITY_EDITOR
         if (editorPreview == EditorPreviewMode.Mobile) return false;

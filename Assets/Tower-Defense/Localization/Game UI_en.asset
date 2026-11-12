@@ -1,0 +1,643 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Game UI_en
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 883dc75dcf70c1e48a22d054941d8c47, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 1466949632
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1580195840
+    m_Localized: DIFFICULTY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390144
+    m_Localized: Normal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390145
+    m_Localized: Hard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390146
+    m_Localized: Nightmare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390147
+    m_Localized: START LEVEL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390148
+    m_Localized: Skills
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390149
+    m_Localized: Equipment
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390150
+    m_Localized: Training ground
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390151
+    m_Localized: Quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390152
+    m_Localized: Back to level selection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390153
+    m_Localized: Audio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390154
+    m_Localized: Master volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390155
+    m_Localized: Music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390156
+    m_Localized: Sound effects
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390157
+    m_Localized: Game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390158
+    m_Localized: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390159
+    m_Localized: Show FPS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390160
+    m_Localized: Tutorial
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390161
+    m_Localized: Tutorial hints will be available in a future update
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390162
+    m_Localized: Replay hints
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390163
+    m_Localized: Skill tree
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390164
+    m_Localized: Vitality
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390165
+    m_Localized: Firepower
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390166
+    m_Localized: Fire rate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390167
+    m_Localized: Upgrade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390168
+    m_Localized: R-07 stats
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390169
+    m_Localized: Stat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390170
+    m_Localized: Current
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390171
+    m_Localized: Preview
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390172
+    m_Localized: Change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390173
+    m_Localized: Health
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390174
+    m_Localized: Armor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390175
+    m_Localized: Speed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390176
+    m_Localized: Avg. damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390177
+    m_Localized: Armor and weapons use demo stats
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390178
+    m_Localized: ARMOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390179
+    m_Localized: WEAPONS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390180
+    m_Localized: MODULE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390181
+    m_Localized: ARMOR PREVIEW
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390182
+    m_Localized: Standard chassis
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390183
+    m_Localized: Previewing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390184
+    m_Localized: Assault armor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390185
+    m_Localized: Preview
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390186
+    m_Localized: Scout chassis
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390187
+    m_Localized: LEFT WEAPON
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390188
+    m_Localized: RIGHT WEAPON
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390189
+    m_Localized: STANDARD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390190
+    m_Localized: HEAVY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390191
+    m_Localized: RAPID FIRE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390192
+    m_Localized: RUN MODULE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390193
+    m_Localized: "OVERDRIVE  \xB7  FASTER FIRE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390194
+    m_Localized: WAVE PREPARATION
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390195
+    m_Localized: RESOURCES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390196
+    m_Localized: NETWORK CORE UNDER ATTACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390197
+    m_Localized: START WAVE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390198
+    m_Localized: FOLLOW ME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390199
+    m_Localized: TELEPORT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390200
+    m_Localized: CONSTRUCTION BLUEPRINTS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390201
+    m_Localized: CHOOSE A BUILDING
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390202
+    m_Localized: PICK A DEFENSE POINT FOR YOUR SQUAD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390203
+    m_Localized: CANCEL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390204
+    m_Localized: Paused
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390205
+    m_Localized: Resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390206
+    m_Localized: Restart
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390207
+    m_Localized: Main menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390208
+    m_Localized: Back to pause
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390209
+    m_Localized: LEAVE CURRENT RUN?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390210
+    m_Localized: CONFIRM EXIT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390211
+    m_Localized: Your run progress will be lost. You will receive no reward.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390212
+    m_Localized: KEEP PLAYING
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390213
+    m_Localized: CONFIRM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390214
+    m_Localized: MISSION COMPLETE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390215
+    m_Localized: VICTORY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390216
+    m_Localized: NEXT LEVEL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390217
+    m_Localized: REPLAY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390218
+    m_Localized: SKILL TREE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390219
+    m_Localized: MAIN MENU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390220
+    m_Localized: MISSION FAILED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390221
+    m_Localized: DEFENSE LOST
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390222
+    m_Localized: Come back with a new strategy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390223
+    m_Localized: TOWER DEFENSE  /  FRONTLINE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390224
+    m_Localized: Build your line. Hold until dawn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390225
+    m_Localized: AVAILABLE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390226
+    m_Localized: UNAVAILABLE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390227
+    m_Localized: Clear the previous difficulty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390228
+    m_Localized: LEVEL {0:00}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390229
+    m_Localized: One enemy approach
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390230
+    m_Localized: Multiple approaches. Flying enemies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390231
+    m_Localized: Armored enemies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390232
+    m_Localized: Level unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390233
+    m_Localized: '{0} WAVE'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390234
+    m_Localized: '{0} WAVES'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390235
+    m_Localized: '{0} WAVES'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390236
+    m_Localized: Rank {0} / {1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390237
+    m_Localized: Rank {0} of {1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390238
+    m_Localized: Locked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390239
+    m_Localized: +15% maximum health per rank
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390240
+    m_Localized: +10% damage per rank
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390241
+    m_Localized: +8% fire rate per rank
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390242
+    m_Localized: Rank 1 unlocks both branches
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390243
+    m_Localized: Requires Vitality I
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390244
+    m_Localized: Maximum rank
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390245
+    m_Localized: Standard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390246
+    m_Localized: Assault
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390247
+    m_Localized: Scout
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390248
+    m_Localized: Standard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390249
+    m_Localized: Heavy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390250
+    m_Localized: Rapid fire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390251
+    m_Localized: CHASSIS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390252
+    m_Localized: "COMBAT MODULE  \xB7  OVERDRIVE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390253
+    m_Localized: "COMBAT MODULE  \xB7  STANDARD"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390254
+    m_Localized: EQUIP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390255
+    m_Localized: EQUIPPED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390256
+    m_Localized: BUY  {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390257
+    m_Localized: RESTART RUN?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390258
+    m_Localized: RETURN TO MENU?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390259
+    m_Localized: RESTART
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390260
+    m_Localized: WAVE IN PROGRESS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390261
+    m_Localized: WAVE {0:00}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390262
+    m_Localized: 'ENEMIES: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390263
+    m_Localized: STAND ON THE CORE PAD TO BUILD IT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390264
+    m_Localized: PREPARE YOUR DEFENSES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390265
+    m_Localized: DEFEND THE NETWORK CORE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390266
+    m_Localized: "\u2744  SLOW  {0}s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390267
+    m_Localized: "\u25C7  SHIELD  {0}s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390268
+    m_Localized: "\u2726  TURRET \xD7{0}  {1}s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390269
+    m_Localized: +{0} CREDITS EARNED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390270
+    m_Localized: '{0} m'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390271
+    m_Localized: CONSTRUCTION
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390272
+    m_Localized: BUILDING UPGRADES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390273
+    m_Localized: BUILD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390274
+    m_Localized: MAX LEVEL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390275
+    m_Localized: UPGRADE THE NETWORK CORE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390276
+    m_Localized: UPGRADE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584448
+    m_Localized: LEVEL {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584449
+    m_Localized: NEXT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584450
+    m_Localized: DMG {0:0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584451
+    m_Localized: +{0:0} / WAVE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584452
+    m_Localized: Cannon turret
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584453
+    m_Localized: Pulse tower
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584454
+    m_Localized: Mine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584455
+    m_Localized: Network core
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584456
+    m_Localized: Melee barracks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584457
+    m_Localized: Ranged barracks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584458
+    m_Localized: Mortar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584459
+    m_Localized: Wall
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584460
+    m_Localized: Damages and slows nearby ground enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584461
+    m_Localized: Hits groups of enemies from long range.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584462
+    m_Localized: Generates resources after each wave.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584463
+    m_Localized: Keep the network core intact throughout the run.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584464
+    m_Localized: Deploys allies to hold a position.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584465
+    m_Localized: Blocks the path and delays enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584466
+    m_Localized: Fires at ground and flying targets.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 904706121728
+    m_Localized: HP {0:0}
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

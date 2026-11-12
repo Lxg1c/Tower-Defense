@@ -14,24 +14,25 @@ public sealed class TowerSelectionModal : MonoBehaviour
     private Action<TowerOption> onPick;
     private int revision;
     private bool isOpen;
-    private string heading = "CHOOSE A BUILDING";
+    private (string Key, string Fallback) heading = ("choose-building", "ВЫБЕРИТЕ ПОСТРОЙКУ");
 
     public sealed class BuildOffer
     {
         public TowerOption Option { get; }
         public int CurrentLevel { get; }
         public int? Cost { get; }
-        public string ActionText { get; }
+        public string ActionText => GameLocalization.Text(actionText.Key, actionText.Fallback);
+        private readonly (string Key, string Fallback) actionText;
         public bool Available { get; }
         private readonly Action activate;
 
-        public BuildOffer(TowerOption option, int currentLevel, int? cost, string actionText,
+        public BuildOffer(TowerOption option, int currentLevel, int? cost, (string Key, string Fallback) actionText,
             bool available, Action activate)
         {
             Option = option;
             CurrentLevel = currentLevel;
             Cost = cost;
-            ActionText = actionText;
+            this.actionText = actionText;
             Available = available;
             this.activate = activate;
         }
@@ -41,7 +42,7 @@ public sealed class TowerSelectionModal : MonoBehaviour
 
     public bool IsOpen => isOpen;
     public int Revision => revision;
-    public string Heading => heading;
+    public string Heading => GameLocalization.Text(heading.Key, heading.Fallback);
     public IReadOnlyList<BuildOffer> ActiveOffers => offers;
     public TowerPlacementZone Owner { get; private set; }
 
@@ -66,9 +67,7 @@ public sealed class TowerSelectionModal : MonoBehaviour
         this.onPick = onPick;
         Owner = owner;
         ClearEntries();
-        heading = options.Count == 1 && options[0] != null &&
-            !string.IsNullOrWhiteSpace(options[0].displayName)
-            ? $"BUILD {options[0].displayName.ToUpperInvariant()}" : "CHOOSE A BUILDING";
+        heading = options.Count == 1 ? ("build-single", "СТРОИТЕЛЬСТВО") : ("choose-building", "ВЫБЕРИТЕ ПОСТРОЙКУ");
         int coins = PlayerWallet.Instance.Coins;
         foreach (TowerOption option in options)
         {
@@ -76,7 +75,7 @@ public sealed class TowerSelectionModal : MonoBehaviour
             TowerOption captured = option;
             int cardRevision = revision;
             int cost = owner != null ? owner.GetOptionCost(option) : option.cost;
-            offers.Add(new BuildOffer(option, 0, cost, "BUILD", coins >= cost,
+            offers.Add(new BuildOffer(option, 0, cost, ("build", "ПОСТРОИТЬ"), coins >= cost,
                 () => { if (isOpen && revision == cardRevision) HandlePick(captured); }));
         }
         isOpen = true;
@@ -90,8 +89,9 @@ public sealed class TowerSelectionModal : MonoBehaviour
         ClearEntries();
         onPick = null;
         Owner = owner;
-        heading = "BUILDING LEVELS";
-        string action = !cost.HasValue ? "MAX LEVEL" : !unlocked ? "UPGRADE TOWN HALL" : "UPGRADE";
+        heading = ("building-levels", "УЛУЧШЕНИЯ ПОСТРОЙКИ");
+        (string, string) action = !cost.HasValue ? ("building-max", "МАКС. УРОВЕНЬ") :
+            !unlocked ? ("upgrade-core", "УЛУЧШИТЕ СЕТЕВОЙ УЗЕЛ") : ("building-upgrade", "УЛУЧШИТЬ");
         bool canBuy = cost.HasValue && unlocked && PlayerWallet.Instance.Coins >= cost.Value;
         int cardRevision = revision;
         offers.Add(new BuildOffer(option, currentLevel, cost, action, canBuy, () =>

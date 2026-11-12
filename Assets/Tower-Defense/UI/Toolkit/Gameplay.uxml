@@ -3,27 +3,28 @@
   <ui:VisualElement name="gameRoot" class="game-root" picking-mode="Ignore">
     <ui:VisualElement name="topBar" class="top-bar" picking-mode="Ignore">
       <ui:Button name="pauseButton" class="icon-button pause-button">
-        <ui:VisualElement class="pause-glyph" picking-mode="Ignore" />
+        <ui:VisualElement class="pause-bar pause-bar-left" picking-mode="Ignore" />
+        <ui:VisualElement class="pause-bar" picking-mode="Ignore" />
       </ui:Button>
-      <ui:VisualElement class="top-status" picking-mode="Ignore">
-        <ui:VisualElement class="wave-block" picking-mode="Ignore">
-          <ui:Label text="DEFENSE PHASE" class="status-caption" />
-          <ui:Label name="waveLabel" text="WAVE 1 / 3" class="wave-label" />
+      <ui:VisualElement class="wave-block" picking-mode="Ignore">
+        <ui:VisualElement class="wave-accent" picking-mode="Ignore" />
+        <ui:Label name="wavePhaseLabel" text="ПОДГОТОВКА К ВОЛНЕ" class="wave-phase-label l10n-build-phase" />
+        <ui:VisualElement class="wave-heading" picking-mode="Ignore">
+          <ui:Label name="waveLabel" text="ВОЛНА 02" class="wave-label" />
+          <ui:Label name="waveTotalLabel" text="/ 05" class="wave-total-label" />
         </ui:VisualElement>
-        <ui:VisualElement class="time-block" picking-mode="Ignore">
-          <ui:Label text="ELAPSED" class="status-caption" />
-          <ui:Label name="timerLabel" text="00:00" class="top-value" />
-        </ui:VisualElement>
-        <ui:VisualElement class="enemy-block" picking-mode="Ignore">
-          <ui:Label text="INCOMING" class="status-caption" />
-          <ui:Label name="enemiesLabel" text="10 ENEMIES" class="top-value" />
-        </ui:VisualElement>
+        <ui:VisualElement name="waveSteps" class="wave-steps" picking-mode="Ignore" />
       </ui:VisualElement>
       <ui:VisualElement class="economy-status" picking-mode="Ignore">
-        <ui:Label text="SUPPLIES" class="status-caption" />
-        <ui:Label name="coinsLabel" text="◆ 1000" class="coins-label" />
-        <ui:Label name="incomeLabel" text="+0 / WAVE" class="income-label" />
+        <ui:VisualElement class="economy-icon" picking-mode="Ignore">
+          <ui:VisualElement class="economy-icon-center" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:Label text="РЕСУРСЫ" class="economy-caption l10n-resources" />
+        <ui:Label name="coinsLabel" text="12" class="coins-label" />
+        <ui:Label name="incomeLabel" text="+2" class="income-label" />
       </ui:VisualElement>
+      <ui:Label name="timerLabel" class="is-hidden" />
+      <ui:Label name="enemiesLabel" class="is-hidden" />
     </ui:VisualElement>
     <ui:VisualElement name="coreAlert" class="core-alert is-hidden" picking-mode="Ignore">
       <ui:VisualElement class="core-edge core-edge-top" picking-mode="Ignore" />
@@ -31,7 +32,7 @@
       <ui:VisualElement class="core-edge core-edge-left" picking-mode="Ignore" />
       <ui:VisualElement class="core-edge core-edge-right" picking-mode="Ignore" />
       <ui:VisualElement class="core-warning" picking-mode="Ignore">
-        <ui:Label text="СЕТЕВОЙ УЗЕЛ АТАКУЮТ" class="core-warning-text" />
+        <ui:Label text="СЕТЕВОЙ УЗЕЛ АТАКУЮТ" class="core-warning-text l10n-core-attacked" />
         <ui:Label name="coreHealthLabel" text="100%" class="core-warning-health" />
       </ui:VisualElement>
     </ui:VisualElement>
@@ -42,95 +43,151 @@
       <ui:Label name="shieldEffect" class="effect-chip is-hidden" />
       <ui:Label name="turretEffect" class="effect-chip is-hidden" />
     </ui:VisualElement>
-    <ui:VisualElement name="spawnPreview" class="spawn-preview" picking-mode="Ignore" />
-    <ui:Button name="startWaveButton" class="start-wave-button is-hidden">
-      <ui:VisualElement class="start-wave-icon" picking-mode="Ignore" />
-      <ui:Label text="В БОЙ" class="start-wave-text" picking-mode="Ignore" />
-    </ui:Button>
+    <ui:VisualElement name="spawnPreview" class="spawn-preview is-hidden" picking-mode="Ignore" />
+    <ui:Button name="startWaveButton" text="НАЧАТЬ ВОЛНУ" class="start-wave-button is-hidden l10n-start-wave" />
     <ui:VisualElement name="touchControls" class="touch-controls" picking-mode="Ignore">
       <ui:VisualElement name="joystick" class="joystick" picking-mode="Position">
         <ui:VisualElement name="joystickArt" class="joystick-art" picking-mode="Ignore" />
+        <ui:VisualElement name="joystickSector" class="joystick-sector" picking-mode="Ignore" />
         <ui:VisualElement name="joystickKnob" class="joystick-knob" picking-mode="Ignore">
           <ui:VisualElement name="joystickKnobArt" class="joystick-knob-art" picking-mode="Ignore" />
         </ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement name="actionStack" class="action-stack" picking-mode="Ignore">
-        <ui:Button name="rallyButton" class="small-action">
-          <ui:VisualElement class="action-icon rally-icon" picking-mode="Ignore" />
-          <ui:Label text="RALLY" class="action-label" picking-mode="Ignore" />
+        <ui:Button name="rallyButton" class="small-action rally-action">
+          <ui:VisualElement class="action-disc" picking-mode="Ignore">
+            <ui:VisualElement class="action-icon" picking-mode="Ignore">
+              <ui:VisualElement class="action-icon-art rally-icon" picking-mode="Ignore" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+          <ui:Label text="ЗА МНОЙ" class="action-label l10n-follow" picking-mode="Ignore" />
         </ui:Button>
-        <ui:Button name="homeButton" class="small-action">
-          <ui:VisualElement class="action-icon home-icon" picking-mode="Ignore" />
-          <ui:Label text="HOME" class="action-label" picking-mode="Ignore" />
+        <ui:Button name="homeButton" class="small-action home-action">
+          <ui:VisualElement class="action-disc" picking-mode="Ignore">
+            <ui:VisualElement class="action-icon" picking-mode="Ignore">
+              <ui:VisualElement class="action-icon-art home-icon" picking-mode="Ignore" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+          <ui:Label text="ТЕЛЕПОРТ" class="action-label l10n-teleport" picking-mode="Ignore" />
         </ui:Button>
-        <ui:VisualElement class="ultimate-wrap" picking-mode="Ignore">
-          <ui:Button name="ultimateButton" class="ultimate-button">
-            <ui:VisualElement class="ultimate-face" picking-mode="Ignore" />
-          </ui:Button>
-          <ui:Label name="ultimateCooldown" class="cooldown-label is-hidden" />
-        </ui:VisualElement>
+        <ui:Button name="ultimateButton" class="ultimate-button">
+          <ui:VisualElement class="ultimate-face" picking-mode="Ignore" />
+          <ui:Label name="ultimateCharge" class="ultimate-charge" picking-mode="Ignore" />
+        </ui:Button>
       </ui:VisualElement>
     </ui:VisualElement>
-    <ui:VisualElement name="desktopActions" class="desktop-actions is-hidden" picking-mode="Ignore">
-      <ui:Button name="desktopRally" class="small-action desktop-small-action"><ui:VisualElement class="action-icon rally-icon" picking-mode="Ignore" /><ui:Label text="RALLY" class="action-label" picking-mode="Ignore" /></ui:Button>
-      <ui:Button name="desktopHome" class="small-action desktop-small-action"><ui:VisualElement class="action-icon home-icon" picking-mode="Ignore" /><ui:Label text="HOME" class="action-label" picking-mode="Ignore" /></ui:Button>
-      <ui:Button name="desktopUltimate" class="desktop-action desktop-ultimate">
+    <ui:VisualElement name="desktopActions" class="action-stack is-hidden" picking-mode="Ignore">
+      <ui:Button name="desktopRally" class="small-action rally-action">
+        <ui:VisualElement class="action-disc" picking-mode="Ignore">
+          <ui:VisualElement class="action-icon" picking-mode="Ignore">
+            <ui:VisualElement class="action-icon-art rally-icon" picking-mode="Ignore" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Label text="ЗА МНОЙ" class="action-label l10n-follow" picking-mode="Ignore" />
+      </ui:Button>
+      <ui:Button name="desktopHome" class="small-action home-action">
+        <ui:VisualElement class="action-disc" picking-mode="Ignore">
+          <ui:VisualElement class="action-icon" picking-mode="Ignore">
+            <ui:VisualElement class="action-icon-art home-icon" picking-mode="Ignore" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Label text="ТЕЛЕПОРТ" class="action-label l10n-teleport" picking-mode="Ignore" />
+      </ui:Button>
+      <ui:Button name="desktopUltimate" class="ultimate-button">
         <ui:VisualElement class="ultimate-face" picking-mode="Ignore" />
+        <ui:Label name="desktopUltimateCharge" class="ultimate-charge" picking-mode="Ignore" />
       </ui:Button>
     </ui:VisualElement>
     <ui:VisualElement name="buildPanel" class="side-panel is-hidden" picking-mode="Ignore">
-      <ui:Label text="CONSTRUCTION / BLUEPRINTS" class="panel-overline" />
-      <ui:Label name="buildHeading" text="CHOOSE A BUILDING" class="panel-heading" />
+      <ui:Label text="ЧЕРТЕЖИ ПОСТРОЕК" class="panel-overline l10n-blueprints" />
+      <ui:Label name="buildHeading" text="ВЫБЕРИТЕ ПОСТРОЙКУ" class="panel-heading l10n-choose-building" />
       <ui:ScrollView name="buildCards" class="build-cards" />
     </ui:VisualElement>
     <ui:VisualElement name="orderLayer" class="order-layer is-hidden" picking-mode="Ignore">
-      <ui:Label text="TAP A WALKABLE POINT FOR YOUR SQUAD" class="order-instruction" />
-      <ui:Button name="orderCancel" text="CANCEL" class="order-cancel" />
+      <ui:Label text="ВЫБЕРИТЕ ТОЧКУ ОБОРОНЫ ДЛЯ ОТРЯДА" class="order-instruction l10n-order-instruction" />
+      <ui:Button name="orderCancel" text="ОТМЕНА" class="order-cancel l10n-cancel" />
     </ui:VisualElement>
     <ui:VisualElement name="screenOverlay" class="screen-overlay is-hidden" picking-mode="Ignore">
-      <ui:VisualElement name="pausePanel" class="screen-panel is-hidden" picking-mode="Ignore">
-        <ui:Label text="SYSTEM / STANDBY" class="screen-overline" />
-        <ui:Label text="PAUSED" class="screen-title" />
-        <ui:Button name="resumeButton" text="RESUME" class="primary-button" />
-        <ui:Button name="pauseSettings" text="AUDIO SETTINGS" class="screen-button" />
-        <ui:Button name="restartButton" text="RESTART" class="screen-button" />
-        <ui:Button name="pauseMenuButton" text="MAIN MENU" class="screen-button" />
+      <ui:VisualElement name="pausePanel" class="pause-menu is-hidden" picking-mode="Position">
+        <ui:Label text="Пауза" class="pause-menu-title l10n-pause" picking-mode="Ignore" />
+        <ui:Button name="resumeButton" text="Продолжить" class="pause-menu-button pause-menu-resume l10n-resume" />
+        <ui:Button name="pauseSettings" text="Настройки" class="pause-menu-button l10n-settings" />
+        <ui:Button name="restartButton" text="Начать заново" class="pause-menu-button l10n-restart" />
+        <ui:Button name="pauseMenuButton" text="В главное меню" class="pause-menu-button pause-menu-last l10n-main-menu" />
       </ui:VisualElement>
-      <ui:VisualElement name="audioPanel" class="screen-panel is-hidden" picking-mode="Ignore">
-        <ui:Label text="SYSTEM / PREFERENCES" class="screen-overline" />
-        <ui:Label text="AUDIO SETTINGS" class="screen-title" />
-        <ui:Label text="MUSIC" class="settings-label" />
-        <ui:Slider name="musicSlider" low-value="0" high-value="1" class="audio-slider" />
-        <ui:Label name="musicValue" class="settings-value" />
-        <ui:Label text="SOUND EFFECTS" class="settings-label" />
-        <ui:Slider name="effectsSlider" low-value="0" high-value="1" class="audio-slider" />
-        <ui:Label name="effectsValue" class="settings-value" />
-        <ui:Button name="fpsToggle" class="screen-button" />
-        <ui:Button name="audioBack" text="BACK" class="screen-button" />
+      <ui:VisualElement name="audioPanel" class="pause-settings is-hidden" picking-mode="Position">
+        <ui:VisualElement class="pause-settings-header" picking-mode="Ignore">
+          <ui:Button name="audioBack" text="←" tooltip="Назад к паузе" class="pause-settings-back l10n-tip-back-pause" />
+          <ui:Label text="Настройки" class="pause-settings-title l10n-settings" />
+        </ui:VisualElement>
+        <ui:VisualElement class="pause-volume-row" picking-mode="Ignore">
+          <ui:VisualElement class="pause-volume-caption" picking-mode="Ignore">
+            <ui:Label text="Общая громкость" class="pause-settings-label l10n-master-volume" />
+            <ui:Label name="masterValue" class="pause-volume-value" />
+          </ui:VisualElement>
+          <ui:VisualElement class="pause-volume-input" picking-mode="Ignore">
+            <ui:VisualElement class="pause-volume-track" picking-mode="Ignore">
+              <ui:VisualElement name="masterFill" class="pause-volume-fill" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Slider name="masterSlider" low-value="0" high-value="1" tooltip="Общая громкость" class="audio-slider l10n-tip-master-volume" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="pause-volume-row" picking-mode="Ignore">
+          <ui:VisualElement class="pause-volume-caption" picking-mode="Ignore">
+            <ui:Label text="Музыка" class="pause-settings-label l10n-music" />
+            <ui:Label name="musicValue" class="pause-volume-value" />
+          </ui:VisualElement>
+          <ui:VisualElement class="pause-volume-input" picking-mode="Ignore">
+            <ui:VisualElement class="pause-volume-track" picking-mode="Ignore">
+              <ui:VisualElement name="musicFill" class="pause-volume-fill" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Slider name="musicSlider" low-value="0" high-value="1" tooltip="Музыка" class="audio-slider l10n-tip-music" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="pause-volume-row" picking-mode="Ignore">
+          <ui:VisualElement class="pause-volume-caption" picking-mode="Ignore">
+            <ui:Label text="Эффекты" class="pause-settings-label l10n-effects" />
+            <ui:Label name="effectsValue" class="pause-volume-value" />
+          </ui:VisualElement>
+          <ui:VisualElement class="pause-volume-input" picking-mode="Ignore">
+            <ui:VisualElement class="pause-volume-track" picking-mode="Ignore">
+              <ui:VisualElement name="effectsFill" class="pause-volume-fill" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Slider name="effectsSlider" low-value="0" high-value="1" tooltip="Эффекты" class="audio-slider l10n-tip-effects" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="pause-fps-row" picking-mode="Ignore">
+          <ui:Label text="Показывать FPS" class="pause-settings-label l10n-fps" />
+          <ui:Button name="fpsToggle" tooltip="Показывать FPS" class="pause-fps-switch l10n-tip-fps">
+            <ui:VisualElement class="pause-fps-track" picking-mode="Ignore">
+              <ui:VisualElement class="pause-fps-knob" picking-mode="Ignore" />
+            </ui:VisualElement>
+          </ui:Button>
+        </ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement name="exitConfirmPanel" class="screen-panel is-hidden" picking-mode="Ignore">
-        <ui:Label text="LEAVE CURRENT RUN?" class="screen-overline" />
-        <ui:Label name="exitConfirmTitle" text="CONFIRM EXIT" class="screen-title" />
-        <ui:Label name="exitConfirmDescription" text="Current wave progress will be lost. No reward is granted." class="screen-subtitle" />
-        <ui:Button name="exitCancelButton" text="KEEP PLAYING" class="screen-button" />
-        <ui:Button name="exitConfirmButton" text="CONFIRM" class="primary-button" />
+        <ui:Label text="ПОКИНУТЬ ТЕКУЩИЙ ЗАБЕГ?" class="screen-overline l10n-leave-run" />
+        <ui:Label name="exitConfirmTitle" text="ПОДТВЕРДИТЕ ВЫХОД" class="screen-title l10n-confirm-exit" />
+        <ui:Label name="exitConfirmDescription" text="Прогресс забега будет потерян. Награда не начисляется." class="screen-subtitle l10n-leave-progress" />
+        <ui:Button name="exitCancelButton" text="ПРОДОЛЖИТЬ ИГРУ" class="screen-button l10n-keep-playing" />
+        <ui:Button name="exitConfirmButton" text="ПОДТВЕРДИТЬ" class="primary-button l10n-confirm" />
       </ui:VisualElement>
       <ui:VisualElement name="victoryPanel" class="screen-panel is-hidden" picking-mode="Ignore">
-        <ui:Label text="MISSION COMPLETE" class="screen-overline" />
-        <ui:Label text="VICTORY" class="screen-title" />
+        <ui:Label text="ЗАДАНИЕ ВЫПОЛНЕНО" class="screen-overline l10n-mission-complete" />
+        <ui:Label text="ПОБЕДА" class="screen-title l10n-victory" />
         <ui:Label name="victoryReward" class="screen-subtitle" />
-        <ui:Button name="nextLevelButton" text="NEXT LEVEL" class="primary-button" />
-        <ui:Button name="replayButton" text="REPLAY" class="screen-button" />
-        <ui:Button name="victorySkills" text="SKILL TREE" class="screen-button" />
-        <ui:Button name="victoryMenu" text="MAIN MENU" class="screen-button" />
+        <ui:Button name="nextLevelButton" text="СЛЕДУЮЩИЙ УРОВЕНЬ" class="primary-button l10n-next-level" />
+        <ui:Button name="replayButton" text="СЫГРАТЬ СНОВА" class="screen-button l10n-replay" />
+        <ui:Button name="victorySkills" text="ДЕРЕВО ТАЛАНТОВ" class="screen-button l10n-talent-tree-button" />
+        <ui:Button name="victoryMenu" text="ГЛАВНОЕ МЕНЮ" class="screen-button l10n-main-menu-button" />
       </ui:VisualElement>
       <ui:VisualElement name="defeatPanel" class="screen-panel is-hidden" picking-mode="Ignore">
-        <ui:Label text="MISSION FAILED" class="screen-overline" />
-        <ui:Label text="DEFENSE LOST" class="screen-title" />
-        <ui:Label text="Return stronger. The front is waiting." class="screen-subtitle" />
+        <ui:Label text="ЗАДАНИЕ ПРОВАЛЕНО" class="screen-overline l10n-mission-failed" />
+        <ui:Label text="ОБОРОНА ПРОРВАНА" class="screen-title l10n-defeat" />
+        <ui:Label text="Вернитесь с новой тактикой." class="screen-subtitle l10n-defeat-copy" />
         <ui:Label name="defeatReward" class="screen-subtitle" />
-        <ui:Button name="defeatReplay" text="REPLAY" class="screen-button" />
-        <ui:Button name="defeatMenu" text="MAIN MENU" class="primary-button" />
+        <ui:Button name="defeatReplay" text="СЫГРАТЬ СНОВА" class="screen-button l10n-replay" />
+        <ui:Button name="defeatMenu" text="ГЛАВНОЕ МЕНЮ" class="primary-button l10n-main-menu-button" />
       </ui:VisualElement>
     </ui:VisualElement>
   </ui:VisualElement>

@@ -318,6 +318,13 @@ Restart retains the selection but creates fresh runtime waves and coins.
 `MainMenu` keeps selection and launch eligibility; `MenuToolkitView` owns the
 interactive controls and visual selection state.
 
+Unity Localization's `Game UI` collection holds the Russian and English UI
+strings in `Assets/Tower-Defense/Localization`. The language controls in
+`MenuToolkitView` set the active locale. Startup selects the saved preference,
+then a supported device language, then English. `GameLocalization` loads the
+active string table, updates Toolkit text and tooltips tagged in UXML, and
+formats dynamic labels such as the wave counter and construction cost.
+
 Main Menu and Play Mode subsystem initialization clear the static selection.
 
 `GameplayLab.unity` is a separate Editor playtest scene copied from the shared

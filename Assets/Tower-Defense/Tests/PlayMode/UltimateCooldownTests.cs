@@ -45,6 +45,7 @@ namespace TowerDefense.Tests
             yield return null;
             Assert.That(ultimate.IsOnCooldown, Is.False);
             Assert.That(ultimate.CanReceiveInput, Is.True);
+            Assert.That(ultimate.EnergyProgress, Is.EqualTo(1f));
         }
 
         [UnityTest]
@@ -83,10 +84,12 @@ namespace TowerDefense.Tests
             Set(ultimate, "maxChargeTime", 0.2f);
             Set(ultimate, "autoChargeLevel", 0.6f);
 
+            Assert.That(ultimate.EnergyProgress, Is.EqualTo(1f));
             ultimate.BeginCharge();
             ultimate.Release();
             Assert.That(ultimate.IsCharging, Is.True,
                 "Releasing a tap must not fire an uncharged orb in automatic mode.");
+            Assert.That(ultimate.EnergyProgress, Is.LessThan(1f));
 
             yield return new WaitForSeconds(0.2f);
             Assert.That(ultimate.IsCharging, Is.False);
@@ -95,6 +98,11 @@ namespace TowerDefense.Tests
                 "The automatic shot should use the configured charge level.");
             Assert.That(ultimate.CanReceiveInput, Is.False,
                 "Automatic firing must retain the normal cooldown.");
+            float energyAfterShot = ultimate.EnergyProgress;
+            Assert.That(energyAfterShot, Is.InRange(0f, 0.05f),
+                "The automatic shot spends the entire energy reserve at its configured power.");
+            yield return new WaitForSeconds(0.3f);
+            Assert.That(ultimate.EnergyProgress, Is.GreaterThan(energyAfterShot));
         }
 
         private PlayerUltimate CreatePlayer()

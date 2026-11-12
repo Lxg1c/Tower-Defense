@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 /// <summary>Screen-space UI Toolkit view over the existing gameplay controllers.</summary>
+[ExecuteAlways]
 [RequireComponent(typeof(UIDocument))]
 public sealed class GameplayToolkitView : MonoBehaviour
 {
@@ -22,11 +23,15 @@ public sealed class GameplayToolkitView : MonoBehaviour
     [SerializeField] private SlowAmmoInventory slowAmmo;
     [SerializeField] private PlayerHealth playerHealth;
     [SerializeField] private CompanionTurretController companionTurrets;
+#if UNITY_EDITOR
+    private VisualElement editorPreviewRoot;
+#endif
 
     private VisualElement root;
     private VisualElement touchControls;
     private VisualElement desktopActions;
     private VisualElement joystick;
+    private VisualElement joystickSector;
     private VisualElement joystickKnob;
     private VisualElement buildPanel;
     private VisualElement orderLayer;
@@ -44,6 +49,9 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private Label defeatReward;
     private ScrollView buildCards;
     private Label waveLabel;
+    private Label wavePhaseLabel;
+    private Label waveTotalLabel;
+    private VisualElement waveSteps;
     private Label timerLabel;
     private Label enemiesLabel;
     private Label coinsLabel;
@@ -53,7 +61,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private Label slowEffect;
     private Label shieldEffect;
     private Label turretEffect;
-    private Label cooldownLabel;
+    private Label mobileUltimateCharge;
+    private Label desktopUltimateCharge;
     private Label fpsLabel;
     private Button fpsToggle;
     private float fpsElapsed;
@@ -67,6 +76,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private Button desktopRally;
     private Button ultimateButton;
     private Button desktopUltimate;
+    private Slider masterSlider;
     private Slider musicSlider;
     private Slider effectsSlider;
     private bool audioOpen;
@@ -92,6 +102,14 @@ public sealed class GameplayToolkitView : MonoBehaviour
 
     private void OnEnable()
     {
+#if UNITY_EDITOR
+        if (!Application.IsPlaying(gameObject))
+        {
+            RefreshEditorHudPreview();
+            return;
+        }
+        ClearEditorHudPreview();
+#endif
         if (bound) return;
         var document = GetComponent<UIDocument>();
         if (document.panelSettings == null || document.visualTreeAsset == null ||
@@ -113,6 +131,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         touchControls = root.Q("touchControls");
         desktopActions = root.Q("desktopActions");
         joystick = root.Q("joystick");
+        joystickSector = root.Q("joystickSector");
         joystickKnob = root.Q("joystickKnob");
         buildPanel = root.Q("buildPanel");
         orderLayer = root.Q("orderLayer");
@@ -129,6 +148,9 @@ public sealed class GameplayToolkitView : MonoBehaviour
         defeatReward = root.Q<Label>("defeatReward");
         buildCards = root.Q<ScrollView>("buildCards");
         waveLabel = root.Q<Label>("waveLabel");
+        wavePhaseLabel = root.Q<Label>("wavePhaseLabel");
+        waveTotalLabel = root.Q<Label>("waveTotalLabel");
+        waveSteps = root.Q("waveSteps");
         timerLabel = root.Q<Label>("timerLabel");
         enemiesLabel = root.Q<Label>("enemiesLabel");
         coinsLabel = root.Q<Label>("coinsLabel");
@@ -137,7 +159,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
         slowEffect = root.Q<Label>("slowEffect");
         shieldEffect = root.Q<Label>("shieldEffect");
         turretEffect = root.Q<Label>("turretEffect");
-        cooldownLabel = root.Q<Label>("ultimateCooldown");
+        mobileUltimateCharge = root.Q<Label>("ultimateCharge");
+        desktopUltimateCharge = root.Q<Label>("desktopUltimateCharge");
         fpsLabel = root.Q<Label>("fpsLabel");
         fpsToggle = root.Q<Button>("fpsToggle");
         startWaveButton = root.Q<Button>("startWaveButton");
@@ -147,22 +170,26 @@ public sealed class GameplayToolkitView : MonoBehaviour
         desktopRally = root.Q<Button>("desktopRally");
         ultimateButton = root.Q<Button>("ultimateButton");
         desktopUltimate = root.Q<Button>("desktopUltimate");
+        masterSlider = root.Q<Slider>("masterSlider");
         musicSlider = root.Q<Slider>("musicSlider");
         effectsSlider = root.Q<Slider>("effectsSlider");
-        if (touchControls == null || desktopActions == null || joystick == null ||
+        if (touchControls == null || desktopActions == null || joystick == null || joystickSector == null ||
             joystickKnob == null || buildPanel == null ||
             orderLayer == null || screenOverlay == null || spawnPreview == null || pausePanel == null ||
             audioPanel == null || exitConfirmPanel == null || victoryPanel == null || defeatPanel == null ||
             exitConfirmTitle == null || exitConfirmDescription == null || exitConfirmButton == null ||
             defeatReward == null ||
-            buildCards == null || waveLabel == null || timerLabel == null ||
+            buildCards == null || waveLabel == null || wavePhaseLabel == null ||
+            waveTotalLabel == null || waveSteps == null || timerLabel == null ||
             enemiesLabel == null || coinsLabel == null || incomeLabel == null ||
             guideLabel == null || coreAlert == null || coreHealthLabel == null ||
             slowEffect == null || shieldEffect == null ||
-            turretEffect == null || cooldownLabel == null || fpsLabel == null || fpsToggle == null ||
+            turretEffect == null || mobileUltimateCharge == null || desktopUltimateCharge == null ||
+            fpsLabel == null || fpsToggle == null ||
             startWaveButton == null || homeButton == null || desktopHome == null ||
             rallyButton == null || desktopRally == null ||
-            ultimateButton == null || desktopUltimate == null || musicSlider == null || effectsSlider == null)
+            ultimateButton == null || desktopUltimate == null || masterSlider == null ||
+            musicSlider == null || effectsSlider == null)
         {
             Debug.LogError("[GameplayToolkitView] Gameplay.uxml is missing a required named element.", this);
             enabled = false;
@@ -171,8 +198,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
 
         ultimateButton.Q<RadialProgressElement>("ultimateChargeRing")?.RemoveFromHierarchy();
         desktopUltimate.Q<RadialProgressElement>("desktopUltimateChargeRing")?.RemoveFromHierarchy();
-        mobileUltimateRing = CreateUltimateRing("ultimateChargeRing", 5f);
-        desktopUltimateRing = CreateUltimateRing("desktopUltimateChargeRing", 4f);
+        mobileUltimateRing = CreateUltimateRing("ultimateChargeRing");
+        desktopUltimateRing = CreateUltimateRing("desktopUltimateChargeRing");
         ultimateButton.Insert(1, mobileUltimateRing);
         desktopUltimate.Insert(1, desktopUltimateRing);
 
@@ -196,6 +223,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         desktopHome.clicked += teleport.TeleportToHome;
         rallyButton.clicked += AllyCommand.ToggleFollowPlayer;
         desktopRally.clicked += AllyCommand.ToggleFollowPlayer;
+        masterSlider.RegisterValueChangedCallback(evt => GameAudioSettings.SetMaster(evt.newValue));
         musicSlider.RegisterValueChangedCallback(evt => GameAudioSettings.SetMusic(evt.newValue));
         effectsSlider.RegisterValueChangedCallback(evt => GameAudioSettings.SetEffects(evt.newValue));
         fpsToggle.clicked += GamePerformanceSettings.ToggleFps;
@@ -209,6 +237,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         buildModal.onClosed.AddListener(ClearBuildCards);
         GameAudioSettings.Changed += RefreshAudio;
         GamePerformanceSettings.Changed += RefreshFps;
+        GameLocalization.Changed += RefreshLanguage;
         healthBars = FindFirstObjectByType<HealthBarManager>();
         if (healthBars != null) healthBars.SetPresentationRoot(root);
         bound = true;
@@ -219,16 +248,26 @@ public sealed class GameplayToolkitView : MonoBehaviour
         if (!bound) return;
         RefreshAudio();
         RefreshFps();
+        RefreshLanguage();
+    }
+
+    private void RefreshLanguage()
+    {
+        GameLocalization.ApplyTo(root);
         RefreshBuildCards();
     }
 
     private void OnDisable()
     {
+#if UNITY_EDITOR
+        ClearEditorHudPreview();
+#endif
         if (!bound) return;
         buildModal.onOpened.RemoveListener(RefreshBuildCards);
         buildModal.onClosed.RemoveListener(ClearBuildCards);
         GameAudioSettings.Changed -= RefreshAudio;
         GamePerformanceSettings.Changed -= RefreshFps;
+        GameLocalization.Changed -= RefreshLanguage;
         if (healthBars != null) healthBars.SetPresentationRoot(null);
         movement.ClearToolkitMoveInput();
         if (ultimatePointerHeld) ultimate.Release();
@@ -237,6 +276,13 @@ public sealed class GameplayToolkitView : MonoBehaviour
 
     private void Update()
     {
+#if UNITY_EDITOR
+        if (!Application.IsPlaying(gameObject))
+        {
+            RefreshEditorHudPreview();
+            return;
+        }
+#endif
         if (!bound) return;
         if (GamePerformanceSettings.ShowFps)
         {
@@ -279,8 +325,13 @@ public sealed class GameplayToolkitView : MonoBehaviour
         touchControls.EnableInClassList("is-hidden", desktop || order || paused || won || lost);
         root.Q("actionStack").EnableInClassList("is-hidden", modal);
         desktopActions.EnableInClassList("is-hidden", !desktop || order || paused || won || lost || modal);
-        rallyButton.EnableInClassList("is-hidden", levelSetup.IsFirstLocation);
-        desktopRally.EnableInClassList("is-hidden", levelSetup.IsFirstLocation);
+        bool hideRally = levelSetup.IsFirstLocation;
+#if UNITY_EDITOR
+        // Temporary placement preview on Level 1.
+        hideRally = false;
+#endif
+        rallyButton.EnableInClassList("is-hidden", hideRally);
+        desktopRally.EnableInClassList("is-hidden", hideRally);
         orderLayer.EnableInClassList("is-hidden", !order);
         buildPanel.EnableInClassList("is-hidden", !buildModal.IsOpen || order || paused || won || lost);
         screenOverlay.EnableInClassList("is-hidden", !paused && !won && !lost);
@@ -292,51 +343,127 @@ public sealed class GameplayToolkitView : MonoBehaviour
         if (confirmingExit)
         {
             bool restarting = pauseMenu.PendingExitAction == PauseMenu.ExitAction.Restart;
-            SetText(exitConfirmTitle, restarting ? "RESTART RUN?" : "RETURN TO MENU?");
-            SetText(exitConfirmDescription, "Current wave progress will be lost. No reward is granted.");
-            SetText(exitConfirmButton, restarting ? "RESTART" : "MAIN MENU");
+            SetText(exitConfirmTitle, restarting
+                ? GameLocalization.Text("restart-question", "НАЧАТЬ ЗАБЕГ ЗАНОВО?")
+                : GameLocalization.Text("menu-question", "ВЕРНУТЬСЯ В МЕНЮ?"));
+            SetText(exitConfirmButton, restarting
+                ? GameLocalization.Text("restart-button", "НАЧАТЬ ЗАНОВО")
+                : GameLocalization.Text("main-menu-button", "ГЛАВНОЕ МЕНЮ"));
         }
 
         int wave = spawner.IsBuildPhase ? spawner.NextWaveIndex + 1 :
             Mathf.Max(1, spawner.NextWaveIndex);
-        SetText(waveLabel, $"WAVE {wave} / {spawner.WaveCount}");
+        int totalWaves = spawner.WaveCount;
+        wave = Mathf.Clamp(wave, 0, totalWaves);
+        SetText(wavePhaseLabel, spawner.IsBuildPhase
+            ? GameLocalization.Text("build-phase", "ПОДГОТОВКА К ВОЛНЕ")
+            : GameLocalization.Text("combat-phase", "ВОЛНА ИДЁТ"));
+        SetText(waveLabel, GameLocalization.Format("wave-number", "ВОЛНА {0:00}", wave));
+        SetText(waveTotalLabel, $"/ {totalWaves:00}");
+        UpdateWaveSteps(waveSteps, totalWaves, wave);
         int seconds = Mathf.FloorToInt(timer.ElapsedSeconds);
         SetText(timerLabel, $"{seconds / 60:00}:{seconds % 60:00}");
-        SetText(coinsLabel, $"◆  {wallet.Coins}");
-        SetText(incomeLabel, $"+{MineIncome.TotalCoinsPerWave} / WAVE");
+        SetText(coinsLabel, wallet.Coins.ToString());
+        SetText(incomeLabel, $"+{MineIncome.TotalCoinsPerWave}");
         var preview = spawner.IsBuildPhase ? spawner.NextWave :
             spawner.GetWave(Mathf.Clamp(wave - 1, 0, spawner.WaveCount - 1));
-        SetText(enemiesLabel, $"{CountEnemies(preview)} ENEMIES");
+        SetText(enemiesLabel, GameLocalization.Format("enemy-count", "ВРАГИ: {0}", CountEnemies(preview)));
         SetText(guideLabel, spawner.IsBuildPhase ? Base.Instance == null
-            ? "STAND ON THE HOME MARKER TO BUILD YOUR BASE"
-            : "PREPARE YOUR DEFENSES" : "DEFEND THE BASE");
+            ? GameLocalization.Text("place-core", "ВСТАНЬТЕ НА ТОЧКУ УЗЛА, ЧТОБЫ ПОСТРОИТЬ ЕГО")
+            : GameLocalization.Text("prepare-defense", "ПОДГОТОВЬТЕ ОБОРОНУ")
+            : GameLocalization.Text("defend-core", "ЗАЩИЩАЙТЕ СЕТЕВОЙ УЗЕЛ"));
         guideLabel.EnableInClassList("is-hidden", !spawner.IsBuildPhase || order || paused || modal || won || lost);
         startWaveButton.EnableInClassList("is-hidden", !spawner.IsBuildPhase || Base.Instance == null ||
             modal || order || paused || won || lost);
 
         SetEffect(slowEffect, slowAmmo.RemainingSeconds > 0f,
-            $"❄  SLOW  {Mathf.CeilToInt(slowAmmo.RemainingSeconds)}s");
+            GameLocalization.Format("slow-effect", "❄  ЗАМЕДЛЕНИЕ  {0} с", Mathf.CeilToInt(slowAmmo.RemainingSeconds)));
         SetEffect(shieldEffect, playerHealth.CurrentShield > 0f && playerHealth.RemainingShieldSeconds > 0f,
-            $"◇  SHIELD  {Mathf.CeilToInt(playerHealth.RemainingShieldSeconds)}s");
+            GameLocalization.Format("shield-effect", "◇  ЩИТ  {0} с", Mathf.CeilToInt(playerHealth.RemainingShieldSeconds)));
         SetEffect(turretEffect, companionTurrets.ActiveCount > 0 && companionTurrets.RemainingSeconds > 0f,
-            $"✦  TURRET ×{companionTurrets.ActiveCount}  {Mathf.CeilToInt(companionTurrets.RemainingSeconds)}s");
+            GameLocalization.Format("turret-effect", "✦  ТУРЕЛЬ ×{0}  {1} с",
+                companionTurrets.ActiveCount, Mathf.CeilToInt(companionTurrets.RemainingSeconds)));
         bool homeAvailable = teleport.gameObject.activeInHierarchy && spawner.IsBuildPhase && !playerHealth.IsGhost;
         homeButton.SetEnabled(homeAvailable);
         desktopHome.SetEnabled(homeAvailable);
         ultimateButton.SetEnabled(ultimate.CanReceiveInput || ultimate.IsCharging);
         desktopUltimate.SetEnabled(ultimate.CanReceiveInput || ultimate.IsCharging);
-        float charge = ultimate.IsCharging ? ultimate.ChargeProgress :
-            ultimate.IsOnCooldown ? ultimate.CooldownProgress : ultimate.CanReceiveInput ? 1f : 0f;
-        mobileUltimateRing.Progress = charge;
-        desktopUltimateRing.Progress = charge;
-        cooldownLabel.EnableInClassList("is-hidden", !ultimate.IsOnCooldown);
-        if (ultimate.IsOnCooldown) SetText(cooldownLabel, Mathf.CeilToInt(ultimate.CooldownRemaining).ToString());
+        float energy = ultimate.EnergyProgress;
+        mobileUltimateRing.Progress = energy;
+        desktopUltimateRing.Progress = energy;
+        string chargeText = $"{Mathf.FloorToInt(energy * 100f)}%";
+        SetText(mobileUltimateCharge, chargeText);
+        SetText(desktopUltimateCharge, chargeText);
         root.Q<Button>("nextLevelButton").EnableInClassList("is-hidden", !victory.CanPlayNextLevel);
-        if (won) SetText(root.Q<Label>("victoryReward"), $"+{levelSetup.VictoryMoneyReward} MONEY EARNED");
-        if (lost) SetText(defeatReward, $"+{levelSetup.DefeatMoneyReward} MONEY EARNED");
+        if (won) SetText(root.Q<Label>("victoryReward"), GameLocalization.Format("reward", "+{0} КРЕДИТОВ", levelSetup.VictoryMoneyReward));
+        if (lost) SetText(defeatReward, GameLocalization.Format("reward", "+{0} КРЕДИТОВ", levelSetup.DefeatMoneyReward));
         if (buildModal.IsOpen && buildModal.Revision != lastModalRevision) RefreshBuildCards();
         UpdateSpawnPreview(spawner.IsBuildPhase && !order && !paused && !modal && !won && !lost);
     }
+
+    private static void UpdateWaveSteps(VisualElement steps, int totalWaves, int currentWave)
+    {
+        if (steps.childCount != totalWaves)
+        {
+            steps.Clear();
+            for (int i = 0; i < totalWaves; i++)
+            {
+                var step = new VisualElement { pickingMode = PickingMode.Ignore };
+                step.AddToClassList("wave-step");
+                steps.Add(step);
+            }
+        }
+
+        for (int i = 0; i < steps.childCount; i++)
+            steps[i].EnableInClassList("is-current-or-past", i < currentWave);
+    }
+
+#if UNITY_EDITOR
+    private void RefreshEditorHudPreview()
+    {
+        var documentRoot = GetComponent<UIDocument>().rootVisualElement;
+        var gameRoot = documentRoot?.Q("gameRoot");
+        if (gameRoot != editorPreviewRoot)
+        {
+            ClearEditorHudPreview();
+            if (gameRoot == null) return;
+
+            editorPreviewRoot = gameRoot;
+            documentRoot.AddToClassList("game-document-root");
+            gameRoot.AddToClassList("editor-hud-preview");
+            if (gameRoot.Q("waveSteps") is { } steps) UpdateWaveSteps(steps, 5, 2);
+            AddEditorUltimatePreview(gameRoot.Q<Button>("ultimateButton"), "ultimateChargeRing", "ultimateCharge");
+            AddEditorUltimatePreview(gameRoot.Q<Button>("desktopUltimate"), "desktopUltimateChargeRing",
+                "desktopUltimateCharge");
+        }
+
+        gameRoot?.EnableInClassList("editor-hud-preview-desktop",
+            responsiveHud == null || responsiveHud.UseDesktopLayout());
+    }
+
+    private static void AddEditorUltimatePreview(Button button, string ringName, string labelName)
+    {
+        if (button == null) return;
+        var charge = button.Q<Label>(labelName);
+        if (charge == null) return;
+        var ring = CreateUltimateRing(ringName);
+        ring.Progress = 1f;
+        button.Insert(button.IndexOf(charge), ring);
+        charge.text = "100%";
+    }
+
+    private void ClearEditorHudPreview()
+    {
+        if (editorPreviewRoot == null) return;
+        editorPreviewRoot.RemoveFromClassList("editor-hud-preview");
+        editorPreviewRoot.RemoveFromClassList("editor-hud-preview-desktop");
+        editorPreviewRoot.Q<RadialProgressElement>("ultimateChargeRing")?.RemoveFromHierarchy();
+        editorPreviewRoot.Q<RadialProgressElement>("desktopUltimateChargeRing")?.RemoveFromHierarchy();
+        if (editorPreviewRoot.Q<Label>("ultimateCharge") is { } mobileCharge) mobileCharge.text = string.Empty;
+        if (editorPreviewRoot.Q<Label>("desktopUltimateCharge") is { } desktopCharge) desktopCharge.text = string.Empty;
+        editorPreviewRoot = null;
+    }
+#endif
 
     private void UpdateSpawnPreview(bool visible)
     {
@@ -430,21 +557,21 @@ public sealed class GameplayToolkitView : MonoBehaviour
                 marker.Edge.style.left = Mathf.Clamp(edgePosition.x - 33f, 96f, width - 96f);
                 marker.Edge.style.top = Mathf.Clamp(height - edgePosition.y - 33f, 108f, height - 88f);
                 float meters = Vector3.Distance(camera.transform.position, marker.Point.position);
-                marker.Distance.text = $"{Mathf.RoundToInt(meters)}м";
+                marker.Distance.text = GameLocalization.Format("distance", "{0} м", Mathf.RoundToInt(meters));
                 marker.Arrow.style.rotate = new Rotate(new Angle(
                     Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f));
             }
         }
     }
 
-    private static RadialProgressElement CreateUltimateRing(string name, float width)
+    private static RadialProgressElement CreateUltimateRing(string name)
     {
         var ring = new RadialProgressElement
         {
             name = name,
-            TrackColor = new Color(0.31f, 0.20f, 0.46f, 0.8f),
-            FillColor = new Color(0.57f, 0.91f, 0.93f, 1f),
-            StrokeWidth = width
+            TrackColor = new Color(0.49f, 0.38f, 0.56f, 1f),
+            FillColor = new Color(0.95f, 0.80f, 1f, 1f),
+            StrokeWidth = 9f
         };
         ring.AddToClassList("ultimate-charge-ring");
         return ring;
@@ -502,7 +629,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
             }
             var summary = new VisualElement();
             summary.AddToClassList("build-card-summary");
-            var title = new Label(source.Option.displayName.ToUpperInvariant());
+            var title = new Label(GetBuildingName(source.Option).ToUpperInvariant());
             title.AddToClassList("build-card-title");
             summary.Add(title);
             var description = new Label(GetBuildingDescription(source.Option));
@@ -514,8 +641,11 @@ public sealed class GameplayToolkitView : MonoBehaviour
             {
                 int currentIndex = Mathf.Clamp(source.CurrentLevel - 1, 0, levels.Count - 1);
                 int nextIndex = Mathf.Min(currentIndex + 1, levels.Count - 1);
-                var progression = new Label($"LEVEL {source.CurrentLevel}  ·  {FormatLevel(levels[currentIndex])}" +
-                    (nextIndex > currentIndex ? $"\nNEXT  ·  {FormatLevel(levels[nextIndex])}" : "\nMAX LEVEL"));
+                string current = GameLocalization.Format("building-level", "УРОВЕНЬ {0}", source.CurrentLevel);
+                string next = nextIndex > currentIndex
+                    ? GameLocalization.Text("building-next", "СЛЕДУЮЩИЙ") + "  ·  " + FormatLevel(levels[nextIndex])
+                    : GameLocalization.Text("building-max", "МАКС. УРОВЕНЬ");
+                var progression = new Label($"{current}  ·  {FormatLevel(levels[currentIndex])}\n{next}");
                 progression.AddToClassList("build-upgrade-summary");
                 card.Add(progression);
             }
@@ -536,25 +666,38 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private static string FormatLevel(BuildingLevelList.Level level)
     {
         var values = new List<string>();
-        if (level.Health.HasValue) values.Add($"HP {level.Health.Value:0}");
-        if (level.Damage.HasValue) values.Add($"DMG {level.Damage.Value:0}");
-        if (level.Income.HasValue) values.Add($"+{level.Income.Value} / WAVE");
+        if (level.Health.HasValue) values.Add(GameLocalization.Format("building-hp", "ЗД {0:0}", level.Health.Value));
+        if (level.Damage.HasValue) values.Add(GameLocalization.Format("damage", "УРОН {0:0}", level.Damage.Value));
+        if (level.Income.HasValue) values.Add(GameLocalization.Format("income", "+{0:0} / ВОЛНА", level.Income.Value));
         return string.Join("  ·  ", values);
     }
+
+    private static string GetBuildingName(TowerOption option) => option.displayName switch
+    {
+        "Cannon Turret" => GameLocalization.Text("cannon", "Пушечная турель"),
+        "Pulse" => GameLocalization.Text("pulse", "Импульсная башня"),
+        "Mine" => GameLocalization.Text("mine", "Шахта"),
+        "Ratusha" => GameLocalization.Text("core", "Сетевой узел"),
+        "Barracks / Melee" => GameLocalization.Text("melee", "Казарма ближнего боя"),
+        "Barracks / Ranged" => GameLocalization.Text("ranged", "Казарма дальнего боя"),
+        "Mortar" => GameLocalization.Text("mortar", "Мортира"),
+        "Wall" => GameLocalization.Text("wall", "Стена"),
+        _ => option.displayName
+    };
 
     private static string GetBuildingDescription(TowerOption option)
     {
         if (!string.IsNullOrWhiteSpace(option.description)) return option.description;
         string name = option.displayName?.ToLowerInvariant() ?? "";
-        if (name.Contains("pulse")) return "AREA CONTROL · Damages and slows nearby ground enemies.";
-        if (name.Contains("mortar")) return "LONG RANGE · Hits groups from a distance.";
+        if (name.Contains("pulse")) return GameLocalization.Text("pulse-desc", "Наносит урон и замедляет наземных врагов рядом.");
+        if (name.Contains("mortar")) return GameLocalization.Text("mortar-desc", "Поражает группы врагов с большого расстояния.");
         return option.slotType switch
         {
-            BuildSlotType.Mine => "INCOME AFTER EACH WAVE · Funds future construction.",
-            BuildSlotType.TownHall => "DEFEND THIS CORE · Your base must survive every wave.",
-            BuildSlotType.Barracks => "ALLIED UNITS · Holds a position against enemies.",
-            BuildSlotType.Wall => "BLOCKS THE PATH · Gives your defenses more time.",
-            _ => "DIRECT FIRE · Attacks enemies within range."
+            BuildSlotType.Mine => GameLocalization.Text("mine-desc", "Даёт ресурсы после каждой волны."),
+            BuildSlotType.TownHall => GameLocalization.Text("core-desc", "Защищайте этот узел до конца забега."),
+            BuildSlotType.Barracks => GameLocalization.Text("barracks-desc", "Выпускает союзников для удержания позиции."),
+            BuildSlotType.Wall => GameLocalization.Text("wall-desc", "Перекрывает путь и задерживает врагов."),
+            _ => GameLocalization.Text("cannon-desc", "Стреляет по наземным и летающим целям.")
         };
     }
 
@@ -580,16 +723,22 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private void CloseAudio() { pauseMenu.ShowPauseOptions(); audioOpen = false; }
     private void RefreshAudio()
     {
-        if (musicSlider == null) return;
-        musicSlider.SetValueWithoutNotify(GameAudioSettings.Music);
-        effectsSlider.SetValueWithoutNotify(GameAudioSettings.Effects);
-        SetText(root.Q<Label>("musicValue"), $"{Mathf.RoundToInt(GameAudioSettings.Music * 100)}%");
-        SetText(root.Q<Label>("effectsValue"), $"{Mathf.RoundToInt(GameAudioSettings.Effects * 100)}%");
+        if (masterSlider == null) return;
+        RefreshVolumeControl(masterSlider, "masterValue", "masterFill", GameAudioSettings.Master);
+        RefreshVolumeControl(musicSlider, "musicValue", "musicFill", GameAudioSettings.Music);
+        RefreshVolumeControl(effectsSlider, "effectsValue", "effectsFill", GameAudioSettings.Effects);
+    }
+
+    private void RefreshVolumeControl(Slider slider, string valueName, string fillName, float volume)
+    {
+        slider.SetValueWithoutNotify(volume);
+        SetText(root.Q<Label>(valueName), $"{Mathf.RoundToInt(volume * 100f)}%");
+        root.Q(fillName).style.width = Length.Percent(volume * 100f);
     }
 
     private void RefreshFps()
     {
-        fpsToggle.text = GamePerformanceSettings.ShowFps ? "FPS DISPLAY: ON" : "FPS DISPLAY: OFF";
+        fpsToggle.EnableInClassList("is-on", GamePerformanceSettings.ShowFps);
         fpsLabel.EnableInClassList("is-hidden", !GamePerformanceSettings.ShowFps);
         fpsElapsed = 0f;
         fpsFrames = 0;
@@ -617,12 +766,16 @@ public sealed class GameplayToolkitView : MonoBehaviour
         Vector2 direction = Vector2.ClampMagnitude((local - center) / (joystick.layout.width * 0.38f), 1f);
         direction.y = -direction.y;
         movement.SetToolkitMoveInput(direction);
-        joystickKnob.transform.position = new Vector3(direction.x * 48f, -direction.y * 48f, 0f);
+        joystickKnob.transform.position = new Vector3(direction.x * 46f, -direction.y * 46f, 0f);
+        joystickSector.EnableInClassList("is-active", direction.sqrMagnitude > 0.0025f);
+        joystickSector.transform.rotation = Quaternion.Euler(0f, 0f,
+            45f - Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg);
     }
     private void ResetMove()
     {
         movement.SetToolkitMoveInput(Vector2.zero);
         joystickKnob.transform.position = Vector3.zero;
+        joystickSector.RemoveFromClassList("is-active");
     }
 
     private void BindUltimate(Button button)

@@ -44,7 +44,7 @@ public class BackgroundMusic : MonoBehaviour
 
     private void ApplyVolume()
     {
-        if (audioSource != null) audioSource.volume = volume * GameAudioSettings.Music;
+        if (audioSource != null) audioSource.volume = volume * GameAudioSettings.Master * GameAudioSettings.Music;
     }
 
     private void OnValidate()

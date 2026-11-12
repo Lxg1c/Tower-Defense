@@ -1,0 +1,648 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Game UI Shared Data
+  m_EditorClassIdentifier: 
+  m_TableCollectionName: Game UI
+  m_TableCollectionNameGuidString: 883dc75dcf70c1e48a22d054941d8c47
+  m_Entries:
+  - m_Id: 1466949632
+    m_Key: settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1580195840
+    m_Key: difficulty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390144
+    m_Key: normal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390145
+    m_Key: hard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390146
+    m_Key: nightmare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390147
+    m_Key: start-level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390148
+    m_Key: skills
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390149
+    m_Key: equipment
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390150
+    m_Key: lab
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390151
+    m_Key: quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390152
+    m_Key: back-level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390153
+    m_Key: audio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390154
+    m_Key: master-volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390155
+    m_Key: music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390156
+    m_Key: effects
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390157
+    m_Key: game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390158
+    m_Key: language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390159
+    m_Key: fps
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390160
+    m_Key: tutorial
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390161
+    m_Key: tutorial-later
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390162
+    m_Key: repeat-hints
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390163
+    m_Key: talent-tree
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390164
+    m_Key: vitality
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390165
+    m_Key: firepower
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390166
+    m_Key: rapid-fire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390167
+    m_Key: upgrade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390168
+    m_Key: stats
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390169
+    m_Key: stat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390170
+    m_Key: equipped-stat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390171
+    m_Key: preview
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390172
+    m_Key: difference
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390173
+    m_Key: health
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390174
+    m_Key: armor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390175
+    m_Key: speed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390176
+    m_Key: avg-damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390177
+    m_Key: demo-stats
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390178
+    m_Key: armor-tab
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390179
+    m_Key: weapons-tab
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390180
+    m_Key: module-tab
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390181
+    m_Key: armor-preview
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390182
+    m_Key: base-armor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390183
+    m_Key: shown
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390184
+    m_Key: assault-armor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390185
+    m_Key: try-on
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390186
+    m_Key: scout-armor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390187
+    m_Key: left-weapon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390188
+    m_Key: right-weapon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390189
+    m_Key: standard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390190
+    m_Key: heavy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390191
+    m_Key: rapid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390192
+    m_Key: pre-run-module
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390193
+    m_Key: overdrive-name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390194
+    m_Key: build-phase
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390195
+    m_Key: resources
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390196
+    m_Key: core-attacked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390197
+    m_Key: start-wave
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390198
+    m_Key: follow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390199
+    m_Key: teleport
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390200
+    m_Key: blueprints
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390201
+    m_Key: choose-building
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390202
+    m_Key: order-instruction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390203
+    m_Key: cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390204
+    m_Key: pause
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390205
+    m_Key: resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390206
+    m_Key: restart
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390207
+    m_Key: main-menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390208
+    m_Key: back-pause
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390209
+    m_Key: leave-run
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390210
+    m_Key: confirm-exit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390211
+    m_Key: leave-progress
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390212
+    m_Key: keep-playing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390213
+    m_Key: confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390214
+    m_Key: mission-complete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390215
+    m_Key: victory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390216
+    m_Key: next-level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390217
+    m_Key: replay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390218
+    m_Key: talent-tree-button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390219
+    m_Key: main-menu-button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390220
+    m_Key: mission-failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390221
+    m_Key: defeat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390222
+    m_Key: defeat-copy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390223
+    m_Key: legacy-brand
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390224
+    m_Key: legacy-tagline
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390225
+    m_Key: available
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390226
+    m_Key: unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390227
+    m_Key: difficulty-locked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390228
+    m_Key: level-number
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390229
+    m_Key: level-one
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390230
+    m_Key: level-two
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390231
+    m_Key: level-three
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390232
+    m_Key: level-missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390233
+    m_Key: wave-count-one
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390234
+    m_Key: wave-count-few
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390235
+    m_Key: wave-count-many
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390236
+    m_Key: rank
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390237
+    m_Key: rank-detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390238
+    m_Key: locked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390239
+    m_Key: vitality-bonus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390240
+    m_Key: firepower-bonus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390241
+    m_Key: rapid-bonus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390242
+    m_Key: unlock-branches
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390243
+    m_Key: requires-vitality
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390244
+    m_Key: max-rank
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390245
+    m_Key: base-name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390246
+    m_Key: assault-name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390247
+    m_Key: scout-name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390248
+    m_Key: standard-name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390249
+    m_Key: heavy-name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390250
+    m_Key: rapid-name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390251
+    m_Key: armor-slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390252
+    m_Key: overdrive-slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390253
+    m_Key: standard-slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390254
+    m_Key: equip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390255
+    m_Key: equipped
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390256
+    m_Key: buy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390257
+    m_Key: restart-question
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390258
+    m_Key: menu-question
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390259
+    m_Key: restart-button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390260
+    m_Key: combat-phase
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390261
+    m_Key: wave-number
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390262
+    m_Key: enemy-count
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390263
+    m_Key: place-core
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390264
+    m_Key: prepare-defense
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390265
+    m_Key: defend-core
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390266
+    m_Key: slow-effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390267
+    m_Key: shield-effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390268
+    m_Key: turret-effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390269
+    m_Key: reward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390270
+    m_Key: distance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390271
+    m_Key: build-single
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390272
+    m_Key: building-levels
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390273
+    m_Key: build
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390274
+    m_Key: building-max
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390275
+    m_Key: upgrade-core
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1584390276
+    m_Key: building-upgrade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584448
+    m_Key: building-level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584449
+    m_Key: building-next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584450
+    m_Key: damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584451
+    m_Key: income
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584452
+    m_Key: cannon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584453
+    m_Key: pulse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584454
+    m_Key: mine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584455
+    m_Key: core
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584456
+    m_Key: melee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584457
+    m_Key: ranged
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584458
+    m_Key: mortar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584459
+    m_Key: wall
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584460
+    m_Key: pulse-desc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584461
+    m_Key: mortar-desc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584462
+    m_Key: mine-desc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584463
+    m_Key: core-desc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584464
+    m_Key: barracks-desc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584465
+    m_Key: wall-desc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1588584466
+    m_Key: cannon-desc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 904706121728
+    m_Key: building-hp
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 5704266607704146018
+  references:
+    version: 2
+    RefIds:
+    - rid: 5704266607704146018
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1794502728731

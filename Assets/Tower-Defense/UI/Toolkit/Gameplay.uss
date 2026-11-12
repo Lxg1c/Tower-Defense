@@ -5,11 +5,11 @@
 }
 .is-hidden { display: none; }
 .top-bar {
-  position: absolute; top: 16px; left: 22px; right: 22px;
-  height: 60px; flex-direction: row; align-items: center;
+  position: absolute; top: 20px; left: 27px; right: 26px;
+  height: 99px; flex-direction: row; align-items: flex-start;
 }
-.icon-button, .economy-status, .guide-label, .effect-chip,
-.start-wave-button, .side-panel, .screen-panel, .order-instruction {
+.guide-label, .effect-chip,
+.side-panel, .screen-panel, .order-instruction {
   background-color: rgba(4, 18, 31, 0.90);
   border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-right-width: 1px;
   border-top-color: #3a7889; border-bottom-color: #3a7889;
@@ -17,65 +17,63 @@
   border-top-left-radius: 6px; border-top-right-radius: 6px;
   border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;
 }
+.icon-button, .wave-block, .economy-status {
+  background-color: rgba(7, 29, 43, 0.94);
+  border-width: 2px; border-color: #3b8f9c; border-radius: 14px;
+}
 .icon-button {
-  width: 60px; height: 60px; background-color: rgba(11, 39, 57, 0.96);
-  border-top-width: 3px; border-bottom-width: 5px; border-left-width: 3px; border-right-width: 3px;
-  border-top-color: #9cf7f3; border-bottom-color: #175b70;
-  border-left-color: #5db7ca; border-right-color: #5db7ca;
-  border-top-left-radius: 19px; border-top-right-radius: 19px;
-  border-bottom-left-radius: 19px; border-bottom-right-radius: 19px;
-  align-items: center; justify-content: center;
+  width: 72px; height: 72px; margin: 2px 0 0 0; padding: 0;
+  border-color: #68d9d4; flex-direction: row; align-items: center; justify-content: center;
 }
-.icon-button:hover { background-color: #14566a; }
-.pause-glyph {
-  width: 25px; height: 34px;
-  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/UI/Pause.png");
-  -unity-background-scale-mode: scale-to-fit;
+.icon-button:hover { background-color: #124253; }
+.icon-button:active { background-color: #1b596e; }
+.pause-bar { width: 8px; height: 32px; background-color: #effcf9; border-radius: 1px; }
+.pause-bar-left { margin-right: 10px; }
+.wave-block {
+  width: 348px; height: 99px; margin-left: 12px;
+  background-color: rgba(7, 29, 43, 0.92);
 }
-.top-status {
-  position: absolute; left: 50%; width: 350px; height: 50px;
-  margin-left: -175px; flex-direction: row;
+.wave-accent {
+  position: absolute; top: 6px; bottom: 6px; left: -2px;
+  width: 5px; background-color: #43e1da; border-radius: 2px;
 }
-.wave-block, .time-block, .enemy-block {
-  height: 50px; margin-right: 5px; padding: 4px 9px; justify-content: center;
-  background-color: rgba(3, 23, 38, 0.90);
-  border-top-width: 2px; border-bottom-width: 4px; border-left-width: 2px; border-right-width: 2px;
-  border-top-color: #71e8e4; border-bottom-color: #1b5267;
-  border-left-color: #337b91; border-right-color: #337b91;
-  border-top-left-radius: 14px; border-top-right-radius: 14px;
-  border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;
+.wave-phase-label, .wave-label, .wave-total-label, .economy-caption, .coins-label, .income-label {
+  margin: 0; padding: 0; -unity-font-style: bold;
 }
-.wave-block { width: 132px; }
-.time-block, .enemy-block {
-  width: 80px;
+.wave-phase-label {
+  position: absolute; top: 6px; left: 18px; height: 19px;
+  color: #7bede9; font-size: 14px; -unity-text-align: middle-left;
 }
-.enemy-block { width: 128px; }
-.status-caption {
-  color: #a6cbd6; font-size: 9px; letter-spacing: 1px;
-  -unity-font-style: bold; margin-bottom: 2px;
+.wave-heading {
+  position: absolute; top: 35px; left: 18px; height: 38px;
+  flex-direction: row; align-items: center;
 }
-.wave-label {
-  color: #79f5ed; font-size: 18px;
-  -unity-font-definition: url("project://database/Assets/TextMesh Pro/Examples & Extras/Fonts/Oswald-Bold.ttf");
+.wave-label { color: #f8fefc; font-size: 30px; }
+.wave-total-label { color: #a4bac3; font-size: 19px; margin-left: 5px; }
+.wave-steps {
+  position: absolute; left: 20px; bottom: 9px; width: 240px; height: 5px;
+  flex-direction: row;
 }
-.top-value {
-  color: #ffffff; font-size: 15px;
-  -unity-font-definition: url("project://database/Assets/TextMesh Pro/Examples & Extras/Fonts/Oswald-Bold.ttf");
+.wave-step {
+  flex-grow: 1; flex-basis: 0; height: 5px; margin-right: 9px;
+  background-color: rgba(75, 104, 115, 0.7); border-radius: 1px;
 }
-.economy-status {
-  width: 122px; height: 50px; margin-left: auto; padding-left: 10px; justify-content: center;
-  background-color: rgba(24, 23, 49, 0.94);
-  border-top-width: 2px; border-bottom-width: 4px; border-left-width: 2px; border-right-width: 2px;
-  border-top-color: #d5aff8; border-bottom-color: #665287;
-  border-left-color: #9a76bb; border-right-color: #9a76bb;
-  border-top-left-radius: 14px; border-top-right-radius: 14px;
-  border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;
+.wave-step.is-current-or-past { background-color: #62eee5; }
+.economy-status { width: 236px; height: 80px; margin-top: 2px; margin-left: auto; }
+.economy-icon {
+  position: absolute; left: 22px; top: 22px; width: 30px; height: 30px;
+  background-color: #ffd66a; border-radius: 3px; align-items: center; justify-content: center;
 }
+.economy-icon-center { width: 15px; height: 15px; background-color: #103341; border-radius: 1px; }
+.economy-caption { position: absolute; top: 7px; left: 65px; color: #8bd9e1; font-size: 14px; }
 .coins-label {
-  color: #ffffff; font-size: 17px;
-  -unity-font-definition: url("project://database/Assets/TextMesh Pro/Examples & Extras/Fonts/Oswald-Bold.ttf");
+  position: absolute; top: 24px; left: 62px; height: 42px;
+  color: #ffffff; font-size: 34px; -unity-text-align: middle-left;
 }
-.income-label { color: #8df1ec; font-size: 12px; }
+.income-label {
+  position: absolute; right: 27px; top: 26px; height: 38px;
+  color: #48e6d8; font-size: 18px; -unity-text-align: middle-right;
+}
 .core-alert { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
 .core-edge { position: absolute; background-color: rgba(255, 66, 88, 0.45); }
 .core-edge-top { top: 0; left: 0; right: 0; height: 7px; }
@@ -95,8 +93,10 @@
   display: none;
 }
 .fps-label {
-  position: absolute; top: 104px; right: 24px; padding: 5px 9px;
-  color: #c8f5f5; background-color: rgba(5, 28, 43, 0.90); font-size: 12px;
+  position: absolute; top: 110px; right: 26px; margin: 0; padding: 6px 11px;
+  color: #8bd9e1; background-color: rgba(7, 29, 43, 0.94);
+  border-width: 1.5px; border-color: #3b8f9c; border-radius: 9px;
+  font-size: 13px; -unity-font-style: bold;
 }
 .effect-row { position: absolute; top: 105px; left: 24px; flex-direction: row; }
 .effect-chip {
@@ -144,48 +144,44 @@
   -unity-font-style: bold; -unity-text-align: middle-center;
 }
 .start-wave-button {
-  position: absolute; bottom: 25px; left: 50%; width: 182px; height: 60px; margin-left: -91px;
-  background-color: #ffca58; flex-direction: row; align-items: center; justify-content: center;
-  border-top-width: 3px; border-bottom-width: 7px; border-left-width: 3px; border-right-width: 3px;
-  border-top-color: #fff2b0; border-bottom-color: #a86424;
-  border-left-color: #d99a35; border-right-color: #d99a35;
-  border-top-left-radius: 23px; border-top-right-radius: 23px;
-  border-bottom-left-radius: 23px; border-bottom-right-radius: 23px;
-}
-.start-wave-button:hover { background-color: #ffe38c; }
-.primary-button:hover { background-color: #92f9f4; }
-.start-wave-button:active { background-color: #e6a93c; border-bottom-width: 3px; }
-.start-wave-icon {
-  width: 38px; height: 38px; margin-right: 11px;
-  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Icons/SwordIcon.png");
+  position: absolute; bottom: 21px; left: 50%; width: 372px; height: 93px;
+  margin: 0; margin-left: -186px; padding: 0; border-width: 0;
+  background-color: rgba(0, 0, 0, 0);
+  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/hud-start-wave-penpot.png");
   -unity-background-scale-mode: scale-to-fit;
+  color: #162632; font-size: 28px; -unity-font-style: bold; -unity-text-align: middle-center;
 }
-.start-wave-text {
-  color: #262015; font-size: 20px; -unity-font-style: bold;
-  -unity-font-definition: url("project://database/Assets/TextMesh Pro/Examples & Extras/Fonts/Oswald-Bold.ttf");
-}
-.touch-controls { position: absolute; left: 0; right: 0; bottom: 0; height: 240px; }
+.start-wave-button:hover { -unity-background-image-tint-color: #fff3cd; }
+.start-wave-button:active { -unity-background-image-tint-color: #e6bd72; }
+.primary-button:hover { background-color: #92f9f4; }
+.touch-controls { position: absolute; left: 0; right: 0; bottom: 0; height: 350px; }
 .joystick {
-  position: absolute; left: 32px; bottom: 28px; width: 178px; height: 178px;
+  position: absolute; left: 24px; bottom: 36px; width: 178px; height: 178px;
   background-color: rgba(4, 29, 43, 0);
   padding: 0;
 }
 .joystick-art {
-  position: absolute; left: -20px; top: -20px; right: -20px; bottom: -20px;
-  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/joystick-base-painted.png");
+  position: absolute; left: 0; top: 0; width: 178px; height: 178px;
+  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/joystick-base-penpot.png");
   -unity-background-scale-mode: scale-to-fit;
-  opacity: 0.72;
 }
+.joystick-sector {
+  position: absolute; left: 0; top: 0; width: 178px; height: 178px;
+  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/joystick-sector-penpot.png");
+  -unity-background-scale-mode: scale-to-fit;
+  opacity: 0;
+}
+.joystick-sector.is-active { opacity: 1; }
 .joystick-knob {
-  position: absolute; left: 55px; top: 55px; width: 68px; height: 68px;
+  position: absolute; left: 50px; top: 50px; width: 78px; height: 78px;
 }
 .joystick-knob-art {
-  position: absolute; left: -28px; top: -28px; right: -28px; bottom: -28px;
-  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/joystick-thumb-painted.png");
+  position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/joystick-thumb-penpot.png");
   -unity-background-scale-mode: scale-to-fit;
 }
-.action-stack { position: absolute; right: 28px; bottom: 24px; flex-direction: row; align-items: flex-end; }
-.small-action, .ultimate-button, .desktop-action, .screen-button, .primary-button, .order-cancel, .build-action {
+.action-stack { position: absolute; right: 32px; bottom: 10px; width: 310px; height: 330px; }
+.screen-button, .primary-button, .order-cancel, .build-action {
   color: #eaffff; background-color: rgba(5, 39, 56, 0.95);
   border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-right-width: 1px;
   border-top-color: #67d8da; border-bottom-color: #327f8e;
@@ -194,63 +190,52 @@
   border-bottom-left-radius: 7px; border-bottom-right-radius: 7px;
   -unity-font-style: bold; -unity-text-align: middle-center;
 }
-.small-action {
-  width: 94px; height: 94px; margin-right: 10px;
-  background-color: rgba(9, 48, 66, 0.96);
-  border-top-width: 4px; border-bottom-width: 6px; border-left-width: 3px; border-right-width: 3px;
-  border-top-color: #b9fffa; border-bottom-color: #145e75;
-  border-left-color: #64d6df; border-right-color: #64d6df;
-  border-top-left-radius: 27px; border-top-right-radius: 27px;
-  border-bottom-left-radius: 27px; border-bottom-right-radius: 27px;
+.screen-button:hover, .build-action:hover { background-color: #1b596e; }
+.small-action, .ultimate-button {
+  position: absolute;
+  margin: 0; padding: 0; border-width: 0;
+  background-color: rgba(0, 0, 0, 0);
 }
-.small-action:hover, .desktop-action:hover, .screen-button:hover, .build-action:hover { background-color: #1b596e; }
-.small-action:active { background-color: #42aeb9; border-bottom-width: 3px; }
-.action-icon { width: 47px; height: 47px; align-self: center; margin-top: 7px; -unity-background-scale-mode: scale-to-fit; }
-.rally-icon { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/UI/FlagIcon.png"); }
-.home-icon { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/UI/homeIcon.png"); }
-.action-label { width: 100%; height: 24px; -unity-text-align: middle-center; color: #efffff; font-size: 12px; letter-spacing: 1px; -unity-font-style: bold; }
-.ultimate-wrap { width: 150px; }
-.ultimate-button {
-  width: 148px; height: 148px; padding: 0;
-  background-color: rgba(39, 27, 73, 0);
-  border-top-width: 0; border-bottom-width: 0; border-left-width: 0; border-right-width: 0;
-  border-top-left-radius: 74px; border-top-right-radius: 74px;
-  border-bottom-left-radius: 74px; border-bottom-right-radius: 74px;
+.small-action { width: 106px; height: 129px; }
+.home-action { right: 190px; bottom: 0; }
+.rally-action { right: 35px; bottom: 197px; }
+.action-disc {
+  position: absolute; top: 0; left: 0; width: 106px; height: 106px;
+  border-radius: 53px; border-width: 2px; border-color: #7ee5e7;
+  background-color: rgba(10, 35, 50, 0.9);
+  align-items: center; justify-content: center;
 }
-.ultimate-button:hover .ultimate-face, .desktop-ultimate:hover .ultimate-face { opacity: 0.94; }
-.ultimate-button:active .ultimate-face, .desktop-ultimate:active .ultimate-face { opacity: 0.78; }
+.action-icon {
+  width: 84px; height: 84px; border-radius: 42px; border-width: 1.5px;
+  border-color: #b8fff3; background-color: rgba(23, 62, 76, 0.96);
+  align-items: center; justify-content: center;
+}
+.action-icon-art { width: 48px; height: 48px; -unity-background-scale-mode: scale-to-fit; }
+.rally-icon { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/hud-flag-penpot.png"); }
+.home-icon { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/hud-home-penpot.png"); }
+.small-action:hover .action-icon, .small-action:active .action-icon { background-color: #286578; }
+.small-action:disabled .action-disc { opacity: 0.55; }
+.action-label {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 22px; margin: 0; padding: 0;
+  -unity-text-align: middle-center; color: #efffff; font-size: 15px; -unity-font-style: bold;
+}
+.ultimate-button { right: 0; bottom: 14px; width: 178px; height: 178px; border-radius: 89px; }
 .ultimate-face {
-  position: absolute; left: -15px; top: -15px; right: -15px; bottom: -15px;
-  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/ultimate-face-painted.png");
+  position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/hud-ultimate-penpot.png");
   -unity-background-scale-mode: scale-to-fit;
 }
-.ultimate-charge-ring { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
-.cooldown-label {
-  position: absolute; top: 7px; right: 7px; padding: 4px 8px;
-  color: #ffffff; background-color: #563773;
-  border-top-left-radius: 8px; border-top-right-radius: 8px;
-  border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;
+.ultimate-button:hover .ultimate-face { opacity: 0.94; }
+.ultimate-button:active .ultimate-face { opacity: 0.78; }
+.ultimate-charge-ring { position: absolute; left: 13px; top: 13px; right: 13px; bottom: 13px; }
+.ultimate-charge {
+  position: absolute; left: 29%; right: 29%; top: 66%; height: 17%; margin: 0; padding: 0;
+  color: #ffffff; font-size: 20px; -unity-font-style: bold; -unity-text-align: middle-center;
 }
-.desktop-actions { position: absolute; right: 24px; bottom: 24px; flex-direction: row; align-items: flex-end; }
-.desktop-action {
-  width: 116px; height: 54px; margin-left: 8px; font-size: 14px;
-  border-top-width: 3px; border-bottom-width: 5px;
-  border-top-left-radius: 16px; border-top-right-radius: 16px;
-  border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;
-}
-.desktop-action:active { border-bottom-width: 2px; background-color: #2d94a0; }
-.desktop-small-action { width: 88px; height: 88px; margin-right: 0; margin-left: 10px; }
-.desktop-small-action .action-icon { width: 43px; height: 43px; }
-.desktop-small-action .action-label { font-size: 11px; }
-.desktop-ultimate {
-  position: relative; width: 116px; height: 116px; padding: 0;
-  background-color: rgba(39, 27, 73, 0);
-  border-top-width: 0; border-bottom-width: 0; border-left-width: 0; border-right-width: 0;
-  border-top-left-radius: 58px; border-top-right-radius: 58px;
-  border-bottom-left-radius: 58px; border-bottom-right-radius: 58px;
-}
-.desktop-ultimate:hover, .desktop-ultimate:active { background-color: rgba(114, 68, 153, 0); border-bottom-width: 0; }
-.desktop-ultimate .ultimate-face { left: -12px; top: -12px; right: -12px; bottom: -12px; }
+.editor-hud-preview #guideLabel,
+.editor-hud-preview #effectRow, .editor-hud-preview #spawnPreview { display: none; }
+.editor-hud-preview #startWaveButton, .editor-hud-preview-desktop #desktopActions { display: flex; }
+.editor-hud-preview-desktop #touchControls { display: none; }
 .side-panel {
   position: absolute; right: 24px; top: 108px; width: 390px; height: 500px; max-height: 72%;
   padding: 18px; overflow: hidden;
@@ -308,6 +293,28 @@
   align-items: center; justify-content: center;
   background-color: rgba(1, 8, 18, 0.62);
 }
+.pause-menu {
+  width: 537px; height: 456px; max-width: 92%; max-height: 94%;
+  padding: 26px 38px 33px;
+  background-color: #102535; border-width: 1.5px; border-color: #5b9ca8; border-radius: 27px;
+}
+.pause-menu-title {
+  height: 70px; margin: 0 0 20px 0; padding: 0;
+  color: #edf9fb; font-size: 39px; -unity-font-style: bold; -unity-text-align: middle-center;
+}
+.pause-menu-button {
+  flex-grow: 1; flex-basis: 0; min-height: 0; margin: 0 0 15px 0; padding: 0 8px;
+  background-color: #162f40; border-width: 1.5px; border-color: #315566; border-radius: 15px;
+  color: #edf9fb; font-size: 21px; -unity-font-style: bold; -unity-text-align: middle-center;
+}
+.pause-menu-last { margin-bottom: 0; }
+.pause-menu-button:hover { background-color: #204457; }
+.pause-menu-button:active { background-color: #275669; }
+.pause-menu-resume {
+  background-color: #ffda73; border-width: 0; color: #192530;
+}
+.pause-menu-resume:hover { background-color: #ffe69a; }
+.pause-menu-resume:active { background-color: #edbd53; }
 .screen-panel {
   width: 470px; max-height: 90%; padding: 30px; align-items: center;
   background-color: rgba(3, 17, 29, 0.98);
@@ -332,11 +339,69 @@
   border-top-left-radius: 25px; border-top-right-radius: 25px;
   border-bottom-left-radius: 25px; border-bottom-right-radius: 25px;
 }
-.settings-label { color: #81e8e8; font-size: 14px; margin-top: 10px; letter-spacing: 2px; }
-.settings-value { color: #ffffff; font-size: 14px; margin-bottom: 7px; }
-.audio-slider { width: 100%; height: 38px; }
-.audio-slider .unity-base-slider__tracker { height: 8px; background-color: #285462; }
-.audio-slider .unity-base-slider__dragger { width: 20px; height: 20px; background-color: #6be9e9; }
+.pause-settings {
+  width: 720px; height: 522px; max-width: 94%; max-height: 96%; padding: 19px 29px 24px;
+  background-color: #102535; border-width: 1.5px; border-color: #5b9ca8; border-radius: 27px;
+}
+.pause-settings-header {
+  height: 80px; flex-direction: row; align-items: center;
+  border-bottom-width: 1.5px; border-bottom-color: #315566;
+}
+.pause-settings-back {
+  width: 55px; height: 55px; margin: 0; padding: 0; border-width: 1.5px;
+  border-color: #315566; border-radius: 15px; background-color: #162f40;
+  color: #82ece4; font-size: 30px; -unity-font-style: bold; -unity-text-align: middle-center;
+}
+.pause-settings-back:hover { background-color: #204457; }
+.pause-settings-title {
+  margin: 0 0 0 21px; padding: 0; color: #edf9fb; font-size: 36px; -unity-font-style: bold;
+}
+.pause-volume-row {
+  flex-grow: 1; flex-basis: 0; min-height: 0; padding: 0 6px; justify-content: center;
+}
+.pause-volume-caption { flex-direction: row; align-items: center; justify-content: space-between; }
+.pause-settings-label, .pause-volume-value {
+  margin: 0; padding: 0; flex-shrink: 0; white-space: nowrap; -unity-font-style: bold;
+}
+.pause-settings-label { color: #edf9fb; font-size: 21px; }
+.pause-volume-value { color: #82ece4; font-size: 19px; }
+.pause-volume-input { height: 38px; margin: 3px -10px 0; }
+.pause-volume-track {
+  position: absolute; left: 10px; right: 10px; top: 16px; height: 7px;
+  background-color: #264657; border-radius: 3.5px;
+}
+.pause-volume-fill { height: 100%; background-color: #60dad4; border-radius: 3.5px; }
+.audio-slider { width: 100%; height: 38px; margin: 0; }
+.audio-slider .unity-base-slider__tracker { background-color: rgba(0, 0, 0, 0); border-width: 0; }
+.audio-slider .unity-base-slider__dragger {
+  top: 9px; width: 20px; height: 20px; background-color: #e2fff8; border-width: 0; border-radius: 10px;
+}
+.pause-fps-row {
+  height: 100px; padding: 0 6px; flex-direction: row; align-items: center; justify-content: space-between;
+  border-top-width: 1.5px; border-top-color: #315566;
+}
+.pause-fps-switch {
+  width: 81px; height: 35px; margin: 0; padding: 0;
+}
+.pause-settings .pause-fps-switch,
+.pause-settings .pause-fps-switch:hover,
+.pause-settings .pause-fps-switch:active,
+.pause-settings .pause-fps-switch:focus {
+  background-color: rgba(0, 0, 0, 0); background-image: none; border-width: 0;
+  transition-duration: 0s;
+}
+.pause-fps-track {
+  position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+  background-color: #2b4858; border-width: 1px;
+  border-color: rgba(0, 0, 0, 0); border-radius: 17.5px;
+}
+.pause-fps-switch:focus .pause-fps-track { border-color: #68b6bc; }
+.pause-fps-knob {
+  position: absolute; left: 5px; top: 4px; width: 25px; height: 25px;
+  background-color: #b1cdd5; border-radius: 12.5px;
+}
+.pause-fps-switch.is-on .pause-fps-track { background-color: #236c73; }
+.pause-fps-switch.is-on .pause-fps-knob { left: 49px; background-color: #e2fff8; }
 
 .health-bar-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 0; -unity-overflow-clip-box: content-box; }
 .entity-health-bar { position: absolute; width: 46px; height: 8px; border-radius: 4px; background-color: #0b1724; border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-right-width: 1px; border-top-color: #b6e4e8; border-bottom-color: #b6e4e8; border-left-color: #b6e4e8; border-right-color: #b6e4e8; overflow: hidden; }

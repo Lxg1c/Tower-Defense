@@ -74,46 +74,140 @@
 .compact-header .brand-row, .compact-header .subtitle { display: none; }
 .compact-header .game-title { height: 45px; font-size: 37px; }
 .compact-header .title-rule { margin-bottom: 4px; }
-.level-layout { width: 700px; align-items: center; }
-.level-detail {
-  width: 700px; height: 405px; padding: 21px;
-  background-color: rgba(3, 15, 28, 0.96);
-  border-top-width: 3px; border-top-color: #bc8ef7;
-  border-bottom-width: 1px; border-bottom-color: #3a8494;
-  border-left-width: 1px; border-left-color: #3a8494;
-  border-right-width: 1px; border-right-color: #3a8494;
-  border-top-left-radius: 12px; border-top-right-radius: 12px;
-  border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;
+.campaign-open {
+  background-color: #091824; background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/menu-background-penpot.png");
+  -unity-background-scale-mode: scale-and-crop;
 }
-.detail-top { flex-direction: row; height: 142px; margin-bottom: 8px; }
-.detail-copy { flex-grow: 1; padding-top: 3px; }
-.level-illustration {
-  width: 142px; height: 142px; flex-shrink: 0;
-  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/base.png");
-  -unity-background-scale-mode: scale-to-fit;
+.campaign-open .menu-header, .campaign-open .menu-shade { display: none; }
+.campaign-open .menu-shell { width: 100%; padding: 0; }
+.campaign-page { width: 100%; height: 100%; }
+.campaign-header-rule {
+  position: absolute; left: 0; right: 0; top: 15.7%; height: 1px; background-color: #295263;
 }
-.detail-title {
-  color: #ffffff; font-size: 28px; margin-top: 4px; margin-bottom: 8px;
-  -unity-font-definition: url("project://database/Assets/TextMesh Pro/Examples & Extras/Fonts/Oswald-Bold.ttf");
+.campaign-top-actions {
+  position: absolute; top: 3.2%; right: 2.6%; flex-direction: row; align-items: flex-start;
 }
-.body-copy { color: #c1d8e3; font-size: 15px; white-space: normal; }
-.difficulty-row { flex-direction: row; margin-top: 7px; margin-bottom: 9px; }
-.difficulty-button { flex-grow: 1; height: 40px; margin-right: 7px; font-size: 12px; }
-.is-selected { background-color: #40dcdf; color: #062935; border-top-color: #b9fffa; }
-.difficulty-button:disabled, .skill-button:disabled, .primary-button:disabled { opacity: 0.48; }
-.level-preview {
-  min-height: 67px; padding-top: 7px; margin-bottom: 9px;
-  color: #a5dce5; font-size: 14px; white-space: normal;
-  border-top-width: 1px; border-top-color: #3a6270;
+.campaign-credits {
+  min-width: 140px; height: 51px; margin: 5px 17px 0 0; padding: 0 14px;
+  flex-direction: row; align-items: center;
+  background-color: #091a29; border-width: 1.5px; border-color: #4f91a5; border-radius: 25.5px;
 }
-.level-detail .primary-button { width: 100%; height: 51px; margin-bottom: 0; }
-.level-list { width: 190px; height: 52px; margin-top: 9px; }
-.level-list .unity-scroll-view__content-container { flex-direction: row; }
-.level-button {
-  width: 48px; height: 46px; margin-right: 8px; font-size: 15px;
-  border-top-left-radius: 5px; border-top-right-radius: 5px;
-  border-bottom-left-radius: 5px; border-bottom-right-radius: 5px;
+.campaign-credit-icon {
+  width: 29px; height: 29px; margin-right: 10px; border-radius: 4px;
+  background-color: #ffd66a; align-items: center; justify-content: center;
 }
+.campaign-credit-center { width: 15px; height: 15px; background-color: #103341; border-radius: 2px; }
+.campaign-credit-value { margin: 0; padding: 0; color: #f7faff; font-size: 21px; -unity-font-style: bold; }
+.campaign-levels {
+  position: absolute; left: 3.8%; right: 3.8%; top: 19%; bottom: 20%;
+  flex-direction: row; justify-content: space-between; align-items: center;
+}
+.campaign-featured, .campaign-side {
+  flex-shrink: 0; padding: 12px; background-color: #102b3d; border-width: 2px; border-radius: 27px;
+}
+.campaign-featured { width: 53%; height: 100%; border-color: #65e2e0; }
+.campaign-side {
+  width: 21.6%; height: 79%; margin: 0; border-color: #438097;
+  background-color: #102535; align-items: stretch; justify-content: flex-start;
+}
+.campaign-side:hover { background-color: #193a4c; border-color: #65e2e0; }
+.campaign-side:focus { border-color: #a9f9ed; }
+.campaign-side.is-empty { visibility: hidden; }
+.campaign-featured-art, .campaign-side-art {
+  flex-grow: 1; min-height: 0; border-radius: 15px; background-color: #0b2331;
+  -unity-background-scale-mode: scale-and-crop; overflow: hidden;
+}
+.campaign-art-1 { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/Campaign/level-01-comic.png"); }
+.campaign-art-2 { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/Campaign/level-02-comic.png"); }
+.campaign-art-3 { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Previews/Campaign/level-03-comic.png"); }
+.campaign-index, .campaign-availability {
+  position: absolute; top: 12px; height: 29px; margin: 0; padding: 0 12px;
+  color: #bffcf1; background-color: #0d3443; border-width: 1px; border-color: #56b7c1; border-radius: 14.5px;
+  font-size: 15px; -unity-font-style: bold; -unity-text-align: middle-center;
+}
+.campaign-index { left: 12px; }
+.campaign-availability { right: 12px; font-size: 13px; }
+.campaign-details { height: 85px; flex-direction: row; align-items: center; padding: 3px 10px 0; }
+.campaign-level-copy { flex-grow: 1; flex-basis: 0; min-width: 0; }
+.campaign-level-title, .campaign-side-title {
+  margin: 0; padding: 0; color: #f4fcff; -unity-font-style: bold;
+  white-space: nowrap; text-overflow: ellipsis; overflow: hidden;
+}
+.campaign-level-title { font-size: 32px; }
+.campaign-level-description, .campaign-side-copy {
+  margin: 5px 0 0; padding: 0; color: #a8cdd2;
+  white-space: nowrap; text-overflow: ellipsis; overflow: hidden;
+}
+.campaign-level-description { font-size: 16px; }
+.campaign-side-title { margin-top: 9px; font-size: 24px; }
+.campaign-side-copy { margin-bottom: 5px; font-size: 14px; }
+.campaign-waves {
+  min-width: 102px; height: 43px; margin: 0 0 0 10px; padding: 0 10px; flex-shrink: 0;
+  color: #d0f5f2; background-color: #0a2b3b; border-width: 1px; border-color: #63c5cc; border-radius: 19px;
+  font-size: 17px; -unity-font-style: bold; -unity-text-align: middle-center;
+}
+.campaign-difficulties { height: 43px; flex-direction: row; align-items: center; padding: 0 10px; }
+.campaign-difficulty-label {
+  margin: 0 12px 0 0; padding: 0; color: #a8d1d7;
+  font-size: 14px; -unity-font-style: bold;
+}
+.campaign-difficulty {
+  flex-grow: 1; flex-basis: 0; min-width: 0; height: 39px; margin: 0 0 0 7px; padding: 0 4px;
+  color: #d0eaec; background-color: #0e2a39; border-width: 1px; border-color: #447f8c; border-radius: 19.5px;
+  font-size: 17px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;
+}
+.campaign-difficulty:hover, .campaign-difficulty.is-selected {
+  color: #f5ffff; background-color: #1b5360; border-color: #8df5e6;
+}
+.campaign-difficulty:disabled, .campaign-start:disabled { opacity: 0.48; }
+.campaign-start {
+  position: absolute; left: 50%; bottom: 4.1%; width: 372px; height: 77px;
+  margin: 0 0 0 -186px; padding: 0; border-width: 0; background-color: rgba(0, 0, 0, 0);
+  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/menu-start-penpot.png"); -unity-background-scale-mode: scale-to-fit;
+  color: #162632; font-size: 26px; -unity-font-style: bold; -unity-text-align: middle-center;
+}
+.campaign-start:hover { -unity-background-image-tint-color: #fff3cd; }
+.campaign-start:active { -unity-background-image-tint-color: #e6bd72; }
+.campaign-bottom-actions { position: absolute; bottom: 2.6%; flex-direction: row; }
+.campaign-bottom-left { left: 2.1%; }
+.campaign-bottom-right { right: 2.1%; }
+.campaign-action {
+  width: 106px; height: 109px; margin: 0; padding: 0; border-width: 0;
+  background-color: rgba(0, 0, 0, 0); align-items: center; justify-content: flex-start;
+}
+.campaign-action:hover, .campaign-action:active, .campaign-action:focus {
+  background-color: rgba(0, 0, 0, 0); border-width: 0;
+}
+.campaign-action-disc {
+  width: 82px; height: 82px; border-width: 2px; border-color: #6fd4db; border-radius: 22px;
+  background-color: #112d3d; align-items: center; justify-content: center;
+}
+.campaign-action:hover .campaign-action-disc, .campaign-action:focus .campaign-action-disc {
+  background-color: #204457; border-color: #b9fffa;
+}
+.campaign-action-icon { width: 58px; height: 58px; -unity-background-scale-mode: scale-to-fit; }
+.campaign-action-label {
+  height: 24px; margin: 3px 0 0; padding: 0; color: #d0eaec;
+  font-size: 13px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;
+}
+.campaign-settings { width: 88px; height: 76px; }
+.campaign-settings .campaign-action-disc { width: 52px; height: 52px; border-radius: 26px; }
+.campaign-settings .campaign-action-icon { width: 50px; height: 50px; background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/menu-settings-penpot.png"); }
+.campaign-skills .campaign-action-icon { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/menu-skills-penpot.png"); }
+.campaign-loadout .campaign-action-icon { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/menu-loadout-penpot.png"); }
+.campaign-lab .campaign-action-icon { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/menu-lab-penpot.png"); }
+.campaign-exit .campaign-action-icon { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/menu-exit-penpot.png"); }
+.campaign-exit .campaign-action-disc { border-color: #708b98; background-color: #172735; }
+.campaign-open .fps-label {
+  top: 111px; right: 32px; border-width: 1px; border-color: #3b8f9c; border-radius: 9px;
+}
+.campaign-narrow .campaign-difficulty-label { display: none; }
+.campaign-narrow .campaign-side-title { font-size: 20px; }
+.campaign-narrow .campaign-side-copy { font-size: 12px; }
+.campaign-narrow .campaign-level-title { font-size: 27px; }
+.campaign-narrow .campaign-level-description { font-size: 14px; }
+.campaign-narrow .campaign-action { width: 88px; }
+.campaign-narrow .campaign-start { width: 310px; height: 65px; margin-left: -155px; font-size: 23px; }
 .settings-card {
   width: 600px; padding: 28px; margin-top: 5px;
   background-color: rgba(3, 15, 28, 0.96);
@@ -301,4 +395,268 @@
   position: absolute; top: 24px; right: 28px; padding: 6px 10px;
   color: #d6fafa; background-color: rgba(6, 29, 43, 0.88); font-size: 12px;
 }
+
+
+/* Campaign subpages share the Penpot header, surface and control palette. */
+.subpage-open { background-color: #091824; background-image: none; }
+.subpage-open .menu-shade, .subpage-open .menu-header { display: none; }
+.subpage-open .menu-shell { width: 100%; max-width: 100%; padding: 0 32px 32px; }
+.menu-subpage { width: 100%; align-items: stretch; min-height: 0; }
+.subpage-heading {
+  height: 91px; flex-shrink: 0; margin: 0 -32px 24px; padding: 0 32px;
+  flex-direction: row; align-items: center; border-bottom-width: 1px; border-bottom-color: #315566;
+}
+.subpage-back {
+  width: 54px; height: 54px; flex-shrink: 0; margin: 0 22px 0 0; padding: 0;
+  border-width: 1px; border-color: #315566; border-radius: 15px;
+  background-color: #102535; color: #edf9fb; font-size: 31px; -unity-text-align: middle-center;
+}
+.subpage-back:hover { background-color: #19414d; border-color: #82ece4; }
+.subpage-title {
+  flex-grow: 1; min-width: 0; margin: 0; padding: 0; color: #edf9fb;
+  font-size: 37px; -unity-font-style: bold;
+}
+.subpage-credits { height: 46px; min-width: 128px; margin: 0; border-color: #315566; background-color: #0c1f2d; }
+.subpage-credits .campaign-credit-icon, .skill-upgrade .campaign-credit-icon { width: 24px; height: 24px; }
+.subpage-credits .campaign-credit-center, .skill-upgrade .campaign-credit-center { width: 13px; height: 13px; }
+.menu-settings-layout, .skill-tree-layout, .subpage-open .loadout-body {
+  width: 100%; height: auto; flex-grow: 1; min-height: 0; flex-direction: row; justify-content: space-between;
+}
+.subpage-panel {
+  background-color: #102535; border-width: 1px; border-color: #315566; border-radius: 21px; padding: 28px 30px;
+}
+.subpage-panel-title { margin: 0 0 14px; padding: 0; color: #edf9fb; font-size: 28px; -unity-font-style: bold; }
+.menu-settings-layout { margin-top: 10px; }
+.menu-settings-card { width: 48.8%; height: 374px; max-height: 100%; }
+.menu-volume-row { margin-bottom: 15px; }
+.menu-volume-caption, .menu-fps-row, .menu-extra-setting {
+  flex-direction: row; align-items: center; justify-content: space-between;
+}
+.menu-setting-label, .menu-volume-value { margin: 0; padding: 0; white-space: nowrap; flex-shrink: 0; -unity-font-style: bold; }
+.menu-setting-label { color: #edf9fb; font-size: 21px; }
+.menu-volume-value { color: #82ece4; font-size: 19px; }
+.menu-volume-input { height: 38px; margin: 3px -10px 0; }
+.menu-volume-track {
+  position: absolute; left: 10px; right: 10px; top: 16px; height: 7px;
+  background-color: #264657; border-radius: 4px;
+}
+.menu-volume-fill { height: 100%; background-color: #60dad4; border-radius: 4px; }
+.menu-volume-slider { width: 100%; height: 38px; margin: 0; }
+.menu-volume-slider .unity-base-slider__tracker { background-color: rgba(0,0,0,0); border-width: 0; }
+.menu-volume-slider .unity-base-slider__dragger {
+  top: 9px; width: 20px; height: 20px; border-width: 0; border-radius: 10px; background-color: #e2fff8;
+}
+.menu-fps-row, .menu-extra-setting { height: 80px; }
+.menu-fps-row, .menu-extra-setting-last { border-top-width: 1px; border-top-color: #315566; }
+.menu-extra-button, .skill-upgrade {
+  border-width: 1px; border-color: #315566; background-color: #162f40; color: #edf9fb;
+  border-radius: 12px; -unity-font-style: bold;
+}
+.menu-extra-button {
+  min-width: 42%; height: 49px; font-size: 16px; margin: 0; padding: 0 12px;
+  color: #b1cdd5; -unity-text-align: middle-center;
+}
+.language-dropdown {
+  width: 42%; min-width: 120px; height: 49px; margin: 0;
+}
+.language-dropdown .unity-base-field__input {
+  min-width: 0; height: 100%; margin: 0; padding: 0 14px;
+  flex-direction: row; align-items: center; justify-content: space-between;
+  border-width: 1px; border-color: #315566; border-radius: 10px;
+  background-color: #162f40; color: #edf9fb; font-size: 16px; -unity-font-style: bold;
+}
+.language-dropdown:hover .unity-base-field__input, .language-dropdown:focus .unity-base-field__input {
+  background-color: #19414d; border-color: #82ece4;
+}
+.language-dropdown .unity-base-popup-field__text { -unity-text-align: middle-left; margin: 0; padding: 0; }
+.language-dropdown .unity-base-popup-field__arrow {
+  width: 9px; height: 9px; margin: 0 2px 5px 8px; flex-shrink: 0;
+  background-image: none; rotate: 45deg;
+  border-bottom-width: 2px; border-right-width: 2px;
+  border-bottom-color: #b1cdd5; border-right-color: #b1cdd5;
+}
+.menu-document-root > .unity-base-dropdown { position: absolute; top: 0; right: 0; bottom: 0; left: 0; }
+.menu-document-root .unity-base-dropdown__container-outer {
+  background-color: #102535; border-width: 1px; border-color: #528699; border-radius: 10px; overflow: hidden;
+}
+.menu-document-root .unity-base-dropdown__item { height: 40px; }
+.menu-document-root .unity-base-dropdown__item-content {
+  height: 100%; flex-direction: row; align-items: center;
+}
+.menu-document-root .unity-base-dropdown__checkmark { width: 8px; height: 8px; margin: 0 10px 0 14px; }
+.menu-document-root .unity-base-dropdown__item:checked .unity-base-dropdown__checkmark {
+  background-color: #82ece4; border-radius: 4px;
+}
+.menu-document-root .unity-base-dropdown__label { color: #edf9fb; font-size: 16px; margin: 0; padding: 0; }
+.menu-document-root .unity-base-dropdown__item:hover { background-color: #19414d; }
+.subpage-short .language-dropdown { height: 36px; }
+.subpage-short .language-dropdown .unity-base-field__input { font-size: 14px; }
+.menu-fps-switch, .menu-fps-switch:hover, .menu-fps-switch:active, .menu-fps-switch:focus {
+  width: 72px; height: 32px; margin: 0; padding: 0; border-width: 0; transition-duration: 0s;
+  background-color: rgba(0,0,0,0); background-image: none;
+}
+.menu-fps-track {
+  position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+  background-color: #2b4858; border-radius: 16px; border-width: 1px; border-color: rgba(0,0,0,0);
+}
+.menu-fps-switch:focus .menu-fps-track { border-color: #68b6bc; }
+.menu-fps-knob {
+  position: absolute; top: 3px; left: 4px; width: 24px; height: 24px;
+  background-color: #b1cdd5; border-radius: 12px;
+}
+.menu-fps-switch.is-on .menu-fps-track { background-color: #236c73; }
+.menu-fps-switch.is-on .menu-fps-knob { left: 42px; background-color: #e2fff8; }
+.subpage-open .fps-label { top: auto; right: 32px; bottom: 10px; }
+.fps-label { border-radius: 12px; border-width: 1px; border-color: #315566; }
+
+.skill-tree { width: 59.8%; padding: 0; }
+.skill-details { width: 38.2%; }
+.skill-link { position: absolute; background-color: #547788; }
+.skill-link-root { left: 50%; top: 34%; width: 2px; height: 12%; }
+.skill-link-branch { left: 26%; right: 26%; top: 46%; height: 2px; }
+.skill-link-left, .skill-link-right { top: 46%; width: 2px; height: 11%; }
+.skill-link-left { left: 26%; }
+.skill-link-right { right: 26%; }
+.skill-node {
+  position: absolute; width: 40%; height: 26%; margin: 0; padding: 0 13px;
+  flex-direction: row; align-items: center; justify-content: flex-start;
+  border-width: 1px; border-color: #315566; border-radius: 15px; background-color: #0d202e;
+}
+.skill-node-root { left: 30%; top: 8%; }
+.skill-node-left { left: 6%; top: 56%; }
+.skill-node-right { right: 6%; top: 56%; }
+.skill-node:hover, .skill-node.is-selected { background-color: #19414d; border-color: #82ece4; }
+.skill-node-icon {
+  width: 49px; height: 49px; flex-shrink: 0; margin: 0 12px 0 0; padding: 0;
+  color: #82ece4; font-size: 28px; -unity-text-align: middle-center;
+  border-width: 1px; border-color: #315566; border-radius: 11px; background-color: #162f40;
+}
+.skill-node-copy { min-width: 0; flex-grow: 1; }
+.skill-node-title, .skill-node-rank { margin: 0; padding: 0; -unity-text-align: middle-left; }
+.skill-node-title { color: #edf9fb; font-size: 19px; -unity-font-style: bold; }
+.skill-node-rank, .skill-detail-rank, .skill-detail-requirement { color: #b1cdd5; font-size: 17px; }
+.skill-node.is-locked .skill-node-icon { color: #b1cdd5; }
+.skill-details .subpage-panel-title { margin-bottom: 3px; }
+.skill-detail-rank, .skill-detail-bonus, .skill-detail-requirement { margin: 0; padding: 0; white-space: normal; }
+.skill-detail-bonus { margin-top: 29px; color: #82ece4; font-size: 21px; -unity-font-style: bold; }
+.skill-detail-requirement { margin-top: 13px; min-height: 26px; }
+.skill-rank-steps { flex-direction: row; margin: 24px -5px 23px; }
+.skill-rank-step { flex-grow: 1; height: 8px; margin: 0 5px; border-radius: 4px; background-color: #284858; }
+.skill-rank-step.is-earned { background-color: #60dad4; }
+.skill-upgrade {
+  width: 100%; height: 68px; margin: 0; padding: 0 18px; align-items: center; justify-content: space-between; flex-direction: row;
+}
+.skill-upgrade:hover { background-color: #19414d; border-color: #82ece4; }
+.skill-upgrade:disabled { background-color: #162f40; opacity: 0.8; }
+.skill-upgrade-price { flex-direction: row; align-items: center; }
+.skill-upgrade-text { margin: 0; font-size: 21px; }
+
+.subpage-open .loadout-stage, .subpage-open .loadout-catalog {
+  height: 100%; background-color: #102535; border-color: #315566; border-radius: 21px;
+}
+.subpage-open .loadout-stage { width: 59.8%; flex-grow: 0; margin: 0; }
+.subpage-open .loadout-catalog { width: 38.2%; padding: 19px 21px; }
+.loadout-character-preview { position: relative; flex-grow: 1; min-height: 110px; }
+.subpage-open .loadout-orbit { top: 8%; height: 86%; border-color: #315566; background-color: #123041; }
+.subpage-open .loadout-portrait { top: 3%; height: 94%; }
+.subpage-open .loadout-slot {
+  width: 27.6%; height: 62px; margin: 0; padding: 3px;
+  border-color: #315566; border-radius: 12px; background-color: #0c1e2b; white-space: normal;
+}
+.subpage-open .loadout-slot.is-focused, .subpage-open .loadout-slot:hover {
+  background-color: #19414d; border-color: #82ece4;
+}
+.subpage-open .armor-slot, .subpage-open .module-slot { left: 3%; right: auto; }
+.subpage-open .left-weapon-slot, .subpage-open .right-weapon-slot { left: auto; right: 3%; }
+.subpage-open .armor-slot, .subpage-open .left-weapon-slot { top: 17%; }
+.subpage-open .module-slot, .subpage-open .right-weapon-slot { top: 54%; }
+.loadout-stats { flex-shrink: 0; margin: 0 15px 14px; padding: 9px 12px 6px; border-radius: 12px; background-color: #0c1e2b; }
+.loadout-stats-title, .loadout-stat-name, .loadout-stat-value, .loadout-stats-note { margin: 0; padding: 0; }
+.loadout-stats-title { color: #edf9fb; font-size: 18px; -unity-font-style: bold; margin-bottom: 5px; }
+.loadout-stat-row { height: 23px; flex-direction: row; align-items: center; border-top-width: 1px; border-top-color: #193b49; }
+.loadout-stat-header { color: #b1cdd5; font-size: 12px; }
+.loadout-stat-name { width: 40%; white-space: nowrap; }
+.loadout-stat-value { width: 20%; white-space: nowrap; -unity-text-align: middle-right; }
+.loadout-stat-delta { color: #a0b9c7; -unity-font-style: bold; }
+.loadout-stat-delta.is-positive { color: #86ecd2; }
+.loadout-stat-delta.is-negative { color: #ffabac; }
+.loadout-stats-note { margin-top: 5px; color: #aac7d2; font-size: 12px; white-space: normal; }
+.loadout-tab { border-radius: 9px; background-color: #0c1e2b; border-color: #315566; }
+.loadout-tab.is-selected { background-color: #19414d; border-color: #82ece4; }
+.subpage-open .preview-card { height: 66px; margin-left: 0; margin-right: 0; background-color: #0c1e2b; border-color: #315566; }
+.subpage-open .preview-card:hover, .subpage-open .preview-card.is-selected { background-color: #19414d; border-color: #82ece4; }
+.preview-status { border-radius: 7px; color: #d6edef; background-color: #162f40; }
+.subpage-open .weapon-column { width: auto; flex-basis: 0; min-width: 0; height: auto; }
+.subpage-open #rightWeaponColumn { margin-right: 0; }
+.subpage-open .weapon-preview { height: 58px; }
+.subpage-open .weapon-preview .preview-name { white-space: normal; }
+
+.subpage-short.subpage-open .menu-shell { padding: 0 23px 20px; }
+.subpage-short .subpage-heading { height: 64px; margin: 0 -23px 15px; padding: 0 23px; }
+.subpage-short .subpage-back { width: 42px; height: 42px; font-size: 24px; margin-right: 15px; }
+.subpage-short .subpage-title { font-size: 28px; }
+.subpage-short .subpage-credits { height: 36px; min-width: 99px; }
+.subpage-short .subpage-panel { padding: 17px 20px; }
+.subpage-short .subpage-panel-title { font-size: 22px; margin-bottom: 7px; }
+.subpage-short .menu-settings-layout { margin-top: 5px; }
+.subpage-short .menu-settings-card { height: 288px; }
+.subpage-short .menu-setting-label, .subpage-short .menu-volume-value { font-size: 16px; }
+.subpage-short .menu-volume-row { margin-bottom: 7px; }
+.subpage-short .menu-fps-row, .subpage-short .menu-extra-setting { height: 61px; }
+.subpage-short .menu-extra-button { height: 36px; font-size: 14px; }
+.subpage-short .skill-node { padding: 0 8px; }
+.subpage-short .skill-node-icon { width: 34px; height: 34px; font-size: 21px; margin-right: 7px; }
+.subpage-short .skill-node-title { font-size: 14px; }
+.subpage-short .skill-node-rank, .subpage-short .skill-detail-rank, .subpage-short .skill-detail-requirement { font-size: 13px; }
+.subpage-short .skill-detail-bonus { margin-top: 18px; font-size: 16px; }
+.subpage-short .skill-rank-steps { margin-top: 15px; margin-bottom: 15px; }
+.subpage-short .skill-upgrade { height: 47px; }
+.subpage-short .skill-upgrade-text { font-size: 16px; }
+.subpage-short.subpage-open .loadout-slot { height: 44px; }
+.subpage-short.subpage-open .loadout-catalog { padding: 12px; }
+.subpage-short .loadout-tabs { height: 43px; padding-bottom: 6px; }
+.subpage-short .loadout-stats { margin: 0 9px 7px; padding: 5px 7px; }
+.subpage-short .loadout-stat-row { height: 17px; font-size: 11px; }
+.subpage-short .loadout-stats-title { font-size: 13px; margin-bottom: 2px; }
+.subpage-short .loadout-stats-note { font-size: 10px; margin-top: 2px; }
+.subpage-short.subpage-open .preview-card { height: 48px; margin-bottom: 6px; }
+.subpage-short .preview-art { width: 32px; height: 32px; }
+.subpage-short .preview-name { font-size: 12px; }
+.subpage-short .preview-status { font-size: 9px; padding: 4px; }
+
+.armor-options { flex-direction: row; justify-content: space-between; }
+.subpage-open .armor-preview {
+  width: 32%; height: 196px; flex-direction: column; padding: 8px 4px;
+  justify-content: space-between; border-left-width: 1px;
+}
+.subpage-open .armor-preview .preview-art { width: 100%; height: 103px; margin: 0; border-radius: 8px; }
+.subpage-open .armor-preview .preview-name {
+  flex-grow: 0; width: 100%; font-size: 13px; white-space: normal; -unity-text-align: middle-center;
+}
+.subpage-open .armor-preview .preview-status { width: 100%; -unity-text-align: middle-center; }
+.subpage-short.subpage-open .armor-preview { height: 148px; }
+.subpage-short.subpage-open .armor-preview .preview-art { height: 73px; }
+.subpage-short.subpage-open .armor-preview .preview-name { font-size: 11px; }
+
+.subpage-back, .skill-node-icon { align-items: center; justify-content: center; }
+.subpage-back-icon, .skill-icon, .skill-lock-icon { -unity-background-scale-mode: scale-to-fit; }
+.subpage-back-icon {
+  width: 54%; height: 54%;
+  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/menu-back-penpot.png");
+}
+.skill-icon { width: 58%; height: 58%; }
+.talent-vitality { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/talent-vitality-penpot.png"); }
+.talent-firepower { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/talent-firepower-penpot.png"); }
+.talent-rapid-fire { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/talent-rapid-fire-penpot.png"); }
+.skill-lock-icon {
+  display: none; width: 17px; height: 17px; margin-left: 4px; flex-shrink: 0;
+  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/talent-lock-penpot.png");
+}
+.skill-node.is-locked .skill-lock-icon { display: flex; }
+.skill-node-title { white-space: normal; }
+.skill-detail-header { flex-direction: row; align-items: center; }
+.skill-detail-icon { width: 60px; height: 60px; background-color: #19414d; }
+.skill-detail-bonus { font-size: 19px; }
+.subpage-short .skill-detail-icon { width: 44px; height: 44px; }
+.subpage-short .skill-detail-bonus { font-size: 16px; }
 

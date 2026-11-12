@@ -78,6 +78,23 @@ public class PlayerUltimate : MonoBehaviour
         && (playerHealth == null || !playerHealth.IsGhost)
         && !IsOnCooldown;
     public float ChargeProgress { get; private set; }
+    public float EnergyProgress
+    {
+        get
+        {
+            if (IsCharging)
+            {
+                float target = activeChargeIsAutomatic ? autoChargeLevel : 1f;
+                return target > 0f ? 1f - Mathf.Clamp01(ChargeProgress / target) : 0f;
+            }
+
+            if (IsOnCooldown)
+                return 1f - Mathf.Clamp01(CooldownRemaining / lastCooldownDuration);
+
+            return CanReceiveInput ? 1f : 0f;
+        }
+    }
+
     public float CooldownProgress
     {
         get

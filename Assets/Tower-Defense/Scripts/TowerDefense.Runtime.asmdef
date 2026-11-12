@@ -2,6 +2,8 @@
     "name": "TowerDefense.Runtime",
     "references": [
         "Unity.InputSystem",
+        "Unity.Localization",
+        "Unity.ResourceManager",
         "Unity.TextMeshPro",
         "Unity.ugui",
         "DOTween.Modules",

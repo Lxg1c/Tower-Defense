@@ -1,128 +1,321 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
   <ui:Style src="Menu.uss" />
-  <ui:VisualElement name="menuRoot" class="menu-root" picking-mode="Ignore">
+  <ui:VisualElement name="menuRoot" class="menu-root campaign-open" picking-mode="Ignore">
     <ui:VisualElement class="menu-shade" picking-mode="Ignore" />
     <ui:VisualElement class="menu-shell" picking-mode="Ignore">
       <ui:VisualElement class="menu-header" picking-mode="Ignore">
         <ui:VisualElement class="brand-row" picking-mode="Ignore">
           <ui:VisualElement class="brand-mark" picking-mode="Ignore" />
-          <ui:Label text="TOWER DEFENSE  /  FRONTLINE" class="eyebrow" />
+          <ui:Label text="TOWER DEFENSE  /  FRONTLINE" class="eyebrow l10n-legacy-brand" />
         </ui:VisualElement>
         <ui:VisualElement class="title-block" picking-mode="Ignore">
           <ui:Label text="TOWER" class="game-title" />
           <ui:Label text="DEFENSE" class="game-title title-accent" />
         </ui:VisualElement>
         <ui:VisualElement class="title-rule" picking-mode="Ignore" />
-        <ui:Label text="Build your line. Hold until dawn." class="subtitle" />
+        <ui:Label text="Постройте оборону. Продержитесь до рассвета." class="subtitle l10n-legacy-tagline" />
       </ui:VisualElement>
-      <ui:VisualElement name="homePage" class="menu-page home-page" picking-mode="Ignore">
-        <ui:Label text="01  /  COMMAND CENTER" class="section-label" />
-        <ui:Button name="playButton" text="START CAMPAIGN     →" class="primary-button" />
-        <ui:VisualElement class="home-secondary" picking-mode="Ignore">
-          <ui:Button name="skillsButton" text="SKILL TREE" class="menu-button" />
-          <ui:Button name="loadoutButton" text="EQUIPMENT" class="menu-button" />
-          <ui:Button name="settingsButton" text="SETTINGS" class="menu-button" />
-        </ui:VisualElement>
-        <ui:Button name="labButton" text="GAMEPLAY TEST   /   SANDBOX" class="lab-button" />
-        <ui:Button name="exitButton" text="EXIT GAME" class="quiet-button" />
-      </ui:VisualElement>
-      <ui:VisualElement name="levelsPage" class="menu-page is-hidden" picking-mode="Ignore">
-        <ui:Label text="02  /  CAMPAIGN" class="section-label" />
-        <ui:Label text="SELECT YOUR FRONT" class="page-title" />
-        <ui:VisualElement class="level-layout" picking-mode="Ignore">
-          <ui:VisualElement class="level-detail" picking-mode="Ignore">
-            <ui:VisualElement class="detail-top" picking-mode="Ignore">
-              <ui:VisualElement class="detail-copy" picking-mode="Ignore">
-                <ui:Label text="OPERATION BRIEF" class="micro-label" />
-                <ui:Label name="levelTitle" class="detail-title" />
-                <ui:Label name="levelDescription" class="body-copy" />
-              </ui:VisualElement>
-              <ui:VisualElement class="level-illustration" picking-mode="Ignore" />
+      <ui:VisualElement name="homePage" class="campaign-page" picking-mode="Ignore">
+        <ui:VisualElement class="campaign-header-rule" picking-mode="Ignore" />
+        <ui:VisualElement class="campaign-top-actions" picking-mode="Ignore">
+          <ui:VisualElement class="campaign-credits" picking-mode="Ignore">
+            <ui:VisualElement class="campaign-credit-icon" picking-mode="Ignore">
+              <ui:VisualElement class="campaign-credit-center" picking-mode="Ignore" />
             </ui:VisualElement>
-            <ui:Label text="THREAT LEVEL" class="micro-label" />
-            <ui:VisualElement class="difficulty-row" picking-mode="Ignore">
-              <ui:Button name="normalButton" text="NORMAL" class="difficulty-button" />
-              <ui:Button name="hardButton" text="HARD" class="difficulty-button" />
-              <ui:Button name="nightmareButton" text="NIGHTMARE" class="difficulty-button" />
-            </ui:VisualElement>
-            <ui:Label name="wavePreview" class="level-preview" />
-            <ui:Button name="startButton" text="DEPLOY TO LEVEL     →" class="primary-button" />
+            <ui:Label name="homeMoney" text="0" class="campaign-credit-value" picking-mode="Ignore" />
           </ui:VisualElement>
-          <ui:ScrollView name="levelList" class="level-list" mode="Horizontal" />
+          <ui:Button name="settingsButton" class="campaign-action campaign-settings l10n-tip-settings" tooltip="Настройки">
+            <ui:VisualElement class="campaign-action-disc" picking-mode="Ignore">
+              <ui:VisualElement class="campaign-action-icon" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label text="Настройки" class="campaign-action-label l10n-settings" picking-mode="Ignore" />
+          </ui:Button>
         </ui:VisualElement>
-        <ui:Button name="levelsBack" text="←  BACK TO MENU" class="back-button" />
-      </ui:VisualElement>
-      <ui:VisualElement name="settingsPage" class="menu-page is-hidden" picking-mode="Ignore">
-        <ui:Label text="03  /  PREFERENCES" class="section-label" />
-        <ui:Label text="SETTINGS" class="page-title" />
-        <ui:VisualElement class="settings-card" picking-mode="Ignore">
-          <ui:Label text="AUDIO MIX" class="card-overline" />
-          <ui:Label text="MUSIC" class="field-label" />
-          <ui:Slider name="musicSlider" low-value="0" high-value="1" class="audio-slider" />
-          <ui:Label name="musicValue" class="value-label" />
-          <ui:Label text="SOUND EFFECTS" class="field-label" />
-          <ui:Slider name="effectsSlider" low-value="0" high-value="1" class="audio-slider" />
-          <ui:Label name="effectsValue" class="value-label" />
-          <ui:VisualElement class="settings-divider" picking-mode="Ignore" />
-          <ui:Button name="fpsToggle" class="menu-button" />
+        <ui:VisualElement class="campaign-levels" picking-mode="Ignore">
+          <ui:Button name="previousLevelButton" class="campaign-side campaign-previous">
+            <ui:VisualElement name="cardArt" class="campaign-side-art" picking-mode="Ignore">
+              <ui:Label name="cardIndex" class="campaign-index" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label name="cardTitle" class="campaign-side-title" picking-mode="Ignore" />
+            <ui:Label name="cardDescription" class="campaign-side-copy" picking-mode="Ignore" />
+          </ui:Button>
+          <ui:VisualElement class="campaign-featured" picking-mode="Ignore">
+            <ui:VisualElement name="levelArt" class="campaign-featured-art" picking-mode="Ignore">
+              <ui:Label name="levelIndex" class="campaign-index" picking-mode="Ignore" />
+              <ui:Label name="levelAvailability" class="campaign-availability" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:VisualElement class="campaign-details" picking-mode="Ignore">
+              <ui:VisualElement class="campaign-level-copy" picking-mode="Ignore">
+                <ui:Label name="levelTitle" class="campaign-level-title" picking-mode="Ignore" />
+                <ui:Label name="levelDescription" class="campaign-level-description" picking-mode="Ignore" />
+              </ui:VisualElement>
+              <ui:Label name="wavePreview" class="campaign-waves" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:VisualElement class="campaign-difficulties" picking-mode="Ignore">
+              <ui:Label text="СЛОЖНОСТЬ" class="campaign-difficulty-label l10n-difficulty" picking-mode="Ignore" />
+              <ui:Button name="normalButton" text="Обычная" class="campaign-difficulty l10n-normal" />
+              <ui:Button name="hardButton" text="Сложная" class="campaign-difficulty l10n-hard" />
+              <ui:Button name="nightmareButton" text="Кошмар" class="campaign-difficulty l10n-nightmare" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+          <ui:Button name="nextLevelButton" class="campaign-side campaign-next">
+            <ui:VisualElement name="cardArt" class="campaign-side-art" picking-mode="Ignore">
+              <ui:Label name="cardIndex" class="campaign-index" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label name="cardTitle" class="campaign-side-title" picking-mode="Ignore" />
+            <ui:Label name="cardDescription" class="campaign-side-copy" picking-mode="Ignore" />
+          </ui:Button>
         </ui:VisualElement>
-        <ui:Button name="settingsBack" text="←  BACK TO MENU" class="back-button" />
+        <ui:Button name="startButton" text="НАЧАТЬ УРОВЕНЬ" class="campaign-start l10n-start-level" />
+        <ui:VisualElement class="campaign-bottom-actions campaign-bottom-left" picking-mode="Ignore">
+          <ui:Button name="skillsButton" class="campaign-action campaign-skills l10n-tip-skills" tooltip="Навыки">
+            <ui:VisualElement class="campaign-action-disc" picking-mode="Ignore">
+              <ui:VisualElement class="campaign-action-icon" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label text="Навыки" class="campaign-action-label l10n-skills" picking-mode="Ignore" />
+          </ui:Button>
+          <ui:Button name="loadoutButton" class="campaign-action campaign-loadout l10n-tip-equipment" tooltip="Снаряжение">
+            <ui:VisualElement class="campaign-action-disc" picking-mode="Ignore">
+              <ui:VisualElement class="campaign-action-icon" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label text="Снаряжение" class="campaign-action-label l10n-equipment" picking-mode="Ignore" />
+          </ui:Button>
+        </ui:VisualElement>
+        <ui:VisualElement class="campaign-bottom-actions campaign-bottom-right" picking-mode="Ignore">
+          <ui:Button name="labButton" class="campaign-action campaign-lab l10n-tip-lab" tooltip="Полигон">
+            <ui:VisualElement class="campaign-action-disc" picking-mode="Ignore">
+              <ui:VisualElement class="campaign-action-icon" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label text="Полигон" class="campaign-action-label l10n-lab" picking-mode="Ignore" />
+          </ui:Button>
+          <ui:Button name="exitButton" class="campaign-action campaign-exit l10n-tip-quit" tooltip="Выход">
+            <ui:VisualElement class="campaign-action-disc" picking-mode="Ignore">
+              <ui:VisualElement class="campaign-action-icon" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label text="Выход" class="campaign-action-label l10n-quit" picking-mode="Ignore" />
+          </ui:Button>
+        </ui:VisualElement>
       </ui:VisualElement>
-      <ui:VisualElement name="skillsPage" class="menu-page is-hidden" picking-mode="Ignore">
-        <ui:Label text="04  /  PERMANENT UPGRADES" class="section-label" />
-        <ui:Label text="SKILL TREE" class="page-title" />
-        <ui:Label name="moneyLabel" class="money-label" />
-        <ui:VisualElement name="skillList" class="skill-list" picking-mode="Ignore" />
-        <ui:Button name="skillsBack" text="←  BACK TO MENU" class="back-button" />
+      <ui:VisualElement name="settingsPage" class="menu-page menu-subpage is-hidden" picking-mode="Ignore">
+        <ui:VisualElement class="subpage-heading" picking-mode="Ignore">
+          <ui:Button name="settingsBack" tooltip="Назад к выбору уровня" class="subpage-back l10n-tip-back-level"><ui:VisualElement class="subpage-back-icon" picking-mode="Ignore" /></ui:Button>
+          <ui:Label text="Настройки" class="subpage-title l10n-settings" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:VisualElement class="menu-settings-layout" picking-mode="Ignore">
+          <ui:VisualElement class="subpage-panel menu-settings-card" picking-mode="Ignore">
+            <ui:Label text="Звук" class="subpage-panel-title l10n-audio" />
+            <ui:VisualElement class="menu-volume-row" picking-mode="Ignore">
+              <ui:VisualElement class="menu-volume-caption" picking-mode="Ignore">
+                <ui:Label text="Общая громкость" class="menu-setting-label l10n-master-volume" />
+                <ui:Label name="masterValue" class="menu-volume-value" />
+              </ui:VisualElement>
+              <ui:VisualElement class="menu-volume-input" picking-mode="Ignore">
+                <ui:VisualElement class="menu-volume-track" picking-mode="Ignore"><ui:VisualElement name="masterFill" class="menu-volume-fill" picking-mode="Ignore" /></ui:VisualElement>
+                <ui:Slider name="masterSlider" low-value="0" high-value="1" class="menu-volume-slider l10n-tip-master-volume" tooltip="Общая громкость" />
+              </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="menu-volume-row" picking-mode="Ignore">
+              <ui:VisualElement class="menu-volume-caption" picking-mode="Ignore">
+                <ui:Label text="Музыка" class="menu-setting-label l10n-music" />
+                <ui:Label name="musicValue" class="menu-volume-value" />
+              </ui:VisualElement>
+              <ui:VisualElement class="menu-volume-input" picking-mode="Ignore">
+                <ui:VisualElement class="menu-volume-track" picking-mode="Ignore"><ui:VisualElement name="musicFill" class="menu-volume-fill" picking-mode="Ignore" /></ui:VisualElement>
+                <ui:Slider name="musicSlider" low-value="0" high-value="1" class="menu-volume-slider l10n-tip-music" tooltip="Музыка" />
+              </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="menu-volume-row" picking-mode="Ignore">
+              <ui:VisualElement class="menu-volume-caption" picking-mode="Ignore">
+                <ui:Label text="Эффекты" class="menu-setting-label l10n-effects" />
+                <ui:Label name="effectsValue" class="menu-volume-value" />
+              </ui:VisualElement>
+              <ui:VisualElement class="menu-volume-input" picking-mode="Ignore">
+                <ui:VisualElement class="menu-volume-track" picking-mode="Ignore"><ui:VisualElement name="effectsFill" class="menu-volume-fill" picking-mode="Ignore" /></ui:VisualElement>
+                <ui:Slider name="effectsSlider" low-value="0" high-value="1" class="menu-volume-slider l10n-tip-effects" tooltip="Эффекты" />
+              </ui:VisualElement>
+            </ui:VisualElement>
+          </ui:VisualElement>
+          <ui:VisualElement class="subpage-panel menu-settings-card" picking-mode="Ignore">
+            <ui:Label text="Игра" class="subpage-panel-title l10n-game" />
+            <ui:VisualElement class="menu-extra-setting" picking-mode="Ignore">
+              <ui:Label text="Язык" class="menu-setting-label l10n-language" picking-mode="Ignore" />
+              <ui:DropdownField name="languageDropdown" class="language-dropdown l10n-tip-language" tooltip="Язык" />
+            </ui:VisualElement>
+            <ui:VisualElement class="menu-fps-row" picking-mode="Ignore">
+              <ui:Label text="Показывать FPS" class="menu-setting-label l10n-fps" />
+              <ui:Button name="fpsToggle" tooltip="Показывать FPS" class="menu-fps-switch l10n-tip-fps">
+                <ui:VisualElement class="menu-fps-track" picking-mode="Ignore"><ui:VisualElement class="menu-fps-knob" picking-mode="Ignore" /></ui:VisualElement>
+              </ui:Button>
+            </ui:VisualElement>
+            <ui:VisualElement class="menu-extra-setting menu-extra-setting-last l10n-tip-tutorial-later" tooltip="Повтор обучения будет доступен после добавления подсказок">
+              <ui:Label text="Обучение" class="menu-setting-label l10n-tutorial" picking-mode="Ignore" />
+              <ui:Label text="Повторить подсказки" class="menu-extra-button l10n-repeat-hints" picking-mode="Ignore" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+        </ui:VisualElement>
       </ui:VisualElement>
-      <ui:VisualElement name="loadoutPage" class="menu-page loadout-page is-hidden" picking-mode="Ignore">
-        <ui:VisualElement class="loadout-heading" picking-mode="Ignore">
-          <ui:Button name="loadoutBack" text="←" class="loadout-back" />
-          <ui:Label text="СНАРЯЖЕНИЕ  Р-07" class="loadout-title" />
-          <ui:Label name="loadoutMoney" class="loadout-money" />
+      <ui:VisualElement name="skillsPage" class="menu-page menu-subpage is-hidden" picking-mode="Ignore">
+        <ui:VisualElement class="subpage-heading" picking-mode="Ignore">
+          <ui:Button name="skillsBack" tooltip="Назад к выбору уровня" class="subpage-back l10n-tip-back-level"><ui:VisualElement class="subpage-back-icon" picking-mode="Ignore" /></ui:Button>
+          <ui:Label text="Дерево талантов" class="subpage-title l10n-talent-tree" picking-mode="Ignore" />
+          <ui:VisualElement class="campaign-credits subpage-credits" picking-mode="Ignore">
+            <ui:VisualElement class="campaign-credit-icon" picking-mode="Ignore"><ui:VisualElement class="campaign-credit-center" picking-mode="Ignore" /></ui:VisualElement>
+            <ui:Label name="moneyLabel" class="campaign-credit-value" picking-mode="Ignore" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="skill-tree-layout" picking-mode="Ignore">
+          <ui:VisualElement name="skillList" class="subpage-panel skill-tree" picking-mode="Ignore">
+            <ui:VisualElement class="skill-link skill-link-root" picking-mode="Ignore" />
+            <ui:VisualElement class="skill-link skill-link-branch" picking-mode="Ignore" />
+            <ui:VisualElement class="skill-link skill-link-left" picking-mode="Ignore" />
+            <ui:VisualElement class="skill-link skill-link-right" picking-mode="Ignore" />
+            <ui:Button name="vitalitySkill" class="skill-node skill-node-root">
+              <ui:VisualElement class="skill-node-icon" picking-mode="Ignore"><ui:VisualElement class="skill-icon talent-vitality" picking-mode="Ignore" /></ui:VisualElement>
+              <ui:VisualElement class="skill-node-copy" picking-mode="Ignore">
+                <ui:Label text="Живучесть" class="skill-node-title l10n-vitality" picking-mode="Ignore" />
+                <ui:Label name="rank" class="skill-node-rank" picking-mode="Ignore" />
+              </ui:VisualElement>
+            </ui:Button>
+            <ui:Button name="firepowerSkill" class="skill-node skill-node-left">
+              <ui:VisualElement class="skill-node-icon" picking-mode="Ignore"><ui:VisualElement class="skill-icon talent-firepower" picking-mode="Ignore" /></ui:VisualElement>
+              <ui:VisualElement class="skill-node-copy" picking-mode="Ignore">
+                <ui:Label text="Огневая мощь" class="skill-node-title l10n-firepower" picking-mode="Ignore" />
+                <ui:Label name="rank" class="skill-node-rank" picking-mode="Ignore" />
+              </ui:VisualElement>
+              <ui:VisualElement class="skill-lock-icon" picking-mode="Ignore" />
+            </ui:Button>
+            <ui:Button name="rapidFireSkill" class="skill-node skill-node-right">
+              <ui:VisualElement class="skill-node-icon" picking-mode="Ignore"><ui:VisualElement class="skill-icon talent-rapid-fire" picking-mode="Ignore" /></ui:VisualElement>
+              <ui:VisualElement class="skill-node-copy" picking-mode="Ignore">
+                <ui:Label text="Скорострельность" class="skill-node-title l10n-rapid-fire" picking-mode="Ignore" />
+                <ui:Label name="rank" class="skill-node-rank" picking-mode="Ignore" />
+              </ui:VisualElement>
+              <ui:VisualElement class="skill-lock-icon" picking-mode="Ignore" />
+            </ui:Button>
+          </ui:VisualElement>
+          <ui:VisualElement class="subpage-panel skill-details" picking-mode="Ignore">
+            <ui:VisualElement class="skill-detail-header" picking-mode="Ignore">
+              <ui:VisualElement class="skill-node-icon skill-detail-icon" picking-mode="Ignore"><ui:VisualElement name="skillDetailIcon" class="skill-icon talent-vitality" picking-mode="Ignore" /></ui:VisualElement>
+              <ui:VisualElement class="skill-node-copy" picking-mode="Ignore">
+                <ui:Label name="skillDetailTitle" class="subpage-panel-title" />
+                <ui:Label name="skillDetailRank" class="skill-detail-rank" />
+              </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="skillDetailBonus" class="skill-detail-bonus" />
+            <ui:Label name="skillDetailRequirement" class="skill-detail-requirement" />
+            <ui:VisualElement name="skillRankSteps" class="skill-rank-steps" picking-mode="Ignore">
+              <ui:VisualElement class="skill-rank-step" picking-mode="Ignore" />
+              <ui:VisualElement class="skill-rank-step" picking-mode="Ignore" />
+              <ui:VisualElement class="skill-rank-step" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Button name="upgradeSkill" class="skill-upgrade">
+              <ui:Label name="upgradeSkillText" text="Улучшить" class="skill-upgrade-text l10n-upgrade" picking-mode="Ignore" />
+              <ui:VisualElement name="upgradeSkillPrice" class="skill-upgrade-price" picking-mode="Ignore">
+                <ui:VisualElement class="campaign-credit-icon" picking-mode="Ignore"><ui:VisualElement class="campaign-credit-center" picking-mode="Ignore" /></ui:VisualElement>
+                <ui:Label name="upgradeSkillCost" class="campaign-credit-value" picking-mode="Ignore" />
+              </ui:VisualElement>
+            </ui:Button>
+          </ui:VisualElement>
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement name="loadoutPage" class="menu-page menu-subpage loadout-page is-hidden" picking-mode="Ignore">
+        <ui:VisualElement class="subpage-heading" picking-mode="Ignore">
+          <ui:Button name="loadoutBack" tooltip="Назад к выбору уровня" class="subpage-back l10n-tip-back-level"><ui:VisualElement class="subpage-back-icon" picking-mode="Ignore" /></ui:Button>
+          <ui:Label text="Снаряжение" class="subpage-title l10n-equipment" picking-mode="Ignore" />
+          <ui:VisualElement class="campaign-credits subpage-credits" picking-mode="Ignore">
+            <ui:VisualElement class="campaign-credit-icon" picking-mode="Ignore"><ui:VisualElement class="campaign-credit-center" picking-mode="Ignore" /></ui:VisualElement>
+            <ui:Label name="loadoutMoney" class="campaign-credit-value" picking-mode="Ignore" />
+          </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement class="loadout-body" picking-mode="Ignore">
           <ui:VisualElement class="loadout-stage" picking-mode="Ignore">
+            <ui:VisualElement class="loadout-character-preview" picking-mode="Ignore">
             <ui:VisualElement class="loadout-orbit" picking-mode="Ignore" />
             <ui:VisualElement name="loadoutPortrait" class="loadout-portrait preview-base" picking-mode="Ignore" />
             <ui:Button name="armorSlot" class="loadout-slot armor-slot" text="КОРПУС  ·  БАЗОВЫЙ" />
             <ui:Button name="leftWeaponSlot" class="loadout-slot left-weapon-slot" text="ЛЕВАЯ ПУШКА  ·  СТАНДАРТ" />
             <ui:Button name="rightWeaponSlot" class="loadout-slot right-weapon-slot" text="ПРАВАЯ ПУШКА  ·  СТАНДАРТ" />
             <ui:Button name="moduleSlot" class="loadout-slot module-slot" text="БОЕВОЙ МОДУЛЬ  ·  СТАНДАРТ" />
+            </ui:VisualElement>
+            <ui:VisualElement class="loadout-stats" picking-mode="Ignore">
+              <ui:Label text="Характеристики Р-07" class="loadout-stats-title l10n-stats" />
+              <ui:VisualElement class="loadout-stat-row loadout-stat-header" picking-mode="Ignore">
+                <ui:Label text="Параметр" class="loadout-stat-name l10n-stat" />
+                <ui:Label text="Сейчас" class="loadout-stat-value l10n-equipped-stat" />
+                <ui:Label text="Примерка" class="loadout-stat-value l10n-preview" />
+                <ui:Label text="Разница" class="loadout-stat-value l10n-difference" />
+              </ui:VisualElement>
+              <ui:VisualElement class="loadout-stat-row" picking-mode="Ignore">
+                <ui:Label text="Здоровье" class="loadout-stat-name l10n-health" />
+                <ui:Label name="statCurrent0" class="loadout-stat-value" />
+                <ui:Label name="statPreview0" class="loadout-stat-value" />
+                <ui:Label name="statDelta0" class="loadout-stat-value loadout-stat-delta" />
+              </ui:VisualElement>
+              <ui:VisualElement class="loadout-stat-row" picking-mode="Ignore">
+                <ui:Label text="Броня" class="loadout-stat-name l10n-armor" />
+                <ui:Label name="statCurrent1" class="loadout-stat-value" />
+                <ui:Label name="statPreview1" class="loadout-stat-value" />
+                <ui:Label name="statDelta1" class="loadout-stat-value loadout-stat-delta" />
+              </ui:VisualElement>
+              <ui:VisualElement class="loadout-stat-row" picking-mode="Ignore">
+                <ui:Label text="Скорость" class="loadout-stat-name l10n-speed" />
+                <ui:Label name="statCurrent2" class="loadout-stat-value" />
+                <ui:Label name="statPreview2" class="loadout-stat-value" />
+                <ui:Label name="statDelta2" class="loadout-stat-value loadout-stat-delta" />
+              </ui:VisualElement>
+              <ui:VisualElement class="loadout-stat-row" picking-mode="Ignore">
+                <ui:Label text="Средний урон" class="loadout-stat-name l10n-avg-damage" />
+                <ui:Label name="statCurrent3" class="loadout-stat-value" />
+                <ui:Label name="statPreview3" class="loadout-stat-value" />
+                <ui:Label name="statDelta3" class="loadout-stat-value loadout-stat-delta" />
+              </ui:VisualElement>
+              <ui:VisualElement class="loadout-stat-row" picking-mode="Ignore">
+                <ui:Label text="Скорострельность" class="loadout-stat-name l10n-rapid-fire" />
+                <ui:Label name="statCurrent4" class="loadout-stat-value" />
+                <ui:Label name="statPreview4" class="loadout-stat-value" />
+                <ui:Label name="statDelta4" class="loadout-stat-value loadout-stat-delta" />
+              </ui:VisualElement>
+              <ui:Label text="Броня и пушки: пробные параметры для примерки" class="loadout-stats-note l10n-demo-stats" />
+            </ui:VisualElement>
           </ui:VisualElement>
           <ui:VisualElement class="loadout-catalog" picking-mode="Ignore">
             <ui:VisualElement class="loadout-tabs" picking-mode="Ignore">
-              <ui:Button name="armorTab" text="БРОНЯ" class="loadout-tab is-selected" />
-              <ui:Button name="weaponTab" text="ОРУЖИЕ" class="loadout-tab" />
-              <ui:Button name="moduleTab" text="МОДУЛЬ" class="loadout-tab" />
+              <ui:Button name="armorTab" text="БРОНЯ" class="loadout-tab is-selected l10n-armor-tab" />
+              <ui:Button name="weaponTab" text="ОРУЖИЕ" class="loadout-tab l10n-weapons-tab" />
+              <ui:Button name="moduleTab" text="МОДУЛЬ" class="loadout-tab l10n-module-tab" />
             </ui:VisualElement>
             <ui:VisualElement name="armorCatalog" class="catalog-page" picking-mode="Ignore">
-              <ui:Label text="ПРЕДПРОСМОТР КОРПУСА" class="catalog-caption" />
-              <ui:Button name="baseArmorPreview" class="preview-card is-selected"><ui:VisualElement class="preview-art armor-base-art" picking-mode="Ignore" /><ui:Label text="БАЗОВЫЙ КОРПУС" class="preview-name" picking-mode="Ignore" /><ui:Label name="baseArmorStatus" text="ПОКАЗАНО" class="preview-status" picking-mode="Ignore" /></ui:Button>
-              <ui:Button name="assaultArmorPreview" class="preview-card"><ui:VisualElement class="preview-art armor-assault-art" picking-mode="Ignore" /><ui:Label text="ШТУРМОВАЯ БРОНЯ" class="preview-name" picking-mode="Ignore" /><ui:Label name="assaultArmorStatus" text="ПРИМЕРИТЬ" class="preview-status" picking-mode="Ignore" /></ui:Button>
+              <ui:Label text="ПРЕДПРОСМОТР КОРПУСА" class="catalog-caption l10n-armor-preview" />
+              <ui:VisualElement class="armor-options" picking-mode="Ignore">
+                <ui:Button name="baseArmorPreview" class="preview-card armor-preview is-selected"><ui:VisualElement class="preview-art armor-base-art" picking-mode="Ignore" /><ui:Label text="Базовый корпус" class="preview-name l10n-base-armor" picking-mode="Ignore" /><ui:Label text="Показано" class="preview-status l10n-shown" picking-mode="Ignore" /></ui:Button>
+                <ui:Button name="assaultArmorPreview" class="preview-card armor-preview"><ui:VisualElement class="preview-art armor-assault-art" picking-mode="Ignore" /><ui:Label text="Штурмовая броня" class="preview-name l10n-assault-armor" picking-mode="Ignore" /><ui:Label text="Примерить" class="preview-status l10n-try-on" picking-mode="Ignore" /></ui:Button>
+                <ui:Button name="scoutArmorPreview" class="preview-card armor-preview"><ui:VisualElement class="preview-art armor-base-art" picking-mode="Ignore" /><ui:Label text="Разведкорпус" class="preview-name l10n-scout-armor" picking-mode="Ignore" /><ui:Label text="Примерить" class="preview-status l10n-try-on" picking-mode="Ignore" /></ui:Button>
+              </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="weaponCatalog" class="catalog-page is-hidden" picking-mode="Ignore">
               <ui:VisualElement class="weapon-columns" picking-mode="Ignore">
                 <ui:VisualElement name="leftWeaponColumn" class="weapon-column is-focused" picking-mode="Ignore">
-                  <ui:Label text="ЛЕВАЯ ПУШКА" class="weapon-column-title" />
-                  <ui:Button name="leftStandardPreview" class="preview-card weapon-preview is-selected"><ui:VisualElement class="preview-art weapon-standard-art" picking-mode="Ignore" /><ui:Label text="СТАНДАРТ" class="preview-name" picking-mode="Ignore" /></ui:Button>
-                  <ui:Button name="leftHeavyPreview" class="preview-card weapon-preview"><ui:VisualElement class="preview-art weapon-heavy-art" picking-mode="Ignore" /><ui:Label text="ТЯЖЁЛАЯ" class="preview-name" picking-mode="Ignore" /></ui:Button>
+                  <ui:Label text="ЛЕВАЯ ПУШКА" class="weapon-column-title l10n-left-weapon" />
+                  <ui:Button name="leftStandardPreview" class="preview-card weapon-preview is-selected"><ui:VisualElement class="preview-art weapon-standard-art" picking-mode="Ignore" /><ui:Label text="СТАНДАРТ" class="preview-name l10n-standard" picking-mode="Ignore" /></ui:Button>
+                  <ui:Button name="leftHeavyPreview" class="preview-card weapon-preview"><ui:VisualElement class="preview-art weapon-heavy-art" picking-mode="Ignore" /><ui:Label text="ТЯЖЁЛАЯ" class="preview-name l10n-heavy" picking-mode="Ignore" /></ui:Button>
+                  <ui:Button name="leftRapidPreview" class="preview-card weapon-preview"><ui:VisualElement class="preview-art weapon-standard-art" picking-mode="Ignore" /><ui:Label text="СКОРОСТРЕЛЬНАЯ" class="preview-name l10n-rapid" picking-mode="Ignore" /></ui:Button>
                 </ui:VisualElement>
                 <ui:VisualElement name="rightWeaponColumn" class="weapon-column" picking-mode="Ignore">
-                  <ui:Label text="ПРАВАЯ ПУШКА" class="weapon-column-title" />
-                  <ui:Button name="rightStandardPreview" class="preview-card weapon-preview is-selected"><ui:VisualElement class="preview-art weapon-standard-art" picking-mode="Ignore" /><ui:Label text="СТАНДАРТ" class="preview-name" picking-mode="Ignore" /></ui:Button>
-                  <ui:Button name="rightHeavyPreview" class="preview-card weapon-preview"><ui:VisualElement class="preview-art weapon-heavy-art" picking-mode="Ignore" /><ui:Label text="ТЯЖЁЛАЯ" class="preview-name" picking-mode="Ignore" /></ui:Button>
+                  <ui:Label text="ПРАВАЯ ПУШКА" class="weapon-column-title l10n-right-weapon" />
+                  <ui:Button name="rightStandardPreview" class="preview-card weapon-preview is-selected"><ui:VisualElement class="preview-art weapon-standard-art" picking-mode="Ignore" /><ui:Label text="СТАНДАРТ" class="preview-name l10n-standard" picking-mode="Ignore" /></ui:Button>
+                  <ui:Button name="rightHeavyPreview" class="preview-card weapon-preview"><ui:VisualElement class="preview-art weapon-heavy-art" picking-mode="Ignore" /><ui:Label text="ТЯЖЁЛАЯ" class="preview-name l10n-heavy" picking-mode="Ignore" /></ui:Button>
+                  <ui:Button name="rightRapidPreview" class="preview-card weapon-preview"><ui:VisualElement class="preview-art weapon-standard-art" picking-mode="Ignore" /><ui:Label text="СКОРОСТРЕЛЬНАЯ" class="preview-name l10n-rapid" picking-mode="Ignore" /></ui:Button>
                 </ui:VisualElement>
               </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="moduleCatalog" class="catalog-page is-hidden" picking-mode="Ignore">
-              <ui:Label text="МОДУЛЬ ПЕРЕД ЗАБЕГОМ" class="catalog-caption" />
+              <ui:Label text="МОДУЛЬ ПЕРЕД ЗАБЕГОМ" class="catalog-caption l10n-pre-run-module" />
               <ui:VisualElement class="module-card" picking-mode="Ignore">
-                <ui:Label text="СТАНДАРТ" class="module-name" />
+                <ui:Label text="СТАНДАРТ" class="module-name l10n-standard" />
                 <ui:Button name="standardModule" class="module-button" />
               </ui:VisualElement>
               <ui:VisualElement class="module-card overdrive-card" picking-mode="Ignore">
-                <ui:Label text="ФОРСАЖ  ·  БЫСТРЕЕ СТРЕЛЬБА" class="module-name" />
+                <ui:Label text="ФОРСАЖ  ·  БЫСТРЕЕ СТРЕЛЬБА" class="module-name l10n-overdrive-name" />
                 <ui:Button name="overdriveModule" class="module-button" />
               </ui:VisualElement>
             </ui:VisualElement>
