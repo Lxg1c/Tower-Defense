@@ -756,6 +756,137 @@ MonoBehaviour:
     m_Localized: Automatically attacks ground and flying enemies within range.
     m_Metadata:
       m_Items: []
+  - m_Id: 65432831647744
+    m_Localized: Graphics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145216
+    m_Localized: Lighting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145217
+    m_Localized: Normal maps
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145218
+    m_Localized: Applies when you enter a level.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145219
+    m_Localized: Standard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145220
+    m_Localized: Simple
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145223
+    m_Localized: Performance results
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145224
+    m_Localized: Copy report
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145225
+    m_Localized: Back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145227
+    m_Localized: No frames were collected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145228
+    m_Localized: unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432911339520
+    m_Localized: on
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432911339521
+    m_Localized: off
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432911339522
+    m_Localized: On this run, 95% of frames stayed within roughly the 60 FPS budget.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432911339523
+    m_Localized: Likely GPU bound. Check lighting, shadows, transparent effects,
+      and render scale.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432911339524
+    m_Localized: Likely CPU bound. Check enemy logic, physics, draw calls, and garbage
+      collection.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432911339525
+    m_Localized: Some frames were slow. These measurements do not identify a clear
+      bottleneck.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432911339526
+    m_Localized: "{0} \xB7 {1} \xB7 {2} \xD7 {3}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432911339528
+    m_Localized: "Average FPS: {0:0.0}\nP95 frame: {1:0.0} ms \xB7 longest: {2:0.0}
+      ms\nFrames over the 60 FPS budget: {3:0.0}%"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056050470912
+    m_Localized: Performance test
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385472
+    m_Localized: Run statistics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385473
+    m_Localized: "{0:0.0} s \xB7 {1:0.0} FPS \xB7 P95 {2:0.0} ms"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385474
+    m_Localized: "Lighting: {0} \xB7 normal maps: {1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385475
+    m_Localized: "Enemies: {0} \xB7 {1:0.0} s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385476
+    m_Localized: "First map \xB7 fixed camera \xB7 enemy models"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385477
+    m_Localized: "Test {0}/{1} \xB7 enemies: {2} \xB7 {3} s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385478
+    m_Localized: "{0:0.0} s \xB7 waves {1}\u2013{2} \xB7 in combat {3:0.0} s\nMost
+      enemies alive: {4}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385479
+    m_Localized: 'Draw calls, average / peak: {0} / {1}
+
+      Peak Unity memory,
+      MB: {2}
+
+      Peak GC allocation per frame, KB: {3}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385480
+    m_Localized: Likely CPU-bound. Inspect render submission, animation and garbage
+      collection.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 74916299792384
+    m_Localized: "P95, ms \xB7 CPU (main / render): {0} / {1} \xB7 GPU: {2}"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

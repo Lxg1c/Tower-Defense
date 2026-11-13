@@ -100,6 +100,7 @@ public class WaveSpawner : MonoBehaviour
     public Phase CurrentPhase => session == null ? Phase.Build : (Phase)session.CurrentPhase;
     public int   WaveCount    => waves != null ? waves.Length : 0;
     public int   NextWaveIndex => nextWaveIndex;
+    internal int DisplayWaveNumber => Mathf.Clamp(nextWaveIndex + 1, 0, WaveCount);
     public bool  IsBuildPhase  => CurrentPhase == Phase.Build;
     public bool  IsCombatPhase => CurrentPhase == Phase.Combat;
     public int   AliveMobCount => aliveMobs.Count;
@@ -224,7 +225,7 @@ public class WaveSpawner : MonoBehaviour
     /// </summary>
     public void StartNextWave()
     {
-        if (!isActiveAndEnabled || completingWave || session == null || !session.TryStartWave(
+        if (RunSelection.IsPerformanceBenchmark || !isActiveAndEnabled || completingWave || session == null || !session.TryStartWave(
             subscribedBase != null && subscribedBase.IsAlive,
             TowerSelectionModal.Instance != null && TowerSelectionModal.Instance.IsOpen)) return;
 
@@ -256,6 +257,8 @@ public class WaveSpawner : MonoBehaviour
 
         return closest;
     }
+
+    internal int GetSpawnPointNumber(Transform point) => System.Array.IndexOf(spawnPoints, point) + 1;
 
     public void GetWavePreviewEntries(int waveIndex, List<WavePreviewEntry> results)
     {

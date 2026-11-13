@@ -92,6 +92,15 @@ and the ranged barracks at level 3; the chosen type stays with that barracks.
 Open the building guide from the Main Menu. To see the first-level hints again,
 select **Repeat hints** in the main menu settings and enter Level 01.
 
+**Settings → Graphics** selects standard or simplified lighting and toggles
+normal maps on supported materials. Changes apply when you enter a level.
+Use **Performance test** in Graphics to run a fixed-camera test on the first map.
+It automatically measures six seconds each with 0, 16, 32 and 64 enemy models
+after a short warm-up per stage. The copyable report includes FPS, CPU and GPU
+timings, and average and peak draw calls where available. Enemy combat and AI
+are inactive during the test. For the full gameplay workload, open **Run
+statistics** after victory or defeat to see the complete unpaused run.
+
 The Main Menu, campaign level and GameplayLab use UI Toolkit for every gameplay
 screen and indicator. The UXML and USS files are in `UI/Toolkit`;
 `MenuToolkitView` and `GameplayToolkitView` in `Scripts/UI` connect them to the
@@ -372,6 +381,8 @@ rather than editing generated code.
   the Inspector to place it in a later tier.
 - Enemy option assets point at enemy prefabs. Each enemy prefab explicitly
   assigns its targeting, combat and navigation modules on `MobCore`.
+  Imported enemy meshes, clips, and materials live in `Assets/Units/enemies`.
+  Fit each model using the nested `Visual` transform on the gameplay prefab.
 - `Data/Loadouts/EnemyLoadout.asset` contains one entry per enemy with slow-ammo,
   shield and companion pickup chances and durations. One roll selects at most one
   pickup per enemy; the chances in an entry must total no more than 100%.

@@ -54,7 +54,11 @@ namespace TowerDefense.Tests
                 typeof(WaveSpawner).GetField("spawnPoints", BindingFlags.Instance | BindingFlags.NonPublic)
                     .SetValue(spawner, new[] { firstPoint.transform, secondPoint.transform });
                 typeof(WaveSpawner).GetField("waves", BindingFlags.Instance | BindingFlags.NonPublic)
-                    .SetValue(spawner, new[] { wave });
+                    .SetValue(spawner, new[]
+                    {
+                        wave,
+                        new WaveSpawner.Wave { spawnGroups = new[] { wave.spawnGroups[2] } }
+                    });
 
                 var preview = new List<WaveSpawner.WavePreviewEntry>();
                 spawner.GetWavePreviewEntries(0, preview);
@@ -66,6 +70,7 @@ namespace TowerDefense.Tests
                 Assert.That(preview[0].stackIndex, Is.EqualTo(0));
                 Assert.That(preview[0].stackCount, Is.EqualTo(2));
                 Assert.That(preview[1].icon, Is.EqualTo(shooter.icon));
+                Assert.That(preview[1].icon, Is.Not.Null.And.Not.EqualTo(preview[0].icon));
                 Assert.That(preview[1].count, Is.EqualTo(4));
                 Assert.That(preview[1].stackIndex, Is.EqualTo(1));
                 Assert.That(preview[1].stackCount, Is.EqualTo(2));
@@ -73,6 +78,10 @@ namespace TowerDefense.Tests
                 Assert.That(preview[2].count, Is.EqualTo(5));
                 Assert.That(preview[2].stackIndex, Is.EqualTo(0));
                 Assert.That(preview[2].stackCount, Is.EqualTo(1));
+
+                spawner.GetWavePreviewEntries(1, preview);
+                Assert.That(preview.Count, Is.EqualTo(1));
+                Assert.That(spawner.GetSpawnPointNumber(preview[0].spawnPoint), Is.EqualTo(2));
             }
             finally
             {

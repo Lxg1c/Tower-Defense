@@ -26,7 +26,7 @@ public class MobPool
 
         if (instance == null)
         {
-            instance = Object.Instantiate(prefab, position, rotation, parent);
+            instance = Create(position, rotation);
         }
         else
         {
@@ -48,9 +48,16 @@ public class MobPool
     {
         for (int i = 0; i < count; i++)
         {
-            var inst = Object.Instantiate(prefab, position, Quaternion.identity, parent);
+            var inst = Create(position, Quaternion.identity);
             inst.gameObject.SetActive(false);
             idle.Push(inst);
         }
+    }
+
+    private MobCore Create(Vector3 position, Quaternion rotation)
+    {
+        var instance = Object.Instantiate(prefab, position, rotation, parent);
+        GraphicsMaterialProfiles.Apply(instance.gameObject);
+        return instance;
     }
 }

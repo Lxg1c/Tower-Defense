@@ -112,35 +112,32 @@
 }
 .spawn-preview { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
 .spawn-world-group {
-  position: absolute; height: 66px; flex-direction: row; align-items: center; padding: 6px;
-  background-color: rgba(8, 30, 43, 0.94);
-  border-top-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-right-width: 2px;
-  border-top-color: #df6473; border-bottom-color: #8c394b;
-  border-left-color: #b34e61; border-right-color: #b34e61;
-  border-top-left-radius: 14px; border-top-right-radius: 14px;
-  border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;
+  position: absolute; align-items: center;
 }
-.spawn-world-number {
-  width: 35px; height: 35px; margin-right: 4px; color: #fff9f7;
-  background-color: #a93d52; -unity-text-align: middle-center; -unity-font-style: bold;
-  border-top-left-radius: 18px; border-top-right-radius: 18px;
-  border-bottom-left-radius: 18px; border-bottom-right-radius: 18px;
+.spawn-number {
+  width: 46px; height: 46px; flex-shrink: 0; margin: 0; padding: 0;
+  color: #fff2f5; background-color: #70283f; border-width: 1.5px;
+  border-color: #f7839b; border-radius: 23px;
+  font-size: 22px; -unity-text-align: middle-center; -unity-font-style: bold;
 }
-.spawn-type { flex-direction: row; align-items: center; margin-left: 4px; }
-.spawn-type-icon { width: 43px; height: 43px; -unity-background-scale-mode: scale-to-fit; }
-.spawn-type-count { color: #ffffff; font-size: 18px; -unity-font-style: bold; margin-left: 2px; }
+.spawn-composition { width: 100%; flex-direction: row; flex-wrap: wrap; justify-content: center; margin-top: 5px; }
+.spawn-type {
+  width: 86px; height: 53px; flex-direction: row; align-items: center;
+  justify-content: center; margin: 0 3px 4px; background-color: #102535;
+  border-width: 1.5px; border-color: #315566; border-radius: 12px;
+}
+.spawn-type-icon { width: 46px; height: 46px; flex-shrink: 0; }
+.spawn-type-count { margin: 0 0 0 2px; padding: 0; color: #edf9fb; font-size: 19px; -unity-font-style: bold; }
 .spawn-edge-badge {
-  position: absolute; width: 66px; height: 66px; align-items: center; justify-content: center;
-  background-color: #872f43;
-  border-top-width: 3px; border-bottom-width: 3px; border-left-width: 3px; border-right-width: 3px;
-  border-top-color: #ff9ba2; border-bottom-color: #ff9ba2;
-  border-left-color: #ff9ba2; border-right-color: #ff9ba2;
-  border-top-left-radius: 33px; border-top-right-radius: 33px;
-  border-bottom-left-radius: 33px; border-bottom-right-radius: 33px;
+  position: absolute; width: 46px; height: 46px; align-items: center;
 }
-.spawn-edge-arrow { position: absolute; top: -25px; left: 14px; width: 38px; height: 38px; color: #ffb9a7; font-size: 33px; -unity-text-align: middle-center; }
-.spawn-edge-number { color: #fff7f5; font-size: 26px; -unity-font-style: bold; }
-.spawn-edge-distance { position: absolute; bottom: -20px; color: #ffffff; font-size: 13px; -unity-font-style: bold; }
+.spawn-edge-arrow { position: absolute; width: 26px; height: 26px; }
+.spawn-edge-distance {
+  position: absolute; top: 50px; min-width: 58px; height: 25px; margin: 0; padding: 0 7px;
+  color: #edf9fb; background-color: #102535; border-width: 1px;
+  border-color: #315566; border-radius: 9px;
+  font-size: 16px; -unity-text-align: middle-center; -unity-font-style: bold;
+}
 .spawn-badge {
   position: absolute; min-width: 42px; height: 38px; padding: 7px 10px;
   color: #ffffff; background-color: #11384a;
@@ -162,24 +159,24 @@
 .primary-button:hover { background-color: #92f9f4; }
 .touch-controls { position: absolute; left: 0; right: 0; bottom: 0; height: 350px; }
 .joystick {
-  position: absolute; left: 24px; bottom: 36px; width: 178px; height: 178px;
+  position: absolute; left: 24px; bottom: 36px; width: 280px; height: 280px;
   background-color: rgba(4, 29, 43, 0);
   padding: 0;
 }
 .joystick-art {
-  position: absolute; left: 0; top: 0; width: 178px; height: 178px;
+  position: absolute; left: 0; top: 0; width: 100%; height: 100%;
   background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/joystick-base-penpot.png");
   -unity-background-scale-mode: scale-to-fit;
 }
 .joystick-sector {
-  position: absolute; left: 0; top: 0; width: 178px; height: 178px;
+  position: absolute; left: 0; top: 0; width: 100%; height: 100%;
   background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/joystick-sector-penpot.png");
   -unity-background-scale-mode: scale-to-fit;
   opacity: 0;
 }
 .joystick-sector.is-active { opacity: 1; }
 .joystick-knob {
-  position: absolute; left: 50px; top: 50px; width: 78px; height: 78px;
+  position: absolute; left: 28.09%; top: 28.09%; width: 43.82%; height: 43.82%;
 }
 .joystick-knob-art {
   position: absolute; left: 0; top: 0; right: 0; bottom: 0;
@@ -327,6 +324,32 @@
 }
 .pause-menu-resume:hover { background-color: #ffe69a; }
 .pause-menu-resume:active { background-color: #edbd53; }
+.benchmark-hidden { display: none; }
+.benchmark-hud {
+  position: absolute; top: 18px; align-self: center; flex-direction: row; align-items: center;
+  padding: 6px 12px; background-color: #102535; border-width: 1px;
+  border-color: #5b9ca8; border-radius: 12px;
+}
+.benchmark-progress { color: #edf9fb; font-size: 17px; }
+.benchmark-hud .screen-button { width: 110px; height: 38px; margin: 0 0 0 12px; }
+.screen-button.outcome-statistics { height: 54px; white-space: normal; }
+.performance-panel {
+  width: 700px; height: 520px; max-width: 94%; max-height: 92%; padding: 20px 26px;
+  background-color: #102535; border-width: 1.5px; border-color: #5b9ca8; border-radius: 24px;
+}
+.benchmark-stages { flex-direction: row; margin: 8px 0 0; }
+.benchmark-stage-button {
+  flex-grow: 1; flex-basis: 0; height: 38px; margin: 0 5px 0 0; color: #edf9fb;
+  background-color: #162f40; border-width: 1px; border-color: #315566; border-radius: 9px;
+  font-size: 17px; -unity-font-style: bold; -unity-text-align: middle-center;
+}
+.benchmark-stage-button.benchmark-stage-selected { color: #a3fcf2; border-color: #82ece4; background-color: #204457; }
+.performance-report {
+  flex-grow: 1; white-space: normal; color: #edf9fb; font-size: 17px;
+  margin: 12px 0; padding: 0; -unity-text-align: upper-left;
+}
+.performance-actions { flex-direction: row; justify-content: space-between; }
+.performance-actions .screen-button { width: 48%; height: 44px; margin: 0; }
 .screen-panel {
   width: 470px; max-height: 90%; padding: 30px; align-items: center;
   background-color: rgba(3, 17, 29, 0.98);

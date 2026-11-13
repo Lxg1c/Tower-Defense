@@ -259,6 +259,19 @@ attack range, change target, die, or return to the pool. `GameplayToolkitView`
 uses this state for the warning, plays the wave-start clip on the combat phase
 event, and highlights the ultimate when it becomes ready again.
 
+`GamePerformanceSettings` saves the lighting and normal-map choices. At level
+entry and when a mob, building, or ally is created, `GraphicsMaterialProfiles`
+assigns shared material variants from the catalog baked by **Tools → Tower
+Defense → Refresh Graphics Materials**. The catalog supports opaque URP Lit and
+Simple Lit materials and preserves custom Shader Graph materials.
+`PerformanceMeasurement` uses bounded timing distributions to collect frame
+times and optional platform counters throughout each unpaused run. The gameplay
+view stops sampling at the outcome and shows a summary with a copyable report.
+The Graphics menu starts `PerformanceBenchmark` on the first map through
+`RunSelection`. It presents the same fixed camera and activates 0, 16, 32 and 64
+enemy models in sequence, sampling each stage separately after warm-up.
+Benchmark mode blocks waves and progression rewards.
+
 `ResponsiveGameplayHud` selects Mobile or Desktop UI Toolkit controls from the
 build target. Editor `Automatic` previews the active build target; the Inspector
 override can switch layouts during Play Mode. `PlayerMovement` accepts WASD/arrow input and
@@ -319,6 +332,10 @@ dedicated wave/group/entry types expose only the supported
 authoring fields, without the spawner's legacy prefab or icon alternatives.
 Validation rejects missing enemies, invalid counts/timings/rewards and invalid
 spawn-point indices. CreateWaves copies data into fresh runtime arrays.
+
+Enemy options reference the gameplay prefabs in `Prefabs/Mobs`. The nested
+`Visual` instance owns the model scale and offset. Its animator uses the
+gameplay controller with clips from the imported model in `Assets/Units/enemies`.
 
 `MenuToolkitView` creates page selectors from `MainMenu`'s Levels list and previews
 the chosen encounter. Start stores the asset and target scene in RunSelection, then loads

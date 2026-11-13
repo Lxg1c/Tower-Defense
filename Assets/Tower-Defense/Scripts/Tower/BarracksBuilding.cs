@@ -211,6 +211,7 @@ public class BarracksBuilding : MonoBehaviour
         Vector3 position = spawnPoint != null ? spawnPoint.position : transform.position;
         Quaternion rotation = spawnPoint != null ? spawnPoint.rotation : transform.rotation;
         AllySoldier soldier = Instantiate(prefab, position, rotation);
+        GraphicsMaterialProfiles.Apply(soldier.gameObject);
 
         soldier.Died += OnSoldierDied;
         soldiers[slot] = soldier;

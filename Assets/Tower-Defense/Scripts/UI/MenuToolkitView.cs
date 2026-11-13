@@ -79,6 +79,8 @@ public sealed class MenuToolkitView : MonoBehaviour
     private const string RussianOption = "Русский";
     private const string EnglishOption = "English";
     private DropdownField languageDropdown;
+    private DropdownField lightingDropdown;
+    private Button normalMapsToggle;
     private Slider masterSlider;
     private Label fpsLabel;
     private Button fpsToggle;
@@ -169,6 +171,8 @@ public sealed class MenuToolkitView : MonoBehaviour
         standardModule = root.Q<Button>("standardModule");
         overdriveModule = root.Q<Button>("overdriveModule");
         languageDropdown = root.Q<DropdownField>("languageDropdown");
+        lightingDropdown = root.Q<DropdownField>("lightingDropdown");
+        normalMapsToggle = root.Q<Button>("normalMapsToggle");
         masterSlider = root.Q<Slider>("masterSlider");
         fpsLabel = root.Q<Label>("fpsLabel");
         fpsToggle = root.Q<Button>("fpsToggle");
@@ -189,6 +193,7 @@ public sealed class MenuToolkitView : MonoBehaviour
             rightWeaponPreviews.Any(button => button == null) || skillButtons.Any(button => button == null) ||
             upgradeSkill == null || standardModule == null || overdriveModule == null ||
             fpsLabel == null || fpsToggle == null || languageDropdown == null ||
+            lightingDropdown == null || normalMapsToggle == null ||
             masterSlider == null || musicSlider == null ||
             effectsSlider == null || startButton == null || difficultyButtons.Any(button => button == null))
         {
@@ -292,6 +297,13 @@ public sealed class MenuToolkitView : MonoBehaviour
         fpsToggle.clicked += GamePerformanceSettings.ToggleFps;
         languageDropdown.RegisterValueChangedCallback(evt =>
             GameLocalization.SelectLanguage(evt.newValue == EnglishOption ? "en" : "ru"));
+        lightingDropdown.RegisterValueChangedCallback(evt =>
+        {
+            int choice = lightingDropdown.choices.IndexOf(evt.newValue);
+            if (choice >= 0) GamePerformanceSettings.SetLighting((GamePerformanceSettings.LightingMode)choice);
+        });
+        normalMapsToggle.clicked += ToggleNormalMaps;
+        root.Q<Button>("startBenchmark").clicked += menu.StartPerformanceBenchmark;
         GameLocalization.Changed += RefreshLanguage;
         PlayerProgression.Changed += RefreshAll;
         GameAudioSettings.Changed += RefreshAudio;
@@ -318,6 +330,8 @@ public sealed class MenuToolkitView : MonoBehaviour
         GameAudioSettings.Changed -= RefreshAudio;
         GamePerformanceSettings.Changed -= RefreshFps;
         GameLocalization.Changed -= RefreshLanguage;
+        normalMapsToggle.clicked -= ToggleNormalMaps;
+        root.Q<Button>("startBenchmark").clicked -= menu.StartPerformanceBenchmark;
         bound = false;
     }
 
@@ -364,6 +378,7 @@ public sealed class MenuToolkitView : MonoBehaviour
         RefreshVolumeControl(musicSlider, "music", .7f);
         RefreshVolumeControl(effectsSlider, "effects", .85f);
         languageDropdown.SetValueWithoutNotify(RussianOption);
+        RefreshGraphics();
         fpsLabel.AddToClassList("is-hidden");
         Show(editorPreview switch
         {
@@ -381,6 +396,7 @@ public sealed class MenuToolkitView : MonoBehaviour
         GameLocalization.ApplyTo(root);
         languageDropdown.SetEnabled(GameLocalization.IsReady);
         languageDropdown.SetValueWithoutNotify(GameLocalization.Language == "en" ? EnglishOption : RussianOption);
+        RefreshGraphics();
         RefreshAll();
     }
 
@@ -722,6 +738,24 @@ public sealed class MenuToolkitView : MonoBehaviour
         fpsLabel.EnableInClassList("is-hidden", !GamePerformanceSettings.ShowFps);
         fpsElapsed = 0f;
         fpsFrames = 0;
+    }
+
+    private void RefreshGraphics()
+    {
+        var choices = new System.Collections.Generic.List<string>
+        {
+            GameLocalization.Text("graphics-standard", "Обычное"),
+            GameLocalization.Text("graphics-simple", "Упрощённое")
+        };
+        lightingDropdown.choices = choices;
+        lightingDropdown.SetValueWithoutNotify(choices[(int)GamePerformanceSettings.Lighting]);
+        normalMapsToggle.EnableInClassList("is-on", GamePerformanceSettings.NormalMaps);
+    }
+
+    private void ToggleNormalMaps()
+    {
+        GamePerformanceSettings.ToggleNormalMaps();
+        normalMapsToggle.EnableInClassList("is-on", GamePerformanceSettings.NormalMaps);
     }
 
     private void ShowHome() { screens.ShowHome(); Show(homePage); }

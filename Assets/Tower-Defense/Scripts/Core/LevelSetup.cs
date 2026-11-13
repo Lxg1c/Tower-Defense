@@ -59,9 +59,15 @@ public sealed class LevelSetup : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        foreach (var root in gameObject.scene.GetRootGameObjects())
+            GraphicsMaterialProfiles.Apply(root);
+    }
+
     public bool TryAwardVictory()
     {
-        if (CurrentLevel == null || spawner == null ||
+        if (RunSelection.IsPerformanceBenchmark || CurrentLevel == null || spawner == null ||
             spawner.CurrentPhase != WaveSpawner.Phase.AllCompleted) return false;
         int reward = CurrentLevel.GetMoneyReward(CurrentDifficulty);
         return rewardGate.TryAward(() =>
@@ -73,7 +79,7 @@ public sealed class LevelSetup : MonoBehaviour
 
     public bool TryAwardDefeat()
     {
-        if (CurrentLevel == null || spawner == null ||
+        if (RunSelection.IsPerformanceBenchmark || CurrentLevel == null || spawner == null ||
             spawner.CurrentPhase != WaveSpawner.Phase.Defeated) return false;
 
         int reward = spawner.CalculateDefeatReward(CurrentLevel.GetMoneyReward(CurrentDifficulty));

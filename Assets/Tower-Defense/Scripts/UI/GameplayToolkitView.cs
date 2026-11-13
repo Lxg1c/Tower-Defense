@@ -31,6 +31,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private VisualElement root;
     private VisualElement touchControls;
     private VisualElement desktopActions;
+    private VisualElement touchActions;
     private VisualElement joystick;
     private VisualElement joystickSector;
     private VisualElement joystickKnob;
@@ -72,6 +73,26 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private Label desktopUltimateCharge;
     private Label fpsLabel;
     private Button fpsToggle;
+    private Button victoryStats;
+    private Button defeatStats;
+    private Label benchmarkProgress;
+    private VisualElement benchmarkHud;
+    private Button benchmarkExit;
+    private Button performanceBack;
+    private PerformanceBenchmark benchmark;
+    private bool benchmarkMode;
+    private int displayedBenchmarkStage;
+    private int displayedBenchmarkSeconds = -1;
+    private bool applicationPaused;
+    private bool skipPerformanceFrame = true;
+    private string runSummary;
+    private string runReport;
+    private VisualElement performancePanel;
+    private Label performanceReport;
+    private VisualElement benchmarkStages;
+    private string performanceClipboard;
+    private PerformanceMeasurement performanceMeasurement;
+    private bool performanceReportOpen;
     private float fpsElapsed;
     private int fpsFrames;
     private RadialProgressElement mobileUltimateRing;
@@ -105,7 +126,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
         public VisualElement Visible;
         public VisualElement Edge;
         public Label Distance;
-        public Label Arrow;
+        public VisualElement Arrow;
+        public float PreviewWidth;
     }
 
     private void OnEnable()
@@ -139,6 +161,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         touchControls = root.Q("touchControls");
         desktopActions = root.Q("desktopActions");
         joystick = root.Q("joystick");
+        touchActions = root.Q("actionStack");
         joystickSector = root.Q("joystickSector");
         joystickKnob = root.Q("joystickKnob");
         buildPanel = root.Q("buildPanel");
@@ -173,6 +196,15 @@ public sealed class GameplayToolkitView : MonoBehaviour
         desktopUltimateCharge = root.Q<Label>("desktopUltimateCharge");
         fpsLabel = root.Q<Label>("fpsLabel");
         fpsToggle = root.Q<Button>("fpsToggle");
+        victoryStats = root.Q<Button>("victoryStats");
+        defeatStats = root.Q<Button>("defeatStats");
+        benchmarkHud = root.Q("benchmarkHud");
+        benchmarkProgress = root.Q<Label>("benchmarkProgress");
+        benchmarkExit = root.Q<Button>("benchmarkExit");
+        performanceBack = root.Q<Button>("performanceBack");
+        performancePanel = root.Q("performancePanel");
+        performanceReport = root.Q<Label>("performanceReport");
+        benchmarkStages = root.Q("benchmarkStages");
         startWaveButton = root.Q<Button>("startWaveButton");
         homeButton = root.Q<Button>("homeButton");
         desktopHome = root.Q<Button>("desktopHome");
@@ -183,7 +215,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         masterSlider = root.Q<Slider>("masterSlider");
         musicSlider = root.Q<Slider>("musicSlider");
         effectsSlider = root.Q<Slider>("effectsSlider");
-        if (touchControls == null || desktopActions == null || joystick == null || joystickSector == null ||
+        if (touchControls == null || desktopActions == null || touchActions == null || joystick == null || joystickSector == null ||
             joystickKnob == null || buildPanel == null ||
             orderLayer == null || screenOverlay == null || spawnPreview == null || pausePanel == null ||
             audioPanel == null || exitConfirmPanel == null || victoryPanel == null || defeatPanel == null ||
@@ -196,7 +228,10 @@ public sealed class GameplayToolkitView : MonoBehaviour
             coreAlert == null || coreHealthLabel == null ||
             slowEffect == null || shieldEffect == null ||
             turretEffect == null || mobileUltimateCharge == null || desktopUltimateCharge == null ||
-            fpsLabel == null || fpsToggle == null ||
+            fpsLabel == null || fpsToggle == null || victoryStats == null || defeatStats == null ||
+            benchmarkHud == null || benchmarkProgress == null || benchmarkExit == null ||
+            performancePanel == null || performanceReport == null || performanceBack == null ||
+            benchmarkStages == null ||
             startWaveButton == null || homeButton == null || desktopHome == null ||
             rallyButton == null || desktopRally == null ||
             ultimateButton == null || desktopUltimate == null || masterSlider == null ||
@@ -238,10 +273,20 @@ public sealed class GameplayToolkitView : MonoBehaviour
         musicSlider.RegisterValueChangedCallback(evt => GameAudioSettings.SetMusic(evt.newValue));
         effectsSlider.RegisterValueChangedCallback(evt => GameAudioSettings.SetEffects(evt.newValue));
         fpsToggle.clicked += GamePerformanceSettings.ToggleFps;
+        victoryStats.clicked += OpenRunReport;
+        defeatStats.clicked += OpenRunReport;
+        benchmarkExit.clicked += defeat.GoToMainMenu;
+        root.Q<Button>("performanceCopy").clicked += CopyPerformanceReport;
+        performanceBack.clicked += ClosePerformanceReport;
         joystick.RegisterCallback<PointerDownEvent>(BeginMove);
         joystick.RegisterCallback<PointerMoveEvent>(Move);
         joystick.RegisterCallback<PointerUpEvent>(EndMove);
         joystick.RegisterCallback<PointerCaptureOutEvent>(_ => ResetMove());
+        if (root.Q("gameRoot") is { } gameRoot)
+        {
+            gameRoot.RegisterCallback<GeometryChangedEvent>(ResizeJoystick);
+            FitJoystick(joystick, gameRoot.layout.size);
+        }
         BindUltimate(ultimateButton);
         BindUltimate(desktopUltimate);
         buildModal.onOpened.AddListener(RefreshBuildCards);
@@ -252,7 +297,20 @@ public sealed class GameplayToolkitView : MonoBehaviour
         BaseUpgrade.OnTownHallChanged += DiscoverGuideBuilding;
         spawner.onCombatPhaseStarted.AddListener(PlayWaveStart);
         healthBars = FindFirstObjectByType<HealthBarManager>();
-        if (healthBars != null) healthBars.SetPresentationRoot(root);
+        benchmarkMode = RunSelection.IsPerformanceBenchmark;
+        if (benchmarkMode)
+        {
+            movement.enabled = false;
+            foreach (var child in root.Q("gameRoot").Children())
+                if (child != benchmarkHud && child != screenOverlay) child.AddToClassList("benchmark-hidden");
+            benchmarkHud.RemoveFromClassList("is-hidden");
+        }
+        else
+        {
+            if (healthBars != null) healthBars.SetPresentationRoot(root);
+            performanceMeasurement = new PerformanceMeasurement();
+            skipPerformanceFrame = true;
+        }
         bound = true;
     }
 
@@ -262,13 +320,15 @@ public sealed class GameplayToolkitView : MonoBehaviour
         RefreshAudio();
         RefreshFps();
         RefreshLanguage();
-        DiscoverGuideBuilding();
+        if (!benchmarkMode) DiscoverGuideBuilding();
     }
 
     private void RefreshLanguage()
     {
         GameLocalization.ApplyTo(root);
-        RefreshBuildCards();
+        if (benchmarkMode)
+            performanceBack.text = GameLocalization.Text("main-menu", "В главное меню");
+        else RefreshBuildCards();
     }
 
     private void OnDisable()
@@ -284,6 +344,27 @@ public sealed class GameplayToolkitView : MonoBehaviour
         GameLocalization.Changed -= RefreshLanguage;
         BaseUpgrade.OnTownHallChanged -= DiscoverGuideBuilding;
         spawner.onCombatPhaseStarted.RemoveListener(PlayWaveStart);
+        victoryStats.clicked -= OpenRunReport;
+        defeatStats.clicked -= OpenRunReport;
+        benchmarkExit.clicked -= defeat.GoToMainMenu;
+        root.Q<Button>("performanceCopy").clicked -= CopyPerformanceReport;
+        performanceBack.clicked -= ClosePerformanceReport;
+        performanceMeasurement?.Dispose();
+        performanceMeasurement = null;
+        performanceReportOpen = false;
+        runSummary = null;
+        runReport = null;
+        performanceClipboard = null;
+        benchmarkStages.Clear();
+        benchmarkStages.AddToClassList("is-hidden");
+        benchmark?.Dispose();
+        benchmark = null;
+        if (benchmarkMode)
+        {
+            foreach (var child in root.Q("gameRoot").Children()) child.RemoveFromClassList("benchmark-hidden");
+            benchmarkHud.AddToClassList("is-hidden");
+        }
+        root.Q("gameRoot")?.UnregisterCallback<GeometryChangedEvent>(ResizeJoystick);
         if (healthBars != null) healthBars.SetPresentationRoot(null);
         movement.ClearToolkitMoveInput();
         if (ultimatePointerHeld) ultimate.Release();
@@ -300,6 +381,12 @@ public sealed class GameplayToolkitView : MonoBehaviour
         }
 #endif
         if (!bound) return;
+        if (benchmarkMode)
+        {
+            UpdateBenchmark();
+            return;
+        }
+        UpdateRunMeasurement();
         if (GamePerformanceSettings.ShowFps)
         {
             fpsElapsed += Time.unscaledDeltaTime;
@@ -352,12 +439,13 @@ public sealed class GameplayToolkitView : MonoBehaviour
         desktopRally.EnableInClassList("is-hidden", hideRally);
         orderLayer.EnableInClassList("is-hidden", !order);
         buildPanel.EnableInClassList("is-hidden", !buildModal.IsOpen || order || paused || won || lost);
-        screenOverlay.EnableInClassList("is-hidden", !paused && !won && !lost);
-        pausePanel.EnableInClassList("is-hidden", !paused || audioOpen || confirmingExit);
+        screenOverlay.EnableInClassList("is-hidden", !paused && !won && !lost && !performanceReportOpen);
+        pausePanel.EnableInClassList("is-hidden", !paused || audioOpen || confirmingExit || performanceReportOpen);
         audioPanel.EnableInClassList("is-hidden", !paused || !audioOpen || confirmingExit);
         exitConfirmPanel.EnableInClassList("is-hidden", !confirmingExit);
-        victoryPanel.EnableInClassList("is-hidden", !won);
-        defeatPanel.EnableInClassList("is-hidden", !lost);
+        victoryPanel.EnableInClassList("is-hidden", !won || performanceReportOpen);
+        defeatPanel.EnableInClassList("is-hidden", !lost || performanceReportOpen);
+        performancePanel.EnableInClassList("is-hidden", !performanceReportOpen);
         if (confirmingExit)
         {
             bool restarting = pauseMenu.PendingExitAction == PauseMenu.ExitAction.Restart;
@@ -369,10 +457,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
                 : GameLocalization.Text("main-menu-button", "ГЛАВНОЕ МЕНЮ"));
         }
 
-        int wave = spawner.IsBuildPhase ? spawner.NextWaveIndex + 1 :
-            Mathf.Max(1, spawner.NextWaveIndex);
+        int wave = spawner.DisplayWaveNumber;
         int totalWaves = spawner.WaveCount;
-        wave = Mathf.Clamp(wave, 0, totalWaves);
         SetText(wavePhaseLabel, spawner.IsBuildPhase
             ? GameLocalization.Text("build-phase", "ПОДГОТОВКА К ВОЛНЕ")
             : GameLocalization.Text("combat-phase", "ВОЛНА ИДЁТ"));
@@ -417,7 +503,103 @@ public sealed class GameplayToolkitView : MonoBehaviour
         if (won) SetText(root.Q<Label>("victoryReward"), GameLocalization.Format("reward", "+{0} КРЕДИТОВ", levelSetup.VictoryMoneyReward));
         if (lost) SetText(defeatReward, GameLocalization.Format("reward", "+{0} КРЕДИТОВ", levelSetup.DefeatMoneyReward));
         if (buildModal.IsOpen && buildModal.Revision != lastModalRevision) RefreshBuildCards();
-        UpdateSpawnPreview(spawner.IsBuildPhase && !order && !paused && !modal && !won && !lost);
+        UpdateSpawnPreview(spawner.IsBuildPhase && !order && !paused && !modal && !won && !lost, desktop);
+    }
+
+    private void OnApplicationPause(bool paused)
+    {
+        applicationPaused = paused;
+        skipPerformanceFrame = true;
+    }
+
+    private void UpdateRunMeasurement()
+    {
+        if (performanceMeasurement == null) return;
+        var phase = spawner.CurrentPhase;
+        if (phase is WaveSpawner.Phase.AllCompleted or WaveSpawner.Phase.Defeated)
+        {
+            runSummary = performanceMeasurement.Summary();
+            runReport = PerformanceMeasurement.DeviceReport() + "\n\n" + performanceMeasurement.Report();
+            performanceMeasurement.Dispose();
+            performanceMeasurement = null;
+            var button = phase == WaveSpawner.Phase.AllCompleted ? victoryStats : defeatStats;
+            button.text = GameLocalization.Text("perf-run-details", "Статистика забега") + "\n" + runSummary;
+            return;
+        }
+
+        if (pauseMenu.IsPaused || applicationPaused)
+        {
+            skipPerformanceFrame = true;
+            return;
+        }
+        if (skipPerformanceFrame)
+        {
+            skipPerformanceFrame = false;
+            return;
+        }
+        performanceMeasurement.Tick(Time.unscaledDeltaTime, spawner.DisplayWaveNumber,
+            phase == WaveSpawner.Phase.Combat, spawner.AliveMobCount);
+    }
+
+    private void UpdateBenchmark()
+    {
+        if (applicationPaused || performanceReportOpen) return;
+        if (benchmark == null)
+        {
+            benchmark = new PerformanceBenchmark(spawner, Camera.main, movement.transform.position);
+            skipPerformanceFrame = true;
+            displayedBenchmarkStage = 0;
+        }
+        if (!skipPerformanceFrame) benchmark.Tick(Time.unscaledDeltaTime);
+        skipPerformanceFrame = false;
+        if (benchmark.IsComplete)
+        {
+            performanceClipboard = benchmark.Report;
+            for (int i = 0; i < benchmark.StageCount; i++)
+            {
+                int index = i;
+                var button = new Button(() => ShowBenchmarkStage(index)) { text = benchmark.EnemiesAtStage(i).ToString() };
+                button.AddToClassList("benchmark-stage-button");
+                benchmarkStages.Add(button);
+            }
+            benchmarkStages.RemoveFromClassList("is-hidden");
+            ShowBenchmarkStage(0);
+            performanceReportOpen = true;
+            benchmarkHud.AddToClassList("is-hidden");
+            screenOverlay.RemoveFromClassList("is-hidden");
+            performancePanel.RemoveFromClassList("is-hidden");
+            return;
+        }
+        int stage = benchmark.StageNumber;
+        int seconds = benchmark.SecondsRemaining;
+        if (stage == displayedBenchmarkStage && seconds == displayedBenchmarkSeconds) return;
+        displayedBenchmarkStage = stage;
+        displayedBenchmarkSeconds = seconds;
+        SetText(benchmarkProgress, GameLocalization.Format("perf-benchmark-progress",
+            "Тест {0}/{1} · врагов: {2} · {3} с", stage, benchmark.StageCount, benchmark.EnemyCount, seconds));
+    }
+
+    private void ShowBenchmarkStage(int index)
+    {
+        performanceReport.text = benchmark.ReportForStage(index);
+        for (int i = 0; i < benchmarkStages.childCount; i++)
+            benchmarkStages[i].EnableInClassList("benchmark-stage-selected", i == index);
+    }
+
+    private void OpenRunReport()
+    {
+        if (runReport == null) return;
+        performanceReport.text = runReport;
+        performanceClipboard = runReport;
+        performanceReportOpen = true;
+    }
+
+    private void CopyPerformanceReport() => GUIUtility.systemCopyBuffer = performanceClipboard;
+
+    private void ClosePerformanceReport()
+    {
+        if (benchmarkMode) defeat.GoToMainMenu();
+        else performanceReportOpen = false;
     }
 
     private void PlayWaveStart(int waveIndex, int totalWaves, int reward)
@@ -522,6 +704,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
             editorPreviewRoot = gameRoot;
             documentRoot.AddToClassList("game-document-root");
             gameRoot.AddToClassList("editor-hud-preview");
+            gameRoot.RegisterCallback<GeometryChangedEvent>(ResizeJoystick);
+            if (gameRoot.Q("joystick") is { } stick) FitJoystick(stick, gameRoot.layout.size);
             if (gameRoot.Q("waveSteps") is { } steps) UpdateWaveSteps(steps, 5, 2);
             AddEditorUltimatePreview(gameRoot.Q<Button>("ultimateButton"), "ultimateChargeRing", "ultimateCharge");
             AddEditorUltimatePreview(gameRoot.Q<Button>("desktopUltimate"), "desktopUltimateChargeRing",
@@ -546,6 +730,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private void ClearEditorHudPreview()
     {
         if (editorPreviewRoot == null) return;
+        editorPreviewRoot.UnregisterCallback<GeometryChangedEvent>(ResizeJoystick);
         editorPreviewRoot.RemoveFromClassList("editor-hud-preview");
         editorPreviewRoot.RemoveFromClassList("editor-hud-preview-desktop");
         editorPreviewRoot.Q<RadialProgressElement>("ultimateChargeRing")?.RemoveFromHierarchy();
@@ -556,7 +741,23 @@ public sealed class GameplayToolkitView : MonoBehaviour
     }
 #endif
 
-    private void UpdateSpawnPreview(bool visible)
+    private static void ResizeJoystick(GeometryChangedEvent evt)
+    {
+        if (evt.currentTarget is VisualElement gameRoot && gameRoot.Q("joystick") is { } stick)
+            FitJoystick(stick, evt.newRect.size);
+    }
+
+    private static void FitJoystick(VisualElement stick, Vector2 panelSize)
+    {
+        if (!(panelSize.x > 0f && panelSize.y > 0f)) return;
+        float diameter = Mathf.Min(300f, Mathf.Min(panelSize.x * 0.28f, panelSize.y * 0.39f));
+        stick.style.width = diameter;
+        stick.style.height = diameter;
+    }
+
+    private const float SpawnBadgeRadius = 23f;
+
+    private void UpdateSpawnPreview(bool visible, bool desktop)
     {
         spawnPreview.EnableInClassList("is-hidden", !visible);
         if (!visible) return;
@@ -571,16 +772,21 @@ public sealed class GameplayToolkitView : MonoBehaviour
             {
                 Transform point = spawnEntries[i].spawnPoint;
                 if (point == null || spawnMarkers.Exists(marker => marker.Point == point)) continue;
-                int number = spawnMarkers.Count + 1;
+                int number = spawner.GetSpawnPointNumber(point);
                 var world = new VisualElement();
                 world.AddToClassList("spawn-world-group");
                 world.AddToClassList("is-hidden");
                 var heading = new Label(number.ToString());
-                heading.AddToClassList("spawn-world-number");
+                heading.AddToClassList("spawn-number");
                 world.Add(heading);
+                var composition = new VisualElement();
+                composition.AddToClassList("spawn-composition");
+                world.Add(composition);
+                int typeCount = 0;
                 for (int j = 0; j < spawnEntries.Count; j++)
                 {
                     if (spawnEntries[j].spawnPoint != point) continue;
+                    typeCount++;
                     var row = new VisualElement();
                     row.AddToClassList("spawn-type");
                     if (spawnEntries[j].icon != null)
@@ -592,16 +798,19 @@ public sealed class GameplayToolkitView : MonoBehaviour
                     var count = new Label(spawnEntries[j].count.ToString());
                     count.AddToClassList("spawn-type-count");
                     row.Add(count);
-                    world.Add(row);
+                    composition.Add(row);
                 }
+                float previewWidth = Mathf.Max(SpawnBadgeRadius * 2f, Mathf.Min(typeCount, 4) * 92f + 4f);
+                world.style.width = previewWidth;
                 var edge = new VisualElement();
                 edge.AddToClassList("spawn-edge-badge");
                 edge.AddToClassList("is-hidden");
-                var arrow = new Label("▲");
+                var arrow = new VisualElement();
                 arrow.AddToClassList("spawn-edge-arrow");
+                arrow.generateVisualContent += DrawSpawnArrow;
                 edge.Add(arrow);
                 var index = new Label(number.ToString());
-                index.AddToClassList("spawn-edge-number");
+                index.AddToClassList("spawn-number");
                 edge.Add(index);
                 var distance = new Label();
                 distance.AddToClassList("spawn-edge-distance");
@@ -611,48 +820,78 @@ public sealed class GameplayToolkitView : MonoBehaviour
                 spawnPreview.Add(world);
                 spawnPreview.Add(edge);
                 spawnMarkers.Add(new SpawnMarker { Point = point, Visible = world, Edge = edge,
-                    Distance = distance, Arrow = arrow });
+                    Distance = distance, Arrow = arrow, PreviewWidth = previewWidth });
             }
         }
         Camera camera = Camera.main;
         float width = spawnPreview.resolvedStyle.width;
         float height = spawnPreview.resolvedStyle.height;
         if (camera == null || width <= 0f || height <= 0f) return;
+        Vector2 center = new(width * 0.5f, height * 0.5f);
+        Rect actions = (desktop ? desktopActions : touchActions).worldBound;
+        Rect stick = desktop ? default : joystick.worldBound;
         foreach (SpawnMarker marker in spawnMarkers)
         {
-            if (marker.Point == null) continue;
-            Vector3 screen = camera.WorldToScreenPoint(marker.Point.position);
-            Vector2 target = new(screen.x * width / Screen.width, screen.y * height / Screen.height);
-            Vector2 center = new(width * 0.5f, height * 0.5f);
-            if (screen.z < 0f) target = center - (target - center);
-            bool onScreen = screen.z > 0f && target.x >= 0f && target.x <= width &&
-                target.y >= 0f && target.y <= height;
+            if (marker.Point == null)
+            {
+                marker.Visible.AddToClassList("is-hidden");
+                marker.Edge.AddToClassList("is-hidden");
+                continue;
+            }
+            Vector3 viewport = camera.WorldToViewportPoint(marker.Point.position);
+            Vector2 target = new(viewport.x * width, (1f - viewport.y) * height);
+            bool onScreen = viewport.z > 0f && viewport.x >= 0f && viewport.x <= 1f &&
+                viewport.y >= 0f && viewport.y <= 1f;
             marker.Visible.EnableInClassList("is-hidden", !onScreen);
             marker.Edge.EnableInClassList("is-hidden", onScreen);
             if (onScreen)
             {
-                marker.Visible.style.left = Mathf.Clamp(target.x - marker.Visible.resolvedStyle.width * 0.5f,
-                    12f, width - marker.Visible.resolvedStyle.width - 12f);
-                marker.Visible.style.top = Mathf.Clamp(height - target.y - 84f, 90f, height - 210f);
+                float left = Mathf.Clamp(target.x - marker.PreviewWidth * 0.5f,
+                    12f, Mathf.Max(12f, width - marker.PreviewWidth - 12f));
+                float previewHeight = Mathf.Max(104f, marker.Visible.layout.height);
+                if (float.IsNaN(previewHeight)) previewHeight = 104f;
+                float limit = height - previewHeight - 124f;
+                if (!desktop && left < stick.xMax) limit = Mathf.Min(limit, stick.yMin - previewHeight - 8f);
+                if (left + marker.PreviewWidth > actions.xMin) limit = Mathf.Min(limit, actions.yMin - previewHeight - 8f);
+                marker.Visible.style.left = left;
+                marker.Visible.style.top = Mathf.Clamp(target.y - previewHeight - 12f, 112f, Mathf.Max(112f, limit));
             }
             else
             {
-                Vector2 direction = target - center;
-                if (direction.sqrMagnitude < 0.001f) direction = Vector2.up;
+                Vector2 direction = (target - center) * (viewport.z < 0f ? -1f : 1f);
+                if (direction.sqrMagnitude < 0.001f) direction = Vector2.down;
                 float scaleX = Mathf.Abs(direction.x) > 0.001f ?
-                    (width * 0.5f - 58f) / Mathf.Abs(direction.x) : float.PositiveInfinity;
+                    (width * 0.5f - 50f) / Mathf.Abs(direction.x) : float.PositiveInfinity;
                 float scaleY = Mathf.Abs(direction.y) > 0.001f ?
-                    (height * 0.5f - 100f) / Mathf.Abs(direction.y) : float.PositiveInfinity;
+                    (height * 0.5f - (direction.y < 0f ? 142f : 148f)) / Mathf.Abs(direction.y) : float.PositiveInfinity;
                 Vector2 edgePosition = center + direction * Mathf.Min(scaleX, scaleY);
-                // Keep the badge clear of the corner pause button and the top HUD.
-                marker.Edge.style.left = Mathf.Clamp(edgePosition.x - 33f, 96f, width - 96f);
-                marker.Edge.style.top = Mathf.Clamp(height - edgePosition.y - 33f, 108f, height - 88f);
-                float meters = Vector3.Distance(camera.transform.position, marker.Point.position);
-                marker.Distance.text = GameLocalization.Format("distance", "{0} м", Mathf.RoundToInt(meters));
+                float limit = height - 148f;
+                if (!desktop && edgePosition.x - 40f < stick.xMax) limit = Mathf.Min(limit, stick.yMin - 56f);
+                if (edgePosition.x + 40f > actions.xMin) limit = Mathf.Min(limit, actions.yMin - 56f);
+                marker.Edge.style.left = edgePosition.x - SpawnBadgeRadius;
+                marker.Edge.style.top = Mathf.Clamp(edgePosition.y, 142f, Mathf.Max(142f, limit)) - SpawnBadgeRadius;
+                Vector3 offset = marker.Point.position - movement.transform.position;
+                offset.y = 0f;
+                SetText(marker.Distance, GameLocalization.Format("distance", "{0} м", Mathf.RoundToInt(offset.magnitude)));
+                Vector2 arrowOffset = direction.normalized * (SpawnBadgeRadius + 6f);
+                marker.Arrow.style.left = SpawnBadgeRadius + arrowOffset.x - 13f;
+                marker.Arrow.style.top = SpawnBadgeRadius + arrowOffset.y - 13f;
                 marker.Arrow.style.rotate = new Rotate(new Angle(
-                    Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f));
+                    Mathf.Atan2(direction.x, -direction.y) * Mathf.Rad2Deg));
             }
         }
+    }
+
+    private static void DrawSpawnArrow(MeshGenerationContext context)
+    {
+        var painter = context.painter2D;
+        painter.fillColor = new Color32(247, 131, 155, 255);
+        painter.BeginPath();
+        painter.MoveTo(new Vector2(13f, 1f));
+        painter.LineTo(new Vector2(4f, 19f));
+        painter.LineTo(new Vector2(22f, 19f));
+        painter.ClosePath();
+        painter.Fill();
     }
 
     private static RadialProgressElement CreateUltimateRing(string name)
@@ -871,7 +1110,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
         Vector2 direction = Vector2.ClampMagnitude((local - center) / (joystick.layout.width * 0.38f), 1f);
         direction.y = -direction.y;
         movement.SetToolkitMoveInput(direction);
-        joystickKnob.transform.position = new Vector3(direction.x * 46f, -direction.y * 46f, 0f);
+        float knobTravel = joystick.layout.width * (46f / 178f);
+        joystickKnob.transform.position = new Vector3(direction.x * knobTravel, -direction.y * knobTravel, 0f);
         joystickSector.EnableInClassList("is-active", direction.sqrMagnitude > 0.0025f);
         joystickSector.transform.rotation = Quaternion.Euler(0f, 0f,
             45f - Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg);

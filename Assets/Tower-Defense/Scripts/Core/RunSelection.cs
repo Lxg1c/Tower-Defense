@@ -8,6 +8,13 @@ public static class RunSelection
     private static string sceneName;
     private static int difficulty = 1;
     public static int Difficulty => difficulty;
+    internal static bool IsPerformanceBenchmark { get; private set; }
+
+    internal static void SelectPerformanceBenchmark(LevelDefinition selection, string targetScene)
+    {
+        Select(selection, targetScene);
+        IsPerformanceBenchmark = true;
+    }
 
     public static bool TrySelectNext(LevelDefinition current, string targetScene)
     {
@@ -26,6 +33,7 @@ public static class RunSelection
         level = selection;
         sceneName = targetScene;
         difficulty = selectedDifficulty;
+        IsPerformanceBenchmark = false;
     }
 
     public static LevelDefinition Resolve(string targetScene, LevelDefinition directPlayLevel)
@@ -40,5 +48,11 @@ public static class RunSelection
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    public static void Clear() { level = null; sceneName = null; difficulty = 1; }
+    public static void Clear()
+    {
+        level = null;
+        sceneName = null;
+        difficulty = 1;
+        IsPerformanceBenchmark = false;
+    }
 }

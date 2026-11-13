@@ -82,6 +82,14 @@ public class MainMenu : MonoBehaviour
         SceneManager.LoadScene(gameplayLabSceneName);
     }
 
+    public void StartPerformanceBenchmark()
+    {
+        if (!enabled || levels[0] == null) return;
+        RunSelection.SelectPerformanceBenchmark(levels[0], gameSceneName);
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(gameSceneName);
+    }
+
     public void ExitGame()
     {
 #if UNITY_EDITOR

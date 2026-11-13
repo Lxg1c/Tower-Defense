@@ -20,8 +20,8 @@ public class PauseMenu : MenuScreenBase
 
     public void Pause()
     {
-        if (spawner != null && (spawner.CurrentPhase == WaveSpawner.Phase.AllCompleted ||
-            spawner.CurrentPhase == WaveSpawner.Phase.Defeated)) return;
+        if (RunSelection.IsPerformanceBenchmark || (spawner != null &&
+            spawner.CurrentPhase is WaveSpawner.Phase.AllCompleted or WaveSpawner.Phase.Defeated)) return;
         PendingExitAction = ExitAction.None;
         IsPaused = true;
         ShowPauseOptions();

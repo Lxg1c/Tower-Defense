@@ -41,6 +41,10 @@
       <ui:Label name="tutorialText" class="tutorial-text" picking-mode="Ignore" />
     </ui:VisualElement>
     <ui:Label name="fpsLabel" class="fps-label is-hidden" />
+    <ui:VisualElement name="benchmarkHud" class="benchmark-hud is-hidden" picking-mode="Ignore">
+      <ui:Label name="benchmarkProgress" class="benchmark-progress" picking-mode="Ignore" />
+      <ui:Button name="benchmarkExit" text="Отмена" class="screen-button l10n-cancel" />
+    </ui:VisualElement>
     <ui:VisualElement name="effectRow" class="effect-row" picking-mode="Ignore">
       <ui:Label name="slowEffect" class="effect-chip is-hidden" />
       <ui:Label name="shieldEffect" class="effect-chip is-hidden" />
@@ -120,6 +124,15 @@
         <ui:Button name="restartButton" text="Начать заново" class="pause-menu-button l10n-restart" />
         <ui:Button name="pauseMenuButton" text="В главное меню" class="pause-menu-button pause-menu-last l10n-main-menu" />
       </ui:VisualElement>
+      <ui:VisualElement name="performancePanel" class="performance-panel is-hidden" picking-mode="Position">
+        <ui:Label text="Результаты замера" class="pause-settings-title l10n-perf-title" picking-mode="Ignore" />
+        <ui:VisualElement name="benchmarkStages" class="benchmark-stages is-hidden" />
+        <ui:Label name="performanceReport" class="performance-report" picking-mode="Ignore" />
+        <ui:VisualElement class="performance-actions" picking-mode="Ignore">
+          <ui:Button name="performanceCopy" text="Скопировать" class="screen-button l10n-perf-copy" />
+          <ui:Button name="performanceBack" text="Назад" class="screen-button l10n-perf-back" />
+        </ui:VisualElement>
+      </ui:VisualElement>
       <ui:VisualElement name="audioPanel" class="pause-settings is-hidden" picking-mode="Position">
         <ui:VisualElement class="pause-settings-header" picking-mode="Ignore">
           <ui:Button name="audioBack" text="←" tooltip="Назад к паузе" class="pause-settings-back l10n-tip-back-pause" />
@@ -181,6 +194,7 @@
         <ui:Label text="ЗАДАНИЕ ВЫПОЛНЕНО" class="screen-overline l10n-mission-complete" />
         <ui:Label text="ПОБЕДА" class="screen-title l10n-victory" />
         <ui:Label name="victoryReward" class="screen-subtitle" />
+        <ui:Button name="victoryStats" text="Статистика забега" class="screen-button outcome-statistics" />
         <ui:Button name="nextLevelButton" text="СЛЕДУЮЩИЙ УРОВЕНЬ" class="primary-button l10n-next-level" />
         <ui:Button name="replayButton" text="СЫГРАТЬ СНОВА" class="screen-button l10n-replay" />
         <ui:Button name="victorySkills" text="ДЕРЕВО ТАЛАНТОВ" class="screen-button l10n-talent-tree-button" />
@@ -191,6 +205,7 @@
         <ui:Label text="ОБОРОНА ПРОРВАНА" class="screen-title l10n-defeat" />
         <ui:Label text="Вернитесь с новой тактикой." class="screen-subtitle l10n-defeat-copy" />
         <ui:Label name="defeatReward" class="screen-subtitle" />
+        <ui:Button name="defeatStats" text="Статистика забега" class="screen-button outcome-statistics" />
         <ui:Button name="defeatReplay" text="СЫГРАТЬ СНОВА" class="screen-button l10n-replay" />
         <ui:Button name="defeatMenu" text="ГЛАВНОЕ МЕНЮ" class="primary-button l10n-main-menu-button" />
       </ui:VisualElement>

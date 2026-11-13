@@ -751,6 +751,126 @@ MonoBehaviour:
     m_Key: guide-cannon-text
     m_Metadata:
       m_Items: []
+  - m_Id: 65432831647744
+    m_Key: graphics-settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145216
+    m_Key: graphics-lighting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145217
+    m_Key: graphics-normals
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145218
+    m_Key: graphics-next-level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145219
+    m_Key: graphics-standard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145220
+    m_Key: graphics-simple
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145223
+    m_Key: perf-title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145224
+    m_Key: perf-copy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145225
+    m_Key: perf-back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145227
+    m_Key: perf-no-frames
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432907145228
+    m_Key: perf-unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432911339520
+    m_Key: perf-on
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432911339521
+    m_Key: perf-off
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432911339522
+    m_Key: perf-ok
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432911339523
+    m_Key: perf-gpu-limit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432911339524
+    m_Key: perf-cpu-limit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432911339525
+    m_Key: perf-uncertain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432911339526
+    m_Key: perf-device
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65432911339528
+    m_Key: perf-fps
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056050470912
+    m_Key: perf-benchmark
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385472
+    m_Key: perf-run-details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385473
+    m_Key: perf-run-summary
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385474
+    m_Key: perf-graphics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385475
+    m_Key: perf-benchmark-stage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385476
+    m_Key: perf-benchmark-scope
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385477
+    m_Key: perf-benchmark-progress
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385478
+    m_Key: perf-run-context
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385479
+    m_Key: perf-frame-counters
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73056113385480
+    m_Key: perf-benchmark-cpu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 74916299792384
+    m_Key: perf-compact-timings
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

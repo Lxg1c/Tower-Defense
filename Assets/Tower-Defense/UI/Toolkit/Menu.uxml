@@ -160,6 +160,21 @@
             </ui:VisualElement>
             <ui:Label name="repeatHintsStatus" text="Подсказки появятся при следующем входе на первый уровень." class="repeat-hints-status l10n-hints-queued is-hidden" picking-mode="Ignore" />
           </ui:VisualElement>
+          <ui:VisualElement class="subpage-panel menu-settings-card" picking-mode="Ignore">
+            <ui:Label text="Графика" class="subpage-panel-title l10n-graphics-settings" />
+            <ui:VisualElement class="menu-extra-setting" picking-mode="Ignore">
+              <ui:Label text="Освещение" class="menu-setting-label l10n-graphics-lighting" />
+              <ui:DropdownField name="lightingDropdown" class="language-dropdown graphics-dropdown l10n-tip-graphics-lighting" tooltip="Освещение" />
+            </ui:VisualElement>
+            <ui:VisualElement class="menu-fps-row" picking-mode="Ignore">
+              <ui:Label text="Карты нормалей" class="menu-setting-label l10n-graphics-normals" />
+              <ui:Button name="normalMapsToggle" tooltip="Карты нормалей" class="menu-fps-switch l10n-tip-graphics-normals">
+                <ui:VisualElement class="menu-fps-track" picking-mode="Ignore"><ui:VisualElement class="menu-fps-knob" picking-mode="Ignore" /></ui:VisualElement>
+              </ui:Button>
+            </ui:VisualElement>
+            <ui:Label text="Применяется при входе на уровень." class="graphics-note l10n-graphics-next-level" picking-mode="Ignore" />
+            <ui:Button name="startBenchmark" text="Тест производительности" class="menu-extra-button benchmark-start l10n-perf-benchmark" />
+          </ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement name="guidePage" class="menu-page menu-subpage guide-page is-hidden" picking-mode="Ignore">

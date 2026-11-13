@@ -423,6 +423,7 @@ public class TowerPlacementZone : MonoBehaviour
                 gridPlacement.SourceGrid.CellSize);
         }
 
+        GraphicsMaterialProfiles.Apply(building);
         PlayBuildingSpawnAnimation(building);
         SyncWithPhase();
         onTowerBuilt?.Invoke();
