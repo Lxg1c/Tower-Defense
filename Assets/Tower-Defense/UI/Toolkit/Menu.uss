@@ -190,14 +190,15 @@
   height: 24px; margin: 3px 0 0; padding: 0; color: #d0eaec;
   font-size: 13px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;
 }
-.campaign-settings { width: 88px; height: 76px; }
-.campaign-settings .campaign-action-disc { width: 52px; height: 52px; border-radius: 26px; }
+.campaign-top-action { width: 88px; height: 76px; }
+.campaign-guide { position: absolute; top: 3.2%; left: 2.6%; }
+.campaign-top-action .campaign-action-disc { width: 52px; height: 52px; border-radius: 26px; }
 .campaign-settings .campaign-action-icon { width: 50px; height: 50px; background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/menu-settings-penpot.png"); }
 .campaign-skills .campaign-action-icon { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/menu-skills-penpot.png"); }
 .campaign-loadout .campaign-action-icon { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/menu-loadout-penpot.png"); }
 .campaign-lab .campaign-action-icon { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/menu-lab-penpot.png"); }
 .campaign-guide .campaign-action-icon {
-  width: 46px; height: 46px;
+  width: 36px; height: 36px;
   background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/menu-guide-penpot.png");
 }
 .campaign-exit .campaign-action-icon { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/menu-exit-penpot.png"); }

@@ -108,7 +108,8 @@ existing gameplay controllers. The old Canvas objects and UI prefabs have been
 removed from playable scenes. Build-zone rings, spawn previews and health bars
 are projected onto the gameplay UI Toolkit panel. Missing UI Toolkit references
 are logged as configuration errors. The new
-on-screen joystick feeds `PlayerMovement` directly, while desktop movement
+on-screen joystick follows the first touch in the lower-left control area
+and feeds `PlayerMovement` directly, while desktop movement
 still uses the existing keyboard path. The UI Toolkit building panel leaves
 movement available so stepping out of a zone closes the panel.
 The top HUD uses separate compact wave, time, enemy and supply indicators. The

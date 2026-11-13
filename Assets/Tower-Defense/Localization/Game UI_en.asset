@@ -471,11 +471,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 1584390257
-    m_Localized: RESTART RUN?
+    m_Localized: Restart the run?
     m_Metadata:
       m_Items: []
   - m_Id: 1584390258
-    m_Localized: RETURN TO MENU?
+    m_Localized: Return to menu?
     m_Metadata:
       m_Items: []
   - m_Id: 1584390259

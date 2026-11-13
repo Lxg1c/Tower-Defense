@@ -17,6 +17,13 @@
       </ui:VisualElement>
       <ui:VisualElement name="homePage" class="campaign-page" picking-mode="Ignore">
         <ui:VisualElement class="campaign-header-rule" picking-mode="Ignore" />
+        <ui:Button name="guideButton" class="campaign-action campaign-top-action campaign-guide l10n-tip-guide" tooltip="Справочник построек">
+          <ui:VisualElement class="campaign-action-disc" picking-mode="Ignore">
+            <ui:VisualElement class="campaign-action-icon" picking-mode="Ignore" />
+          </ui:VisualElement>
+          <ui:Label text="Справочник" class="campaign-action-label l10n-guide" picking-mode="Ignore" />
+          <ui:Label name="guideNewBadge" text="Новое" class="guide-badge guide-menu-badge l10n-guide-new is-hidden" picking-mode="Ignore" />
+        </ui:Button>
         <ui:VisualElement class="campaign-top-actions" picking-mode="Ignore">
           <ui:VisualElement class="campaign-credits" picking-mode="Ignore">
             <ui:VisualElement class="campaign-credit-icon" picking-mode="Ignore">
@@ -24,7 +31,7 @@
             </ui:VisualElement>
             <ui:Label name="homeMoney" text="0" class="campaign-credit-value" picking-mode="Ignore" />
           </ui:VisualElement>
-          <ui:Button name="settingsButton" class="campaign-action campaign-settings l10n-tip-settings" tooltip="Настройки">
+          <ui:Button name="settingsButton" class="campaign-action campaign-top-action campaign-settings l10n-tip-settings" tooltip="Настройки">
             <ui:VisualElement class="campaign-action-disc" picking-mode="Ignore">
               <ui:VisualElement class="campaign-action-icon" picking-mode="Ignore" />
             </ui:VisualElement>
@@ -79,13 +86,6 @@
               <ui:VisualElement class="campaign-action-icon" picking-mode="Ignore" />
             </ui:VisualElement>
             <ui:Label text="Снаряжение" class="campaign-action-label l10n-equipment" picking-mode="Ignore" />
-          </ui:Button>
-          <ui:Button name="guideButton" class="campaign-action campaign-guide l10n-tip-guide" tooltip="Справочник построек">
-            <ui:VisualElement class="campaign-action-disc" picking-mode="Ignore">
-              <ui:VisualElement class="campaign-action-icon" picking-mode="Ignore" />
-            </ui:VisualElement>
-            <ui:Label text="Справочник" class="campaign-action-label l10n-guide" picking-mode="Ignore" />
-            <ui:Label name="guideNewBadge" text="Новое" class="guide-badge guide-menu-badge l10n-guide-new is-hidden" picking-mode="Ignore" />
           </ui:Button>
         </ui:VisualElement>
         <ui:VisualElement class="campaign-bottom-actions campaign-bottom-right" picking-mode="Ignore">

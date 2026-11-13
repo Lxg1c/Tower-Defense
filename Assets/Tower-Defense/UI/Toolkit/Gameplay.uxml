@@ -53,7 +53,8 @@
     <ui:VisualElement name="spawnPreview" class="spawn-preview is-hidden" picking-mode="Ignore" />
     <ui:Button name="startWaveButton" text="НАЧАТЬ ВОЛНУ" class="start-wave-button is-hidden l10n-start-wave" />
     <ui:VisualElement name="touchControls" class="touch-controls" picking-mode="Ignore">
-      <ui:VisualElement name="joystick" class="joystick" picking-mode="Position">
+      <ui:VisualElement name="joystickZone" class="joystick-zone" />
+      <ui:VisualElement name="joystick" class="joystick" picking-mode="Ignore">
         <ui:VisualElement name="joystickArt" class="joystick-art" picking-mode="Ignore" />
         <ui:VisualElement name="joystickSector" class="joystick-sector" picking-mode="Ignore" />
         <ui:VisualElement name="joystickKnob" class="joystick-knob" picking-mode="Ignore">
@@ -183,12 +184,11 @@
           </ui:Button>
         </ui:VisualElement>
       </ui:VisualElement>
-      <ui:VisualElement name="exitConfirmPanel" class="screen-panel is-hidden" picking-mode="Ignore">
-        <ui:Label text="ПОКИНУТЬ ТЕКУЩИЙ ЗАБЕГ?" class="screen-overline l10n-leave-run" />
-        <ui:Label name="exitConfirmTitle" text="ПОДТВЕРДИТЕ ВЫХОД" class="screen-title l10n-confirm-exit" />
-        <ui:Label name="exitConfirmDescription" text="Прогресс забега будет потерян. Награда не начисляется." class="screen-subtitle l10n-leave-progress" />
-        <ui:Button name="exitCancelButton" text="ПРОДОЛЖИТЬ ИГРУ" class="screen-button l10n-keep-playing" />
-        <ui:Button name="exitConfirmButton" text="ПОДТВЕРДИТЬ" class="primary-button l10n-confirm" />
+      <ui:VisualElement name="exitConfirmPanel" class="pause-menu pause-confirm is-hidden" picking-mode="Position">
+        <ui:Label name="exitConfirmTitle" text="Вернуться в меню?" class="pause-menu-title pause-confirm-title" picking-mode="Ignore" />
+        <ui:Label name="exitConfirmDescription" text="Прогресс забега будет потерян. Награда не начисляется." class="pause-confirm-copy l10n-leave-progress" picking-mode="Ignore" />
+        <ui:Button name="exitCancelButton" text="Отмена" class="pause-menu-button pause-menu-resume l10n-cancel" />
+        <ui:Button name="exitConfirmButton" text="В главное меню" class="pause-menu-button pause-menu-last" />
       </ui:VisualElement>
       <ui:VisualElement name="victoryPanel" class="screen-panel is-hidden" picking-mode="Ignore">
         <ui:Label text="ЗАДАНИЕ ВЫПОЛНЕНО" class="screen-overline l10n-mission-complete" />

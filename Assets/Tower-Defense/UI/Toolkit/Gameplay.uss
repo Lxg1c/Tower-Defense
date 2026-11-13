@@ -158,6 +158,7 @@
 .start-wave-button:active { -unity-background-image-tint-color: #e6bd72; }
 .primary-button:hover { background-color: #92f9f4; }
 .touch-controls { position: absolute; left: 0; right: 0; bottom: 0; height: 350px; }
+.joystick-zone { position: absolute; left: 0; bottom: 0; width: 32%; max-width: 420px; height: 100%; }
 .joystick {
   position: absolute; left: 24px; bottom: 36px; width: 280px; height: 280px;
   background-color: rgba(4, 29, 43, 0);
@@ -324,6 +325,13 @@
 }
 .pause-menu-resume:hover { background-color: #ffe69a; }
 .pause-menu-resume:active { background-color: #edbd53; }
+.pause-confirm { height: auto; }
+.pause-confirm-title { height: auto; margin-bottom: 12px; font-size: 30px; white-space: normal; }
+.pause-confirm-copy {
+  margin: 0 0 22px; padding: 0; white-space: normal;
+  color: #bddde7; font-size: 17px; -unity-text-align: middle-center;
+}
+.pause-confirm .pause-menu-button { flex-grow: 0; flex-basis: auto; height: 52px; }
 .benchmark-hidden { display: none; }
 .benchmark-hud {
   position: absolute; top: 18px; align-self: center; flex-direction: row; align-items: center;

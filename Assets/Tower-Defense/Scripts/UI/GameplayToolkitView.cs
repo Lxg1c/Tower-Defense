@@ -33,6 +33,9 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private VisualElement desktopActions;
     private VisualElement touchActions;
     private VisualElement joystick;
+    private VisualElement joystickZone;
+    private int movePointer = -1;
+    private Vector2 moveOrigin;
     private VisualElement joystickSector;
     private VisualElement joystickKnob;
     private VisualElement buildPanel;
@@ -161,6 +164,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         touchControls = root.Q("touchControls");
         desktopActions = root.Q("desktopActions");
         joystick = root.Q("joystick");
+        joystickZone = root.Q("joystickZone");
         touchActions = root.Q("actionStack");
         joystickSector = root.Q("joystickSector");
         joystickKnob = root.Q("joystickKnob");
@@ -215,7 +219,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         masterSlider = root.Q<Slider>("masterSlider");
         musicSlider = root.Q<Slider>("musicSlider");
         effectsSlider = root.Q<Slider>("effectsSlider");
-        if (touchControls == null || desktopActions == null || touchActions == null || joystick == null || joystickSector == null ||
+        if (touchControls == null || desktopActions == null || touchActions == null || joystick == null || joystickZone == null || joystickSector == null ||
             joystickKnob == null || buildPanel == null ||
             orderLayer == null || screenOverlay == null || spawnPreview == null || pausePanel == null ||
             audioPanel == null || exitConfirmPanel == null || victoryPanel == null || defeatPanel == null ||
@@ -278,10 +282,11 @@ public sealed class GameplayToolkitView : MonoBehaviour
         benchmarkExit.clicked += defeat.GoToMainMenu;
         root.Q<Button>("performanceCopy").clicked += CopyPerformanceReport;
         performanceBack.clicked += ClosePerformanceReport;
-        joystick.RegisterCallback<PointerDownEvent>(BeginMove);
-        joystick.RegisterCallback<PointerMoveEvent>(Move);
-        joystick.RegisterCallback<PointerUpEvent>(EndMove);
-        joystick.RegisterCallback<PointerCaptureOutEvent>(_ => ResetMove());
+        joystickZone.RegisterCallback<PointerDownEvent>(BeginMove);
+        joystickZone.RegisterCallback<PointerMoveEvent>(Move);
+        joystickZone.RegisterCallback<PointerUpEvent>(EndMove);
+        joystickZone.RegisterCallback<PointerCancelEvent>(CancelMove);
+        joystickZone.RegisterCallback<PointerCaptureOutEvent>(LostMoveCapture);
         if (root.Q("gameRoot") is { } gameRoot)
         {
             gameRoot.RegisterCallback<GeometryChangedEvent>(ResizeJoystick);
@@ -365,6 +370,12 @@ public sealed class GameplayToolkitView : MonoBehaviour
             benchmarkHud.AddToClassList("is-hidden");
         }
         root.Q("gameRoot")?.UnregisterCallback<GeometryChangedEvent>(ResizeJoystick);
+        joystickZone.UnregisterCallback<PointerDownEvent>(BeginMove);
+        joystickZone.UnregisterCallback<PointerMoveEvent>(Move);
+        joystickZone.UnregisterCallback<PointerUpEvent>(EndMove);
+        joystickZone.UnregisterCallback<PointerCancelEvent>(CancelMove);
+        joystickZone.UnregisterCallback<PointerCaptureOutEvent>(LostMoveCapture);
+        ResetMove();
         if (healthBars != null) healthBars.SetPresentationRoot(null);
         movement.ClearToolkitMoveInput();
         if (ultimatePointerHeld) ultimate.Release();
@@ -427,7 +438,9 @@ public sealed class GameplayToolkitView : MonoBehaviour
         bool desktop = responsiveHud.IsDesktopLayout;
         root.Q("topBar").EnableInClassList("is-hidden", order || won || lost);
         root.Q("effectRow").EnableInClassList("is-hidden", order || won || lost);
-        touchControls.EnableInClassList("is-hidden", desktop || order || paused || won || lost);
+        bool hideTouchControls = desktop || order || paused || won || lost;
+        if (hideTouchControls && movePointer >= 0) ResetMove();
+        touchControls.EnableInClassList("is-hidden", hideTouchControls);
         root.Q("actionStack").EnableInClassList("is-hidden", modal);
         desktopActions.EnableInClassList("is-hidden", !desktop || order || paused || won || lost || modal);
         bool hideRally = levelSetup.IsFirstLocation;
@@ -450,11 +463,11 @@ public sealed class GameplayToolkitView : MonoBehaviour
         {
             bool restarting = pauseMenu.PendingExitAction == PauseMenu.ExitAction.Restart;
             SetText(exitConfirmTitle, restarting
-                ? GameLocalization.Text("restart-question", "НАЧАТЬ ЗАБЕГ ЗАНОВО?")
-                : GameLocalization.Text("menu-question", "ВЕРНУТЬСЯ В МЕНЮ?"));
+                ? GameLocalization.Text("restart-question", "Начать забег заново?")
+                : GameLocalization.Text("menu-question", "Вернуться в меню?"));
             SetText(exitConfirmButton, restarting
-                ? GameLocalization.Text("restart-button", "НАЧАТЬ ЗАНОВО")
-                : GameLocalization.Text("main-menu-button", "ГЛАВНОЕ МЕНЮ"));
+                ? GameLocalization.Text("restart", "Начать заново")
+                : GameLocalization.Text("main-menu", "В главное меню"));
         }
 
         int wave = spawner.DisplayWaveNumber;
@@ -510,6 +523,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
     {
         applicationPaused = paused;
         skipPerformanceFrame = true;
+        if (paused && movePointer >= 0) ResetMove();
     }
 
     private void UpdateRunMeasurement()
@@ -1090,24 +1104,45 @@ public sealed class GameplayToolkitView : MonoBehaviour
 
     private void BeginMove(PointerDownEvent evt)
     {
-        if (responsiveHud.IsDesktopLayout) return;
-        joystick.CapturePointer(evt.pointerId);
-        UpdateMove((Vector2)evt.position);
+        if (responsiveHud.IsDesktopLayout || movePointer >= 0 || evt.button != 0) return;
+        Vector2 size = joystick.layout.size;
+        if (!(size.x > 0f && size.y > 0f)) return;
+        var bounds = root.Q("gameRoot").worldBound;
+        moveOrigin = (Vector2)evt.position;
+        Vector2 center = new(
+            Mathf.Clamp(moveOrigin.x, bounds.xMin + size.x * 0.5f, bounds.xMax - size.x * 0.5f),
+            Mathf.Clamp(moveOrigin.y, bounds.yMin + size.y * 0.5f, bounds.yMax - size.y * 0.5f));
+        Vector2 restingCenter = touchControls.LocalToWorld(joystick.layout.center);
+        Vector2 offset = center - restingCenter;
+        joystick.style.translate = new Translate(offset.x, offset.y);
+        movePointer = evt.pointerId;
+        joystickZone.CapturePointer(movePointer);
+        evt.StopPropagation();
     }
+
     private void Move(PointerMoveEvent evt)
     {
-        if (joystick.HasPointerCapture(evt.pointerId)) UpdateMove((Vector2)evt.position);
+        if (evt.pointerId == movePointer) UpdateMove((Vector2)evt.position);
     }
+
     private void EndMove(PointerUpEvent evt)
     {
-        if (joystick.HasPointerCapture(evt.pointerId)) joystick.ReleasePointer(evt.pointerId);
-        ResetMove();
+        if (evt.pointerId == movePointer && evt.button == 0) ResetMove();
     }
+
+    private void CancelMove(PointerCancelEvent evt)
+    {
+        if (evt.pointerId == movePointer) ResetMove();
+    }
+
+    private void LostMoveCapture(PointerCaptureOutEvent evt)
+    {
+        if (evt.pointerId == movePointer) ResetMove();
+    }
+
     private void UpdateMove(Vector2 worldPosition)
     {
-        Vector2 local = joystick.WorldToLocal(worldPosition);
-        Vector2 center = joystick.layout.size * 0.5f;
-        Vector2 direction = Vector2.ClampMagnitude((local - center) / (joystick.layout.width * 0.38f), 1f);
+        Vector2 direction = Vector2.ClampMagnitude((worldPosition - moveOrigin) / (joystick.layout.width * 0.38f), 1f);
         direction.y = -direction.y;
         movement.SetToolkitMoveInput(direction);
         float knobTravel = joystick.layout.width * (46f / 178f);
@@ -1118,7 +1153,12 @@ public sealed class GameplayToolkitView : MonoBehaviour
     }
     private void ResetMove()
     {
+        int pointer = movePointer;
+        movePointer = -1;
+        if (pointer >= 0 && joystickZone.HasPointerCapture(pointer))
+            joystickZone.ReleasePointer(pointer);
         movement.SetToolkitMoveInput(Vector2.zero);
+        joystick.style.translate = StyleKeyword.Null;
         joystickKnob.transform.position = Vector3.zero;
         joystickSector.RemoveFromClassList("is-active");
     }
