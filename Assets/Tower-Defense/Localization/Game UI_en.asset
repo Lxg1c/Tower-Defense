@@ -887,6 +887,14 @@ MonoBehaviour:
     m_Localized: "P95, ms \xB7 CPU (main / render): {0} / {1} \xB7 GPU: {2}"
     m_Metadata:
       m_Items: []
+  - m_Id: 639053874585600
+    m_Localized: "Loading level\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 639053983637504
+    m_Localized: '{0} difficulty'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

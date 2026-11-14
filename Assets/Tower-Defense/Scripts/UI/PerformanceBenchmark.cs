@@ -117,7 +117,7 @@ internal sealed class PerformanceBenchmark : IDisposable
         if (IsComplete)
         {
             reportHeader = PerformanceMeasurement.DeviceReport() + "\n" +
-                GameLocalization.Text("perf-benchmark-scope", "Первая локация · фиксированная камера · модели врагов");
+                GameLocalization.Text(LocalizationKeys.PerfBenchmarkScope);
             Report = reportHeader + "\n\n" + string.Join("\n\n────────────\n\n", reports);
         }
         else StartStage();

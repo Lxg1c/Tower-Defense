@@ -1,0 +1,26 @@
+.loading-screen {
+  position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+  background-color: #07131f; opacity: 0;
+  -unity-font-definition: url("project://database/Assets/TextMesh Pro/Fonts/LiberationSans.ttf");
+}
+.loading-cover, .loading-shade { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+.loading-cover { -unity-background-scale-mode: scale-and-crop; }
+.loading-shade {
+  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/level-loading-shade.png");
+  -unity-background-scale-mode: stretch-to-fill;
+}
+.loading-content { position: absolute; left: 4.5%; right: 4.5%; bottom: 8%; }
+.loading-title {
+  color: #f0faff; font-size: 44px; -unity-font-style: bold;
+  margin: 0; padding: 0 0 0 14px; border-left-width: 4px; border-left-color: #67e6e1;
+}
+.loading-difficulty { color: #bcd3dc; font-size: 18px; margin: 5px 0 0 18px; padding: 0; }
+.loading-status-row { flex-direction: row; justify-content: space-between; margin-top: 18px; }
+.loading-status, .loading-percent { margin: 0 0 8px; padding: 0; font-size: 17px; -unity-font-style: bold; }
+.loading-status { color: #8eece8; }
+.loading-percent { color: #eaf9ff; }
+.loading-track {
+  height: 10px; padding: 1px; border-width: 1px; border-color: #2b4a59;
+  border-radius: 3px; background-color: #102734;
+}
+.loading-fill { width: 0; flex-grow: 1; align-self: flex-start; border-radius: 2px; background-color: #67e6e1; }

@@ -62,15 +62,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Grass_Base:
-        m_Texture: {fileID: 2800000, guid: 2ad4e3646fe13be4a91f13cb5ea9ea95, type: 3}
+        m_Texture: {fileID: 2800000, guid: 82f5102f1fdb851469cb98d81e7b69c0, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Grass_Mask:
-        m_Texture: {fileID: 2800000, guid: a596b2116ed18364c920631a6db2694b, type: 3}
+        m_Texture: {fileID: 2800000, guid: f8876a786c8d82e4d8026d546c3f7bae, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Grass_Normal:
-        m_Texture: {fileID: 2800000, guid: 1db8ab7bb65441b43b52ea72b42eddec, type: 3}
+        m_Texture: {fileID: 2800000, guid: 30c990032632d8a4a93128e95e726b40, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -90,27 +90,27 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Path_Base:
-        m_Texture: {fileID: 2800000, guid: 44bffcd8de426f7498e3a81fce72fdd1, type: 3}
+        m_Texture: {fileID: 2800000, guid: 82f5102f1fdb851469cb98d81e7b69c0, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Path_Mask:
-        m_Texture: {fileID: 2800000, guid: ddc38b247a3be4d45b06099b0209d6c7, type: 3}
+        m_Texture: {fileID: 2800000, guid: f8876a786c8d82e4d8026d546c3f7bae, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Path_Normal:
-        m_Texture: {fileID: 2800000, guid: 6035f343aa4f18c43bda54c96ad45d64, type: 3}
+        m_Texture: {fileID: 2800000, guid: 30c990032632d8a4a93128e95e726b40, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Rock_Base:
-        m_Texture: {fileID: 2800000, guid: d692a7ad09e87e447bbd6325c7a05cf0, type: 3}
+        m_Texture: {fileID: 2800000, guid: 82f5102f1fdb851469cb98d81e7b69c0, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Rock_Mask:
-        m_Texture: {fileID: 2800000, guid: 48aa932092235894b8a1cc947513d2ef, type: 3}
+        m_Texture: {fileID: 2800000, guid: f8876a786c8d82e4d8026d546c3f7bae, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Rock_Normal:
-        m_Texture: {fileID: 2800000, guid: 330ed63570b09554d93cc5c84b80d219, type: 3}
+        m_Texture: {fileID: 2800000, guid: 30c990032632d8a4a93128e95e726b40, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:

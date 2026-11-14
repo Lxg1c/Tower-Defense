@@ -174,7 +174,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b279c75fc21db574c980226a4f714f2c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 4
+  speed: 3.2
   rotationSpeed: 8
   hoverHeight: 5
   separationRadius: 1.25
@@ -273,15 +273,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 6134f0a56e8ec324198f3425f47bbe62, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1.16
+      value: 0.87
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6134f0a56e8ec324198f3425f47bbe62, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.16
+      value: 0.87
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6134f0a56e8ec324198f3425f47bbe62, type: 3}
       propertyPath: m_LocalScale.z
-      value: 1.16
+      value: 0.87
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6134f0a56e8ec324198f3425f47bbe62, type: 3}
       propertyPath: m_LocalPosition.x

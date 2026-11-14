@@ -332,7 +332,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
     {
         GameLocalization.ApplyTo(root);
         if (benchmarkMode)
-            performanceBack.text = GameLocalization.Text("main-menu", "В главное меню");
+            performanceBack.text = GameLocalization.Text(LocalizationKeys.MainMenu);
         else RefreshBuildCards();
     }
 
@@ -463,19 +463,19 @@ public sealed class GameplayToolkitView : MonoBehaviour
         {
             bool restarting = pauseMenu.PendingExitAction == PauseMenu.ExitAction.Restart;
             SetText(exitConfirmTitle, restarting
-                ? GameLocalization.Text("restart-question", "Начать забег заново?")
-                : GameLocalization.Text("menu-question", "Вернуться в меню?"));
+                ? GameLocalization.Text(LocalizationKeys.RestartQuestion)
+                : GameLocalization.Text(LocalizationKeys.MenuQuestion));
             SetText(exitConfirmButton, restarting
-                ? GameLocalization.Text("restart", "Начать заново")
-                : GameLocalization.Text("main-menu", "В главное меню"));
+                ? GameLocalization.Text(LocalizationKeys.Restart)
+                : GameLocalization.Text(LocalizationKeys.MainMenu));
         }
 
         int wave = spawner.DisplayWaveNumber;
         int totalWaves = spawner.WaveCount;
         SetText(wavePhaseLabel, spawner.IsBuildPhase
-            ? GameLocalization.Text("build-phase", "ПОДГОТОВКА К ВОЛНЕ")
-            : GameLocalization.Text("combat-phase", "ВОЛНА ИДЁТ"));
-        SetText(waveLabel, GameLocalization.Format("wave-number", "ВОЛНА {0:00}", wave));
+            ? GameLocalization.Text(LocalizationKeys.BuildPhase)
+            : GameLocalization.Text(LocalizationKeys.CombatPhase));
+        SetText(waveLabel, GameLocalization.Format(LocalizationKeys.WaveNumber, wave));
         SetText(waveTotalLabel, $"/ {totalWaves:00}");
         UpdateWaveSteps(waveSteps, totalWaves, wave);
         int seconds = Mathf.FloorToInt(timer.ElapsedSeconds);
@@ -484,17 +484,17 @@ public sealed class GameplayToolkitView : MonoBehaviour
         SetText(incomeLabel, $"+{MineIncome.TotalCoinsPerWave}");
         var preview = spawner.IsBuildPhase ? spawner.NextWave :
             spawner.GetWave(Mathf.Clamp(wave - 1, 0, spawner.WaveCount - 1));
-        SetText(enemiesLabel, GameLocalization.Format("enemy-count", "ВРАГИ: {0}", CountEnemies(preview)));
+        SetText(enemiesLabel, GameLocalization.Format(LocalizationKeys.EnemyCount, CountEnemies(preview)));
         UpdateTutorial(!order && !paused && !won && !lost && !playerHealth.IsGhost, desktop);
         startWaveButton.EnableInClassList("is-hidden", !spawner.IsBuildPhase || Base.Instance == null ||
             modal || order || paused || won || lost);
 
         SetEffect(slowEffect, slowAmmo.RemainingSeconds > 0f,
-            GameLocalization.Format("slow-effect", "❄  ЗАМЕДЛЕНИЕ  {0} с", Mathf.CeilToInt(slowAmmo.RemainingSeconds)));
+            GameLocalization.Format(LocalizationKeys.SlowEffect, Mathf.CeilToInt(slowAmmo.RemainingSeconds)));
         SetEffect(shieldEffect, playerHealth.CurrentShield > 0f && playerHealth.RemainingShieldSeconds > 0f,
-            GameLocalization.Format("shield-effect", "◇  ЩИТ  {0} с", Mathf.CeilToInt(playerHealth.RemainingShieldSeconds)));
+            GameLocalization.Format(LocalizationKeys.ShieldEffect, Mathf.CeilToInt(playerHealth.RemainingShieldSeconds)));
         SetEffect(turretEffect, companionTurrets.ActiveCount > 0 && companionTurrets.RemainingSeconds > 0f,
-            GameLocalization.Format("turret-effect", "✦  ТУРЕЛЬ ×{0}  {1} с",
+            GameLocalization.Format(LocalizationKeys.TurretEffect,
                 companionTurrets.ActiveCount, Mathf.CeilToInt(companionTurrets.RemainingSeconds)));
         bool homeAvailable = teleport.gameObject.activeInHierarchy && spawner.IsBuildPhase && !playerHealth.IsGhost;
         homeButton.SetEnabled(homeAvailable);
@@ -513,8 +513,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
         SetText(mobileUltimateCharge, chargeText);
         SetText(desktopUltimateCharge, chargeText);
         root.Q<Button>("nextLevelButton").EnableInClassList("is-hidden", !victory.CanPlayNextLevel);
-        if (won) SetText(root.Q<Label>("victoryReward"), GameLocalization.Format("reward", "+{0} КРЕДИТОВ", levelSetup.VictoryMoneyReward));
-        if (lost) SetText(defeatReward, GameLocalization.Format("reward", "+{0} КРЕДИТОВ", levelSetup.DefeatMoneyReward));
+        if (won) SetText(root.Q<Label>("victoryReward"), GameLocalization.Format(LocalizationKeys.Reward, levelSetup.VictoryMoneyReward));
+        if (lost) SetText(defeatReward, GameLocalization.Format(LocalizationKeys.Reward, levelSetup.DefeatMoneyReward));
         if (buildModal.IsOpen && buildModal.Revision != lastModalRevision) RefreshBuildCards();
         UpdateSpawnPreview(spawner.IsBuildPhase && !order && !paused && !modal && !won && !lost, desktop);
     }
@@ -537,7 +537,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
             performanceMeasurement.Dispose();
             performanceMeasurement = null;
             var button = phase == WaveSpawner.Phase.AllCompleted ? victoryStats : defeatStats;
-            button.text = GameLocalization.Text("perf-run-details", "Статистика забега") + "\n" + runSummary;
+            button.text = GameLocalization.Text(LocalizationKeys.PerfRunDetails) + "\n" + runSummary;
             return;
         }
 
@@ -589,8 +589,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         if (stage == displayedBenchmarkStage && seconds == displayedBenchmarkSeconds) return;
         displayedBenchmarkStage = stage;
         displayedBenchmarkSeconds = seconds;
-        SetText(benchmarkProgress, GameLocalization.Format("perf-benchmark-progress",
-            "Тест {0}/{1} · врагов: {2} · {3} с", stage, benchmark.StageCount, benchmark.EnemyCount, seconds));
+        SetText(benchmarkProgress, GameLocalization.Format(LocalizationKeys.PerfBenchmarkProgress, stage, benchmark.StageCount, benchmark.EnemyCount, seconds));
     }
 
     private void ShowBenchmarkStage(int index)
@@ -665,27 +664,19 @@ public sealed class GameplayToolkitView : MonoBehaviour
         if (hint == FirstLevelTutorial.Hint.None) return;
         var copy = hint switch
         {
-            FirstLevelTutorial.Hint.Approach => ("approach", "Построй сетевой узел",
-                "Встань на отмеченную точку и дождись заполнения круга."),
-            FirstLevelTutorial.Hint.Core => ("core", "Подтверди строительство",
-                "Построй узел, чтобы открыть остальные точки строительства."),
-            FirstLevelTutorial.Hint.Economy => ("economy", "Шахта или турель?",
-                "Шахта приносит кредиты после волны. Турель защищает узел сразу."),
-            FirstLevelTutorial.Hint.Mine => ("mine", "Подтверди строительство",
-                "Построй шахту, чтобы получать кредиты после волн."),
-            FirstLevelTutorial.Hint.Turret => ("turret", "Подтверди строительство",
-                "Построй турель, чтобы усилить оборону узла."),
-            FirstLevelTutorial.Hint.StartWave => ("start", "Начни волну",
-                "Когда будешь готов, нажми «Начать волну» внизу по центру."),
-            FirstLevelTutorial.Hint.AutoFire => ("fire", "Держи врагов в радиусе",
-                "Р-07 стреляет сам. Подойди к врагам, чтобы пушки открыли огонь."),
-            _ => ("ultimate", "Ультимейт готов",
-                "Нажми кнопку ультимейта в правом нижнем углу.")
+            FirstLevelTutorial.Hint.Approach => (LocalizationKeys.HintApproachTitle, LocalizationKeys.HintApproachText),
+            FirstLevelTutorial.Hint.Core => (LocalizationKeys.HintCoreTitle, LocalizationKeys.HintCoreText),
+            FirstLevelTutorial.Hint.Economy => (LocalizationKeys.HintEconomyTitle, LocalizationKeys.HintEconomyText),
+            FirstLevelTutorial.Hint.Mine => (LocalizationKeys.HintMineTitle, LocalizationKeys.HintMineText),
+            FirstLevelTutorial.Hint.Turret => (LocalizationKeys.HintTurretTitle, LocalizationKeys.HintTurretText),
+            FirstLevelTutorial.Hint.StartWave => (LocalizationKeys.HintStartTitle, LocalizationKeys.HintStartText),
+            FirstLevelTutorial.Hint.AutoFire => (LocalizationKeys.HintFireTitle, LocalizationKeys.HintFireText),
+            _ => (LocalizationKeys.HintUltimateTitle, LocalizationKeys.HintUltimateText)
         };
-        SetText(tutorialTitle, GameLocalization.Text($"hint-{copy.Item1}-title", copy.Item2));
+        SetText(tutorialTitle, GameLocalization.Text(copy.Item1));
         SetText(tutorialText, desktop && hint == FirstLevelTutorial.Hint.Ultimate
-            ? GameLocalization.Text("hint-ultimate-desktop", "Нажми пробел, чтобы применить ультимейт.")
-            : GameLocalization.Text($"hint-{copy.Item1}-text", copy.Item3));
+            ? GameLocalization.Text(LocalizationKeys.HintUltimateDesktop)
+            : GameLocalization.Text(copy.Item2));
     }
 
     private static void UpdateWaveSteps(VisualElement steps, int totalWaves, int currentWave)
@@ -886,7 +877,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
                 marker.Edge.style.top = Mathf.Clamp(edgePosition.y, 142f, Mathf.Max(142f, limit)) - SpawnBadgeRadius;
                 Vector3 offset = marker.Point.position - movement.transform.position;
                 offset.y = 0f;
-                SetText(marker.Distance, GameLocalization.Format("distance", "{0} м", Mathf.RoundToInt(offset.magnitude)));
+                SetText(marker.Distance, GameLocalization.Format(LocalizationKeys.Distance, Mathf.RoundToInt(offset.magnitude)));
                 Vector2 arrowOffset = direction.normalized * (SpawnBadgeRadius + 6f);
                 marker.Arrow.style.left = SpawnBadgeRadius + arrowOffset.x - 13f;
                 marker.Arrow.style.top = SpawnBadgeRadius + arrowOffset.y - 13f;
@@ -985,10 +976,10 @@ public sealed class GameplayToolkitView : MonoBehaviour
             {
                 int currentIndex = Mathf.Clamp(source.CurrentLevel - 1, 0, levels.Count - 1);
                 int nextIndex = Mathf.Min(currentIndex + 1, levels.Count - 1);
-                string current = GameLocalization.Format("building-level", "УРОВЕНЬ {0}", source.CurrentLevel);
+                string current = GameLocalization.Format(LocalizationKeys.BuildingLevel, source.CurrentLevel);
                 string next = nextIndex > currentIndex
-                    ? GameLocalization.Text("building-next", "СЛЕДУЮЩИЙ") + "  ·  " + FormatLevel(levels[nextIndex])
-                    : GameLocalization.Text("building-max", "МАКС. УРОВЕНЬ");
+                    ? GameLocalization.Text(LocalizationKeys.BuildingNext) + "  ·  " + FormatLevel(levels[nextIndex])
+                    : GameLocalization.Text(LocalizationKeys.BuildingMax);
                 var progression = new Label($"{current}  ·  {FormatLevel(levels[currentIndex])}\n{next}");
                 progression.AddToClassList("build-upgrade-summary");
                 card.Add(progression);
@@ -1024,22 +1015,22 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private static string FormatLevel(BuildingLevelList.Level level)
     {
         var values = new List<string>();
-        if (level.Health.HasValue) values.Add(GameLocalization.Format("building-hp", "ЗД {0:0}", level.Health.Value));
-        if (level.Damage.HasValue) values.Add(GameLocalization.Format("damage", "УРОН {0:0}", level.Damage.Value));
-        if (level.Income.HasValue) values.Add(GameLocalization.Format("income", "+{0:0} / ВОЛНА", level.Income.Value));
+        if (level.Health.HasValue) values.Add(GameLocalization.Format(LocalizationKeys.BuildingHp, level.Health.Value));
+        if (level.Damage.HasValue) values.Add(GameLocalization.Format(LocalizationKeys.Damage, level.Damage.Value));
+        if (level.Income.HasValue) values.Add(GameLocalization.Format(LocalizationKeys.Income, level.Income.Value));
         return string.Join("  ·  ", values);
     }
 
     internal static string GetBuildingName(TowerOption option) => option.displayName switch
     {
-        "Cannon Turret" => GameLocalization.Text("cannon", "Пушечная турель"),
-        "Pulse" => GameLocalization.Text("pulse", "Импульсная башня"),
-        "Mine" => GameLocalization.Text("mine", "Шахта"),
-        "Ratusha" => GameLocalization.Text("core", "Сетевой узел"),
-        "Barracks / Melee" => GameLocalization.Text("melee", "Казарма ближнего боя"),
-        "Barracks / Ranged" => GameLocalization.Text("ranged", "Казарма дальнего боя"),
-        "Mortar" => GameLocalization.Text("mortar", "Мортира"),
-        "Wall" => GameLocalization.Text("wall", "Стена"),
+        "Cannon Turret" => GameLocalization.Text(LocalizationKeys.Cannon),
+        "Pulse" => GameLocalization.Text(LocalizationKeys.Pulse),
+        "Mine" => GameLocalization.Text(LocalizationKeys.Mine),
+        "Ratusha" => GameLocalization.Text(LocalizationKeys.Core),
+        "Barracks / Melee" => GameLocalization.Text(LocalizationKeys.Melee),
+        "Barracks / Ranged" => GameLocalization.Text(LocalizationKeys.Ranged),
+        "Mortar" => GameLocalization.Text(LocalizationKeys.Mortar),
+        "Wall" => GameLocalization.Text(LocalizationKeys.Wall),
         _ => option.displayName
     };
 
@@ -1047,15 +1038,15 @@ public sealed class GameplayToolkitView : MonoBehaviour
     {
         if (!string.IsNullOrWhiteSpace(option.description)) return option.description;
         string name = option.displayName?.ToLowerInvariant() ?? "";
-        if (name.Contains("pulse")) return GameLocalization.Text("pulse-desc", "Наносит урон и замедляет наземных врагов рядом.");
-        if (name.Contains("mortar")) return GameLocalization.Text("mortar-desc", "Поражает группы врагов с большого расстояния.");
+        if (name.Contains("pulse")) return GameLocalization.Text(LocalizationKeys.PulseDesc);
+        if (name.Contains("mortar")) return GameLocalization.Text(LocalizationKeys.MortarDesc);
         return option.slotType switch
         {
-            BuildSlotType.Mine => GameLocalization.Text("mine-desc", "Даёт кредиты после каждой волны."),
-            BuildSlotType.TownHall => GameLocalization.Text("core-desc", "Защищайте этот узел до конца забега."),
-            BuildSlotType.Barracks => GameLocalization.Text("barracks-desc", "Выпускает союзников для удержания позиции."),
-            BuildSlotType.Wall => GameLocalization.Text("wall-desc", "Перекрывает путь и задерживает врагов."),
-            _ => GameLocalization.Text("cannon-desc", "Стреляет по наземным и летающим целям.")
+            BuildSlotType.Mine => GameLocalization.Text(LocalizationKeys.MineDesc),
+            BuildSlotType.TownHall => GameLocalization.Text(LocalizationKeys.CoreDesc),
+            BuildSlotType.Barracks => GameLocalization.Text(LocalizationKeys.BarracksDesc),
+            BuildSlotType.Wall => GameLocalization.Text(LocalizationKeys.WallDesc),
+            _ => GameLocalization.Text(LocalizationKeys.CannonDesc)
         };
     }
 

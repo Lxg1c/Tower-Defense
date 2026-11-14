@@ -1,6 +1,6 @@
 {
     "name": "TowerDefense.EditMode.Tests",
-    "references": ["TowerDefense.Runtime", "Unity.ugui"],
+    "references": ["TowerDefense.Runtime", "Unity.ugui", "Unity.Localization"],
     "includePlatforms": ["Editor"],
     "optionalUnityReferences": ["TestAssemblies"],
     "autoReferenced": false

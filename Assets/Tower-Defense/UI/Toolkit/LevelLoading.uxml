@@ -1,0 +1,19 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <ui:Style src="Menu.uss" />
+  <ui:Style src="LevelLoading.uss" />
+  <ui:VisualElement name="loadingScreen" class="loading-screen">
+    <ui:VisualElement name="loadingCover" class="loading-cover" picking-mode="Ignore" />
+    <ui:VisualElement class="loading-shade" picking-mode="Ignore" />
+    <ui:VisualElement class="loading-content" picking-mode="Ignore">
+      <ui:Label name="loadingTitle" class="loading-title" />
+      <ui:Label name="loadingDifficulty" class="loading-difficulty" />
+      <ui:VisualElement class="loading-status-row" picking-mode="Ignore">
+        <ui:Label name="loadingStatus" class="loading-status" />
+        <ui:Label name="loadingPercent" text="0%" class="loading-percent" />
+      </ui:VisualElement>
+      <ui:VisualElement class="loading-track" picking-mode="Ignore">
+        <ui:VisualElement name="loadingFill" class="loading-fill" picking-mode="Ignore" />
+      </ui:VisualElement>
+    </ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>

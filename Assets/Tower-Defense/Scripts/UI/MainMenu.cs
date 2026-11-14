@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 
 [DisallowMultipleComponent]
 public class MainMenu : MonoBehaviour
@@ -66,12 +67,18 @@ public class MainMenu : MonoBehaviour
         catch (ArgumentException) { }
     }
 
-    public void StartGame()
+    internal void StartGame(PanelSettings panel, VisualTreeAsset loadingScreen, VisualElement menuRoot, string title)
     {
-        if (!enabled || !canStartSelected) return;
+        if (!enabled || !canStartSelected || LevelLoadingScreen.IsLoading) return;
+        if (!Application.CanStreamedLevelBeLoaded(gameSceneName))
+        {
+            Debug.LogError($"[MainMenu] Add {gameSceneName} to the build scene list.", this);
+            return;
+        }
+
         RunSelection.Select(levels[selectedIndex], gameSceneName, selectedDifficulty);
         Time.timeScale = 1f;
-        SceneManager.LoadScene(gameSceneName);
+        LevelLoadingScreen.Begin(panel, loadingScreen, menuRoot, gameSceneName, title, selectedIndex, selectedDifficulty);
     }
 
     public void StartGameplayLab()

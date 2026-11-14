@@ -13,6 +13,7 @@ public sealed class MenuToolkitView : MonoBehaviour
     [SerializeField] private MainMenuScreens screens;
 
     [SerializeField] private TowerLoadout guideLoadout;
+    [SerializeField] private VisualTreeAsset loadingScreen;
 
     private enum PreviewPage { Campaign, Equipment, Settings, Talents, BuildingGuide }
     [SerializeField, Tooltip("Screen displayed in Game view outside Play Mode.")]
@@ -94,18 +95,15 @@ public sealed class MenuToolkitView : MonoBehaviour
 
     private static readonly PlayerSkill[] Skills =
         { PlayerSkill.Vitality, PlayerSkill.Firepower, PlayerSkill.RapidFire };
-    private static readonly string[] SkillKeys = { "vitality", "firepower", "rapid-fire" };
-    private static readonly string[] SkillNames = { "Живучесть", "Огневая мощь", "Скорострельность" };
+    private static readonly string[] SkillKeys = { LocalizationKeys.Vitality, LocalizationKeys.Firepower, LocalizationKeys.RapidFire };
     private static readonly string[] SkillIcons = { "talent-vitality", "talent-firepower", "talent-rapid-fire" };
-    private static readonly string[] SkillBonusKeys = { "vitality-bonus", "firepower-bonus", "rapid-bonus" };
-    private static readonly string[] SkillBonuses =
-        { "+15% к максимальному здоровью за ранг", "+10% к урону за ранг", "+8% к скорострельности за ранг" };
+    private static readonly string[] SkillBonusKeys = { LocalizationKeys.VitalityBonus, LocalizationKeys.FirepowerBonus, LocalizationKeys.RapidBonus };
 
     // Equipment mockups are for menu comparison until equipment affects combat.
-    private static readonly (string Key, string Name, float Armor, float Speed)[] ArmorExamples =
-        { ("base-name", "Базовый", 20f, 3f), ("assault-name", "Штурмовой", 35f, 2.6f), ("scout-name", "Разведкорпус", 12f, 3.6f) };
-    private static readonly (string Key, string Name, float Damage, float Rate)[] WeaponExamples =
-        { ("standard-name", "Стандарт", 5f, 2f), ("heavy-name", "Тяжёлая", 8f, 1.4f), ("rapid-name", "Скорострельная", 4f, 2.6f) };
+    private static readonly (string Key, float Armor, float Speed)[] ArmorExamples =
+        { (LocalizationKeys.BaseName, 20f, 3f), (LocalizationKeys.AssaultName, 35f, 2.6f), (LocalizationKeys.ScoutName, 12f, 3.6f) };
+    private static readonly (string Key, float Damage, float Rate)[] WeaponExamples =
+        { (LocalizationKeys.StandardName, 5f, 2f), (LocalizationKeys.HeavyName, 8f, 1.4f), (LocalizationKeys.RapidName, 4f, 2.6f) };
 
     private void OnEnable()
     {
@@ -279,7 +277,15 @@ public sealed class MenuToolkitView : MonoBehaviour
         startButton.clicked += () =>
         {
             CompleteLevelSlide();
-            menu.StartGame();
+            if (loadingScreen == null)
+            {
+                Debug.LogError("[MenuToolkitView] Assign the level loading screen.", this);
+                return;
+            }
+
+            int index = menu.SelectedIndex;
+            menu.StartGame(GetComponent<UIDocument>().panelSettings, loadingScreen, root,
+                LevelTitle(menu.GetLevel(index), index));
         };
         for (int i = 0; i < difficultyButtons.Length; i++)
         {
@@ -377,7 +383,8 @@ public sealed class MenuToolkitView : MonoBehaviour
         RefreshVolumeControl(masterSlider, "master", 1f);
         RefreshVolumeControl(musicSlider, "music", .7f);
         RefreshVolumeControl(effectsSlider, "effects", .85f);
-        languageDropdown.SetValueWithoutNotify(RussianOption);
+        languageDropdown.SetValueWithoutNotify(GameLocalization.Language == "en" ? EnglishOption : RussianOption);
+        GameLocalization.ApplyTo(root);
         RefreshGraphics();
         fpsLabel.AddToClassList("is-hidden");
         Show(editorPreview switch
@@ -420,7 +427,7 @@ public sealed class MenuToolkitView : MonoBehaviour
         levelTitle.text = LevelTitle(level, index);
         levelDescription.text = LevelDescription(level);
         levelIndex.text = $"{index + 1:00} / {menu.LevelCount:00}";
-        levelAvailability.text = canStart ? GameLocalization.Text("available", "ДОСТУПЕН") : GameLocalization.Text("unavailable", "НЕДОСТУПЕН");
+        levelAvailability.text = canStart ? GameLocalization.Text(LocalizationKeys.Available) : GameLocalization.Text(LocalizationKeys.Unavailable);
         SetLevelArt(levelArt, index);
         RefreshAdjacentLevel(previousLevelButton, index - 1);
         RefreshAdjacentLevel(nextLevelButton, index + 1);
@@ -430,7 +437,7 @@ public sealed class MenuToolkitView : MonoBehaviour
                 Progress.IsDifficultyUnlocked(level.progressionId, i + 1);
             difficultyButtons[i].SetEnabled(unlocked);
             difficultyButtons[i].EnableInClassList("is-selected", menu.SelectedDifficulty == i + 1);
-            difficultyButtons[i].tooltip = unlocked ? "" : GameLocalization.Text("difficulty-locked", "Пройдите предыдущую сложность");
+            difficultyButtons[i].tooltip = unlocked ? "" : GameLocalization.Text(LocalizationKeys.DifficultyLocked);
         }
         startButton.SetEnabled(canStart);
         wavePreview.EnableInClassList("is-hidden", !canStart);
@@ -513,7 +520,7 @@ public sealed class MenuToolkitView : MonoBehaviour
         SetLevelArt(button.Q("cardArt"), index);
     }
 
-    private static void SetLevelArt(VisualElement art, int index)
+    internal static void SetLevelArt(VisualElement art, int index)
     {
         art.EnableInClassList("campaign-art-1", index == 0 || index > 2);
         art.EnableInClassList("campaign-art-2", index == 1);
@@ -523,29 +530,29 @@ public sealed class MenuToolkitView : MonoBehaviour
     private static string LevelTitle(LevelDefinition level, int index) =>
         string.IsNullOrWhiteSpace(level?.displayName) ||
         string.Equals(level.displayName, $"Level {index + 1}", StringComparison.OrdinalIgnoreCase)
-            ? GameLocalization.Format("level-number", "УРОВЕНЬ {0:00}", index + 1) : level.displayName;
+            ? GameLocalization.Format(LocalizationKeys.LevelNumber, index + 1) : level.displayName;
 
     private static string LevelDescription(LevelDefinition level) => level?.progressionId switch
     {
-        "level-1" => GameLocalization.Text("level-one", "Один выход врагов"),
-        "level-2" => GameLocalization.Text("level-two", "Несколько подходов. Летающие враги"),
-        "level-3" => GameLocalization.Text("level-three", "Бронированные враги"),
-        _ => level?.description ?? GameLocalization.Text("level-missing", "Уровень ещё не настроен")
+        "level-1" => GameLocalization.Text(LocalizationKeys.LevelOne),
+        "level-2" => GameLocalization.Text(LocalizationKeys.LevelTwo),
+        "level-3" => GameLocalization.Text(LocalizationKeys.LevelThree),
+        _ => level?.description ?? GameLocalization.Text(LocalizationKeys.LevelMissing)
     };
 
     private static string FormatWaves(int count)
     {
         int lastDigit = count % 10;
         if (GameLocalization.Language == "en")
-            return count == 1 ? GameLocalization.Format("wave-count-one", "{0} WAVE", count) :
-                GameLocalization.Format("wave-count-many", "{0} WAVES", count);
+            return count == 1 ? GameLocalization.Format(LocalizationKeys.WaveCountOne, count) :
+                GameLocalization.Format(LocalizationKeys.WaveCountMany, count);
 
-        if (count % 100 is >= 11 and <= 14) return GameLocalization.Format("wave-count-many", "{0} ВОЛН", count);
+        if (count % 100 is >= 11 and <= 14) return GameLocalization.Format(LocalizationKeys.WaveCountMany, count);
         return lastDigit switch
         {
-            1 => GameLocalization.Format("wave-count-one", "{0} ВОЛНА", count),
-            >= 2 and <= 4 => GameLocalization.Format("wave-count-few", "{0} ВОЛНЫ", count),
-            _ => GameLocalization.Format("wave-count-many", "{0} ВОЛН", count)
+            1 => GameLocalization.Format(LocalizationKeys.WaveCountOne, count),
+            >= 2 and <= 4 => GameLocalization.Format(LocalizationKeys.WaveCountFew, count),
+            _ => GameLocalization.Format(LocalizationKeys.WaveCountMany, count)
         };
     }
 
@@ -557,8 +564,8 @@ public sealed class MenuToolkitView : MonoBehaviour
         {
             int rank = state.Rank(Skills[i]);
             bool unlocked = state.IsUnlocked(Skills[i]);
-            skillButtons[i].Q<Label>("rank").text = unlocked ? GameLocalization.Format("rank", "Ранг {0} / {1}", rank, SkillTreeState.MaxRank) :
-                GameLocalization.Text("locked", "Закрыто");
+            skillButtons[i].Q<Label>("rank").text = unlocked ? GameLocalization.Format(LocalizationKeys.Rank, rank, SkillTreeState.MaxRank) :
+                GameLocalization.Text(LocalizationKeys.Locked);
             skillButtons[i].EnableInClassList("is-locked", !unlocked);
             skillButtons[i].EnableInClassList("is-selected", i == selectedSkill);
         }
@@ -570,19 +577,19 @@ public sealed class MenuToolkitView : MonoBehaviour
         var detailIcon = root.Q("skillDetailIcon");
         for (int i = 0; i < SkillIcons.Length; i++)
             detailIcon.EnableInClassList(SkillIcons[i], i == selectedSkill);
-        root.Q<Label>("skillDetailTitle").text = GameLocalization.Text(SkillKeys[selectedSkill], SkillNames[selectedSkill]);
-        root.Q<Label>("skillDetailRank").text = GameLocalization.Format("rank-detail", "Ранг {0} из {1}", currentRank, SkillTreeState.MaxRank);
-        root.Q<Label>("skillDetailBonus").text = GameLocalization.Text(SkillBonusKeys[selectedSkill], SkillBonuses[selectedSkill]);
+        root.Q<Label>("skillDetailTitle").text = GameLocalization.Text(SkillKeys[selectedSkill]);
+        root.Q<Label>("skillDetailRank").text = GameLocalization.Format(LocalizationKeys.RankDetail, currentRank, SkillTreeState.MaxRank);
+        root.Q<Label>("skillDetailBonus").text = GameLocalization.Text(SkillBonusKeys[selectedSkill]);
         root.Q<Label>("skillDetailRequirement").text = selectedSkill == 0
-            ? GameLocalization.Text("unlock-branches", "Первый ранг открывает обе ветки") :
-            available ? "" : GameLocalization.Text("requires-vitality", "Требуется Живучесть I");
+            ? GameLocalization.Text(LocalizationKeys.UnlockBranches) :
+            available ? "" : GameLocalization.Text(LocalizationKeys.RequiresVitality);
 
         var steps = root.Q("skillRankSteps");
         for (int i = 0; i < steps.childCount; i++)
             steps[i].EnableInClassList("is-earned", i < currentRank);
 
-        root.Q<Label>("upgradeSkillText").text = !available ? GameLocalization.Text("locked", "Закрыто") :
-            cost == 0 ? GameLocalization.Text("max-rank", "Максимальный ранг") : GameLocalization.Text("upgrade", "Улучшить");
+        root.Q<Label>("upgradeSkillText").text = !available ? GameLocalization.Text(LocalizationKeys.Locked) :
+            cost == 0 ? GameLocalization.Text(LocalizationKeys.MaxRank) : GameLocalization.Text(LocalizationKeys.Upgrade);
         root.Q("upgradeSkillPrice").EnableInClassList("is-hidden", !available || cost == 0);
         root.Q<Label>("upgradeSkillCost").text = cost.ToString();
         upgradeSkill.SetEnabled(available && cost > 0 && state.Money >= cost);
@@ -604,18 +611,18 @@ public sealed class MenuToolkitView : MonoBehaviour
         RefreshLoadoutStats();
         RefreshEquipmentLabels();
         bool overdrive = state.EquippedWeaponModule == PlayerWeaponModule.Overdrive;
-        moduleSlot.text = overdrive ? GameLocalization.Text("overdrive-slot", "БОЕВОЙ МОДУЛЬ  ·  ФОРСАЖ") :
-            GameLocalization.Text("standard-slot", "БОЕВОЙ МОДУЛЬ  ·  СТАНДАРТ");
-        standardModule.text = overdrive ? GameLocalization.Text("equip", "ВЫБРАТЬ") : GameLocalization.Text("equipped", "НАДЕТО");
+        moduleSlot.text = overdrive ? GameLocalization.Text(LocalizationKeys.OverdriveSlot) :
+            GameLocalization.Text(LocalizationKeys.StandardSlot);
+        standardModule.text = overdrive ? GameLocalization.Text(LocalizationKeys.Equip) : GameLocalization.Text(LocalizationKeys.Equipped);
         standardModule.SetEnabled(overdrive);
         if (!state.IsWeaponModuleUnlocked(PlayerWeaponModule.Overdrive))
         {
-            overdriveModule.text = GameLocalization.Format("buy", "КУПИТЬ  {0}", SkillTreeState.OverdriveCost);
+            overdriveModule.text = GameLocalization.Format(LocalizationKeys.Buy, SkillTreeState.OverdriveCost);
             overdriveModule.SetEnabled(state.Money >= SkillTreeState.OverdriveCost);
         }
         else
         {
-            overdriveModule.text = overdrive ? GameLocalization.Text("equipped", "НАДЕТО") : GameLocalization.Text("equip", "ВЫБРАТЬ");
+            overdriveModule.text = overdrive ? GameLocalization.Text(LocalizationKeys.Equipped) : GameLocalization.Text(LocalizationKeys.Equip);
             overdriveModule.SetEnabled(!overdrive);
         }
     }
@@ -666,12 +673,12 @@ public sealed class MenuToolkitView : MonoBehaviour
         var armor = ArmorExamples[previewArmor];
         var left = WeaponExamples[previewLeftWeapon];
         var right = WeaponExamples[previewRightWeapon];
-        armorSlot.text = GameLocalization.Text("armor-slot", "КОРПУС") + "\n" + GameLocalization.Text(armor.Key, armor.Name);
-        leftWeaponSlot.text = GameLocalization.Text("left-weapon", "ЛЕВАЯ ПУШКА") + "\n" + GameLocalization.Text(left.Key, left.Name);
-        rightWeaponSlot.text = GameLocalization.Text("right-weapon", "ПРАВАЯ ПУШКА") + "\n" + GameLocalization.Text(right.Key, right.Name);
+        armorSlot.text = GameLocalization.Text(LocalizationKeys.ArmorSlot) + "\n" + GameLocalization.Text(armor.Key);
+        leftWeaponSlot.text = GameLocalization.Text(LocalizationKeys.LeftWeapon) + "\n" + GameLocalization.Text(left.Key);
+        rightWeaponSlot.text = GameLocalization.Text(LocalizationKeys.RightWeapon) + "\n" + GameLocalization.Text(right.Key);
         for (int i = 0; i < armorPreviews.Length; i++)
             armorPreviews[i].Q<Label>(className: "preview-status").text = i == previewArmor
-                ? GameLocalization.Text("shown", "Показано") : GameLocalization.Text("try-on", "Примерить");
+                ? GameLocalization.Text(LocalizationKeys.Shown) : GameLocalization.Text(LocalizationKeys.TryOn);
     }
 
     private void RefreshAppearancePreview()
@@ -744,8 +751,8 @@ public sealed class MenuToolkitView : MonoBehaviour
     {
         var choices = new System.Collections.Generic.List<string>
         {
-            GameLocalization.Text("graphics-standard", "Обычное"),
-            GameLocalization.Text("graphics-simple", "Упрощённое")
+            GameLocalization.Text(LocalizationKeys.GraphicsStandard),
+            GameLocalization.Text(LocalizationKeys.GraphicsSimple)
         };
         lightingDropdown.choices = choices;
         lightingDropdown.SetValueWithoutNotify(choices[(int)GamePerformanceSettings.Lighting]);
@@ -809,7 +816,7 @@ public sealed class MenuToolkitView : MonoBehaviour
             row.Add(labels);
             if (name == "Pulse" && pulseNew)
             {
-                var badge = new Label(GameLocalization.Text("guide-new", "Новое")) { pickingMode = PickingMode.Ignore };
+                var badge = new Label(GameLocalization.Text(LocalizationKeys.GuideNew)) { pickingMode = PickingMode.Ignore };
                 badge.AddToClassList("guide-badge");
                 row.Add(badge);
             }
@@ -820,17 +827,17 @@ public sealed class MenuToolkitView : MonoBehaviour
             root.Q<Label>("guideRole").text = GuideRole(name);
             root.Q<Label>("guideDescription").text = name switch
             {
-                "Ratusha" => GameLocalization.Text("guide-core-text", "Главная цель обороны. Если узел разрушат, забег закончится."),
-                "Mine" => GameLocalization.Text("guide-mine-text", "Приносит кредиты после каждой пережитой волны. Построй заранее, чтобы усилить оборону позже."),
-                "Cannon Turret" => GameLocalization.Text("guide-cannon-text", "Автоматически атакует наземных и летающих врагов в радиусе."),
+                "Ratusha" => GameLocalization.Text(LocalizationKeys.GuideCoreText),
+                "Mine" => GameLocalization.Text(LocalizationKeys.GuideMineText),
+                "Cannon Turret" => GameLocalization.Text(LocalizationKeys.GuideCannonText),
                 _ => GameplayToolkitView.GetBuildingDescription(option)
             };
             root.Q<Label>("guideCost").text = option.cost.ToString();
             root.Q<Label>("guideRequirement").text = option.requiredTownHallLevel switch
             {
-                0 => GameLocalization.Text("guide-immediate", "Доступен сразу"),
-                1 => GameLocalization.Text("guide-after-core", "После постройки узла"),
-                _ => GameLocalization.Format("guide-core-level", "Узел {0} уровня", option.requiredTownHallLevel)
+                0 => GameLocalization.Text(LocalizationKeys.GuideImmediate),
+                1 => GameLocalization.Text(LocalizationKeys.GuideAfterCore),
+                _ => GameLocalization.Format(LocalizationKeys.GuideCoreLevel, option.requiredTownHallLevel)
             };
         }
     }
@@ -839,10 +846,10 @@ public sealed class MenuToolkitView : MonoBehaviour
 
     private static string GuideRole(string name) => name switch
     {
-        "Ratusha" => GameLocalization.Text("guide-role-core", "Защита"),
-        "Mine" => GameLocalization.Text("guide-role-mine", "Доход"),
-        "Cannon Turret" => GameLocalization.Text("guide-role-cannon", "Прямая защита"),
-        _ => GameLocalization.Text("guide-role-pulse", "Контроль группы")
+        "Ratusha" => GameLocalization.Text(LocalizationKeys.GuideRoleCore),
+        "Mine" => GameLocalization.Text(LocalizationKeys.GuideRoleMine),
+        "Cannon Turret" => GameLocalization.Text(LocalizationKeys.GuideRoleCannon),
+        _ => GameLocalization.Text(LocalizationKeys.GuideRolePulse)
     };
 
     private void Show(VisualElement page)

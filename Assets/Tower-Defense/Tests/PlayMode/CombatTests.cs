@@ -12,6 +12,36 @@ namespace TowerDefense.Tests
     {
         private readonly List<GameObject> created = new();
 
+        [UnityTest]
+        public IEnumerator PlayerOnlyDivertsEnemyWhileClose()
+        {
+            var enemy = NewObject("Close aggro enemy", false);
+            var selector = enemy.AddComponent<BaseOnlySelector>();
+            var attack = enemy.AddComponent<StandardAttack>();
+            var navigation = enemy.AddComponent<DefaultNav>();
+            var mob = enemy.AddComponent<MobCore>();
+            Set(mob, "targetSelectorRef", selector);
+            Set(mob, "combatBehaviorRef", attack);
+            Set(mob, "navigationModifierRef", navigation);
+            Set(mob, "refreshInterval", 0f);
+            var coreObject = NewObject("Distant core");
+            coreObject.transform.position = Vector3.forward * 12f;
+            var core = coreObject.AddComponent<Base>();
+            var player = NewObject("Player").AddComponent<PlayerHealth>();
+            player.transform.position = Vector3.right * 5f;
+            enemy.SetActive(true);
+            yield return null;
+            Assert.That(mob.CurrentTarget, Is.SameAs(core));
+
+            player.transform.position = Vector3.right * 2f;
+            yield return null;
+            Assert.That(mob.CurrentTarget, Is.SameAs(player));
+
+            player.transform.position = Vector3.right * 5f;
+            yield return null;
+            Assert.That(mob.CurrentTarget, Is.SameAs(core));
+        }
+
         [UnityTearDown]
         public IEnumerator TearDown()
         {

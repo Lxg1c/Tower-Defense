@@ -871,6 +871,14 @@ MonoBehaviour:
     m_Key: perf-compact-timings
     m_Metadata:
       m_Items: []
+  - m_Id: 639053874585600
+    m_Key: loading-level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 639053983637504
+    m_Key: loading-difficulty
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

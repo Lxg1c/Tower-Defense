@@ -95,6 +95,7 @@ public class NearestThreatSelector : MonoBehaviour, ITargetSelector
                 continue;
             }
 
+            if (dmg is PlayerHealth player && !mob.IsPlayerInAggroRange(player)) continue;
             targetable++;
             float d = (dmg.transform.position - origin).sqrMagnitude;
             if (d < bestDistSqr)

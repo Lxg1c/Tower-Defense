@@ -447,9 +447,25 @@
 .pause-fps-switch.is-on .pause-fps-knob { left: 49px; background-color: #e2fff8; }
 
 .health-bar-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 0; -unity-overflow-clip-box: content-box; }
-.entity-health-bar { position: absolute; width: 46px; height: 8px; border-radius: 4px; background-color: #0b1724; border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-right-width: 1px; border-top-color: #b6e4e8; border-bottom-color: #b6e4e8; border-left-color: #b6e4e8; border-right-color: #b6e4e8; overflow: hidden; }
-.entity-health-fill { position: absolute; left: 0; top: 0; bottom: 0; background-color: #3cf0a7; }
-.entity-shield-fill { position: absolute; left: 0; top: 0; height: 3px; background-color: #68bcff; }
+.entity-health-bar {
+    position: absolute;
+    width: 46px;
+    height: 8px;
+    flex-direction: row;
+    padding: 2px;
+    border-radius: 2px;
+    background-color: #07121b;
+    translate: -50% -50%;
+    --entity-health-color: #75e1c7;
+}
+
+.entity-health-bar--building { --entity-health-color: #ffd17b; }
+.entity-health-bar--enemy { --entity-health-color: #ff8279; }
+.entity-health-segment { flex: 1; background-color: #304652; border-radius: 1px; overflow: hidden; }
+.entity-health-segment--spaced { margin-left: 1px; }
+.entity-health-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background-color: var(--entity-health-color); }
+.entity-shield-track { position: absolute; left: 1px; right: 1px; top: -4px; height: 3px; background-color: #07121b; border-radius: 1px; overflow: hidden; }
+.entity-shield-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background-color: #6cc7ff; }
 
 /* Compact build choice: role first, then one unambiguous purchase action. */
 .side-panel {

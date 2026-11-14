@@ -17,6 +17,7 @@ public class MobCore : MonoBehaviour
     [Header("Awareness")]
     [Tooltip("Radius in meters used by target selectors to find candidates.")]
     [SerializeField] private float awarenessRadius = 30f;
+    [SerializeField, Min(0f)] private float playerAggroRadius = 3f;
     [Tooltip("Target / destination refresh interval in seconds. Keep >= 0.5 to stay within perf budget.")]
     [SerializeField] private float refreshInterval = 0.5f;
 
@@ -57,6 +58,7 @@ public class MobCore : MonoBehaviour
     private float refreshTimer;
     private Collider currentTargetCollider;
     private Base attackedCore;
+    private PlayerHealth nearbyPlayer;
 
     /// <summary>
     /// Returns the closest point on the target's collider, or its pivot if there is no collider.
@@ -171,7 +173,10 @@ public class MobCore : MonoBehaviour
     {
         if (TargetSelector == null) return;
 
-        Damageable newTarget = TargetSelector.GetTarget(this);
+        if (nearbyPlayer == null)
+            nearbyPlayer = FindFirstObjectByType<PlayerHealth>();
+        Damageable newTarget = IsPlayerInAggroRange(nearbyPlayer)
+            ? nearbyPlayer : TargetSelector.GetTarget(this);
 
         // Drop dead targets
         if (newTarget != null && !newTarget.IsAlive)
@@ -186,6 +191,17 @@ public class MobCore : MonoBehaviour
         }
 
         NavigationModifier?.UpdateDestination(this, CurrentTarget);
+    }
+
+    internal bool IsPlayerInAggroRange(PlayerHealth player)
+    {
+        if (player == null || !player.IsTargetable || player.gameObject.scene != gameObject.scene)
+            return false;
+
+        var offset = player.transform.position - transform.position;
+        offset.y = 0f;
+        float radius = Mathf.Min(playerAggroRadius, awarenessRadius);
+        return radius > 0f && offset.sqrMagnitude <= radius * radius;
     }
 
     private void FaceTarget(Vector3 worldPos)

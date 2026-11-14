@@ -7,6 +7,8 @@ using UnityEngine.UIElements;
 [DefaultExecutionOrder(200)]
 public sealed class HealthBarManager : MonoBehaviour
 {
+    private const int HealthSegmentCount = 4;
+
     [SerializeField] private Vector3 barOffset = new(0f, 1.8f, 0f);
     [SerializeField] private bool hideWhenFull = true;
     [SerializeField] private Camera worldCamera;
@@ -14,7 +16,9 @@ public sealed class HealthBarManager : MonoBehaviour
     private sealed class Entry
     {
         public VisualElement Root;
-        public VisualElement Health;
+        public readonly VisualElement[] HealthSegments = new VisualElement[HealthSegmentCount];
+        public float DisplayedHealth = -1f;
+        public VisualElement ShieldTrack;
         public VisualElement Shield;
     }
 
@@ -29,7 +33,9 @@ public sealed class HealthBarManager : MonoBehaviour
         foreach (Entry entry in active.Values)
         {
             entry.Root = null;
-            entry.Health = null;
+            System.Array.Clear(entry.HealthSegments, 0, entry.HealthSegments.Length);
+            entry.DisplayedHealth = -1f;
+            entry.ShieldTrack = null;
             entry.Shield = null;
         }
         if (root == null) return;
@@ -37,7 +43,7 @@ public sealed class HealthBarManager : MonoBehaviour
         layer.AddToClassList("health-bar-layer");
         VisualElement container = root.Q("gameRoot") ?? root;
         container.Insert(Mathf.Min(1, container.childCount), layer);
-        foreach (Entry entry in active.Values) CreateVisual(entry);
+        foreach (var pair in active) CreateVisual(pair.Key.Target, pair.Value);
     }
 
     public void SetVisible(bool visible) => layer?.EnableInClassList("is-hidden", !visible);
@@ -68,7 +74,7 @@ public sealed class HealthBarManager : MonoBehaviour
         if (binding == null || binding.gameObject.scene != gameObject.scene || active.ContainsKey(binding)) return;
         var entry = new Entry();
         active.Add(binding, entry);
-        if (layer != null) CreateVisual(entry);
+        if (layer != null) CreateVisual(binding.Target, entry);
     }
 
     private void Unregister(HealthBarBinding binding)
@@ -78,17 +84,39 @@ public sealed class HealthBarManager : MonoBehaviour
         active.Remove(binding);
     }
 
-    private void CreateVisual(Entry entry)
+    private void CreateVisual(Damageable target, Entry entry)
     {
         if (layer == null) return;
         entry.Root = new VisualElement { pickingMode = PickingMode.Ignore };
         entry.Root.AddToClassList("entity-health-bar");
-        entry.Health = new VisualElement { pickingMode = PickingMode.Ignore };
-        entry.Health.AddToClassList("entity-health-fill");
-        entry.Shield = new VisualElement { pickingMode = PickingMode.Ignore };
-        entry.Shield.AddToClassList("entity-shield-fill");
-        entry.Root.Add(entry.Health);
-        entry.Root.Add(entry.Shield);
+        if (target is Base or TowerHealth)
+            entry.Root.AddToClassList("entity-health-bar--building");
+        else if (target is MobHealth)
+            entry.Root.AddToClassList("entity-health-bar--enemy");
+
+        for (int i = 0; i < HealthSegmentCount; i++)
+        {
+            var segment = new VisualElement { pickingMode = PickingMode.Ignore };
+            segment.AddToClassList("entity-health-segment");
+            segment.EnableInClassList("entity-health-segment--spaced", i > 0);
+
+            var fill = new VisualElement { pickingMode = PickingMode.Ignore };
+            fill.AddToClassList("entity-health-fill");
+            segment.Add(fill);
+            entry.Root.Add(segment);
+            entry.HealthSegments[i] = fill;
+        }
+
+        if (target is PlayerHealth)
+        {
+            entry.ShieldTrack = new VisualElement { pickingMode = PickingMode.Ignore };
+            entry.ShieldTrack.AddToClassList("entity-shield-track");
+            entry.ShieldTrack.AddToClassList("is-hidden");
+            entry.Shield = new VisualElement { pickingMode = PickingMode.Ignore };
+            entry.Shield.AddToClassList("entity-shield-fill");
+            entry.ShieldTrack.Add(entry.Shield);
+            entry.Root.Add(entry.ShieldTrack);
+        }
         layer.Add(entry.Root);
     }
 
@@ -117,11 +145,20 @@ public sealed class HealthBarManager : MonoBehaviour
                 !(hideWhenFull && health >= 0.999f && shield <= 0f);
             entry.Root.EnableInClassList("is-hidden", !show);
             if (!show) continue;
-            entry.Root.style.left = x - 23f;
-            entry.Root.style.top = height - y - 4f;
-            entry.Health.style.width = Length.Percent(health * 100f);
-            entry.Shield.style.width = Length.Percent(shield * 100f);
-            entry.Shield.EnableInClassList("is-hidden", shield <= 0f);
+            entry.Root.style.left = x;
+            entry.Root.style.top = height - y;
+            if (entry.DisplayedHealth != health)
+            {
+                entry.DisplayedHealth = health;
+                float filledSegments = health * HealthSegmentCount;
+                for (int i = 0; i < HealthSegmentCount; i++)
+                    entry.HealthSegments[i].style.width = Length.Percent(Mathf.Clamp01(filledSegments - i) * 100f);
+            }
+            if (entry.ShieldTrack != null)
+            {
+                entry.ShieldTrack.EnableInClassList("is-hidden", shield <= 0f);
+                if (shield > 0f) entry.Shield.style.width = Length.Percent(shield * 100f);
+            }
         }
     }
 }

@@ -73,19 +73,19 @@ internal sealed class PerformanceMeasurement : IDisposable
     }
 
     internal string Summary() => HasFrames
-        ? GameLocalization.Format("perf-run-summary", "{0:0.0} с · {1:0.0} FPS · P95 {2:0.0} мс",
+        ? GameLocalization.Format(LocalizationKeys.PerfRunSummary,
             Elapsed, frames.Count / Elapsed, frames.Percentile95)
-        : GameLocalization.Text("perf-no-frames", "Не успели собрать кадры для отчёта.");
+        : GameLocalization.Text(LocalizationKeys.PerfNoFrames);
 
     internal static string DeviceReport()
     {
         string lighting = GamePerformanceSettings.Lighting == GamePerformanceSettings.LightingMode.Simple
-            ? GameLocalization.Text("graphics-simple", "Упрощённое") : GameLocalization.Text("graphics-standard", "Обычное");
+            ? GameLocalization.Text(LocalizationKeys.GraphicsSimple) : GameLocalization.Text(LocalizationKeys.GraphicsStandard);
         string normals = GamePerformanceSettings.NormalMaps
-            ? GameLocalization.Text("perf-on", "вкл.") : GameLocalization.Text("perf-off", "выкл.");
-        return GameLocalization.Format("perf-device", "{0} · {1} · {2} × {3}",
+            ? GameLocalization.Text(LocalizationKeys.PerfOn) : GameLocalization.Text(LocalizationKeys.PerfOff);
+        return GameLocalization.Format(LocalizationKeys.PerfDevice,
             SystemInfo.graphicsDeviceName, SystemInfo.graphicsDeviceType, Screen.width, Screen.height) + "\n" +
-            GameLocalization.Format("perf-graphics", "Освещение: {0} · карты нормалей: {1}", lighting, normals);
+            GameLocalization.Format(LocalizationKeys.PerfGraphics, lighting, normals);
     }
 
     internal string Report(bool benchmark = false)
@@ -95,32 +95,32 @@ internal sealed class PerformanceMeasurement : IDisposable
         double cpuP95 = mainThread.Percentile95;
         double renderP95 = renderThread.Percentile95;
         double gpuP95 = gpu.Percentile95;
-        string unavailable = GameLocalization.Text("perf-unavailable", "нет данных");
+        string unavailable = GameLocalization.Text(LocalizationKeys.PerfUnavailable);
         string Metric(double value) => value > 0d ? value.ToString("0.0") : unavailable;
 
         double cpuLimit = Math.Max(cpuP95, renderP95);
         string diagnosis;
         if (frameP95 <= FrameBudget + 0.35d)
-            diagnosis = GameLocalization.Text("perf-ok", "На этом отрезке 95% кадров уложились примерно в бюджет 60 FPS.");
+            diagnosis = GameLocalization.Text(LocalizationKeys.PerfOk);
         else if (gpuP95 > FrameBudget && cpuLimit > 0d && gpuP95 >= cpuLimit * 1.1d)
-            diagnosis = GameLocalization.Text("perf-gpu-limit", "Вероятный упор в GPU. Проверь освещение, тени, прозрачные эффекты и масштаб рендера.");
+            diagnosis = GameLocalization.Text(LocalizationKeys.PerfGpuLimit);
         else if (cpuLimit > FrameBudget && gpuP95 > 0d && cpuLimit >= gpuP95 * 1.1d)
             diagnosis = benchmark
-                ? GameLocalization.Text("perf-benchmark-cpu", "Вероятный упор в CPU. Проверь время подготовки отрисовки, анимации и сборку мусора.")
-                : GameLocalization.Text("perf-cpu-limit", "Вероятный упор в CPU. Проверь поведение врагов, физику, вызовы отрисовки и сборку мусора.");
+                ? GameLocalization.Text(LocalizationKeys.PerfBenchmarkCpu)
+                : GameLocalization.Text(LocalizationKeys.PerfCpuLimit);
         else
-            diagnosis = GameLocalization.Text("perf-uncertain", "Есть медленные кадры. По этим данным узкое место не удалось выделить.");
+            diagnosis = GameLocalization.Text(LocalizationKeys.PerfUncertain);
 
         string context = benchmark
-            ? GameLocalization.Format("perf-benchmark-stage", "Врагов: {0} · {1:0.0} с", peakEnemies, Elapsed)
-            : GameLocalization.Format("perf-run-context", "{0:0.0} с · волны {1}–{2} · в бою {3:0.0} с\nМаксимум врагов одновременно: {4}",
+            ? GameLocalization.Format(LocalizationKeys.PerfBenchmarkStage, peakEnemies, Elapsed)
+            : GameLocalization.Format(LocalizationKeys.PerfRunContext,
                 Elapsed, firstWave, lastWave, combatSeconds, peakEnemies);
         return string.Join("\n", context,
-            GameLocalization.Format("perf-fps", "Средний FPS: {0:0.0}\nКадр P95: {1:0.0} мс · самый долгий: {2:0.0} мс\nКадров дольше бюджета 60 FPS: {3:0.0}%",
+            GameLocalization.Format(LocalizationKeys.PerfFps,
                 frames.Count / Elapsed, frameP95, frames.Max, missedBudget * 100d / frames.Count),
-            GameLocalization.Format("perf-compact-timings", "P95, мс · CPU (главный / рендер): {0} / {1} · GPU: {2}",
+            GameLocalization.Format(LocalizationKeys.PerfCompactTimings,
                 Metric(cpuP95), Metric(renderP95), Metric(gpuP95)),
-            GameLocalization.Format("perf-frame-counters", "Вызовы отрисовки, среднее / пик: {0} / {1}\nПик памяти Unity, МБ: {2}\nПик выделений GC за кадр, КБ: {3}",
+            GameLocalization.Format(LocalizationKeys.PerfFrameCounters,
                 drawCallSamples > 0 ? ((double)totalDrawCalls / drawCallSamples).ToString("0") : unavailable,
                 drawCallSamples > 0 ? peakDrawCalls.ToString() : unavailable,
                 hasMemory ? (peakMemory / 1048576d).ToString("0.0") : unavailable,

@@ -37,6 +37,19 @@ project guidance, not an installed Codex skill package.
   and unsubscribe symmetrically against the same publisher instance. Consider
   disable/re-enable, pooled objects, scene unloading and callback re-entry.
 
+## UI localization
+
+- Use named constants from `LocalizationKeys` for localization keys in C#.
+  Reuse an existing key when the text serves the same purpose.
+- Store player-facing translations and format templates in the Unity
+  Localization `Game UI` collection. Add each new key to both the Russian
+  and English tables. Use `l10n-<key>` for static UXML text and
+  `l10n-tip-<key>` for tooltips.
+- Use `GameLocalization.Text(key)` for plain text and
+  `GameLocalization.Format(key, values)` for templates. Pass only the key and
+  any values to substitute. Keep fallback text in the same string tables.
+  Set the fallback language centrally in `GameLocalization.FallbackLanguage`.
+
 ## Unity assets and source control
 
 - Use the running Unity Editor's APIs for scene/prefab/asset edits. Inspect current

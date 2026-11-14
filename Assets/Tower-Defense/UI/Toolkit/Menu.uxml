@@ -121,7 +121,7 @@
                 <ui:Slider name="masterSlider" low-value="0" high-value="1" class="menu-volume-slider l10n-tip-master-volume" tooltip="Общая громкость" />
               </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement class="menu-volume-row" picking-mode="Ignore">
+            <ui:VisualElement class="menu-volume-row menu-setting-divider" picking-mode="Ignore">
               <ui:VisualElement class="menu-volume-caption" picking-mode="Ignore">
                 <ui:Label text="Музыка" class="menu-setting-label l10n-music" />
                 <ui:Label name="musicValue" class="menu-volume-value" />
@@ -131,7 +131,7 @@
                 <ui:Slider name="musicSlider" low-value="0" high-value="1" class="menu-volume-slider l10n-tip-music" tooltip="Музыка" />
               </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement class="menu-volume-row" picking-mode="Ignore">
+            <ui:VisualElement class="menu-volume-row menu-setting-divider" picking-mode="Ignore">
               <ui:VisualElement class="menu-volume-caption" picking-mode="Ignore">
                 <ui:Label text="Эффекты" class="menu-setting-label l10n-effects" />
                 <ui:Label name="effectsValue" class="menu-volume-value" />
@@ -172,8 +172,10 @@
                 <ui:VisualElement class="menu-fps-track" picking-mode="Ignore"><ui:VisualElement class="menu-fps-knob" picking-mode="Ignore" /></ui:VisualElement>
               </ui:Button>
             </ui:VisualElement>
+            <ui:VisualElement class="menu-extra-setting menu-extra-setting-last" picking-mode="Ignore">
+              <ui:Button name="startBenchmark" text="Тест производительности" class="menu-extra-button benchmark-start l10n-perf-benchmark" />
+            </ui:VisualElement>
             <ui:Label text="Применяется при входе на уровень." class="graphics-note l10n-graphics-next-level" picking-mode="Ignore" />
-            <ui:Button name="startBenchmark" text="Тест производительности" class="menu-extra-button benchmark-start l10n-perf-benchmark" />
           </ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>

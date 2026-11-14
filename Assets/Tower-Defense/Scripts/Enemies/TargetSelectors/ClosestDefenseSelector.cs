@@ -36,6 +36,7 @@ public class ClosestDefenseSelector : MonoBehaviour, ITargetSelector
 
             var dmg = col.GetComponentInParent<Damageable>();
             if (dmg == null || !dmg.IsTargetable) continue;
+            if (dmg is PlayerHealth player && !mob.IsPlayerInAggroRange(player)) continue;
 
             float d = (dmg.transform.position - origin).sqrMagnitude;
             if (d < bestDistSqr)

@@ -336,6 +336,8 @@ spawn-point indices. CreateWaves copies data into fresh runtime arrays.
 Enemy options reference the gameplay prefabs in `Prefabs/Mobs`. The nested
 `Visual` instance owns the model scale and offset. Its animator uses the
 gameplay controller with clips from the imported model in `Assets/Units/enemies`.
+Mobs can switch to a targetable player within a short horizontal radius.
+Outside that radius, each mob follows its configured building-target selector.
 
 `MenuToolkitView` creates page selectors from `MainMenu`'s Levels list and previews
 the chosen encounter. Start stores the asset and target scene in RunSelection, then loads
@@ -353,6 +355,9 @@ strings in `Assets/Tower-Defense/Localization`. The language controls in
 then a supported device language, then English. `GameLocalization` loads the
 active string table, updates Toolkit text and tooltips tagged in UXML, and
 formats dynamic labels such as the wave counter and construction cost.
+C# views use `LocalizationKeys` constants. Missing entries use the same key
+in the table selected by `GameLocalization.FallbackLanguage`. Change that
+constant to switch the fallback language across all views.
 
 Main Menu and Play Mode subsystem initialization clear the static selection.
 
