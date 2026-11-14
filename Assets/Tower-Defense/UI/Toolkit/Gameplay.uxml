@@ -187,8 +187,10 @@
       <ui:VisualElement name="exitConfirmPanel" class="pause-menu pause-confirm is-hidden" picking-mode="Position">
         <ui:Label name="exitConfirmTitle" text="Вернуться в меню?" class="pause-menu-title pause-confirm-title" picking-mode="Ignore" />
         <ui:Label name="exitConfirmDescription" text="Прогресс забега будет потерян. Награда не начисляется." class="pause-confirm-copy l10n-leave-progress" picking-mode="Ignore" />
-        <ui:Button name="exitCancelButton" text="Отмена" class="pause-menu-button pause-menu-resume l10n-cancel" />
-        <ui:Button name="exitConfirmButton" text="В главное меню" class="pause-menu-button pause-menu-last" />
+        <ui:VisualElement class="pause-confirm-actions" picking-mode="Ignore">
+          <ui:Button name="exitConfirmButton" text="В главное меню" class="pause-menu-button pause-confirm-submit" />
+          <ui:Button name="exitCancelButton" text="Отмена" class="pause-menu-button pause-menu-resume pause-confirm-cancel l10n-cancel" />
+        </ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement name="victoryPanel" class="screen-panel is-hidden" picking-mode="Ignore">
         <ui:Label text="ЗАДАНИЕ ВЫПОЛНЕНО" class="screen-overline l10n-mission-complete" />

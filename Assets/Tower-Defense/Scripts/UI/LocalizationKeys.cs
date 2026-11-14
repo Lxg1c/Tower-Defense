@@ -28,6 +28,7 @@ internal static class LocalizationKeys
     internal const string Hard = "hard";
     internal const string Nightmare = "nightmare";
     internal const string LoadingLevel = "loading-level";
+    internal const string LoadingMenu = "loading-menu";
     internal const string LoadingDifficulty = "loading-difficulty";
     internal const string Distance = "distance";
     internal const string EnemyCount = "enemy-count";

@@ -11,16 +11,18 @@ public class PauseMenu : MenuScreenBase
     public bool IsSettingsOpen { get; private set; }
     public ExitAction PendingExitAction { get; private set; }
     public bool IsConfirmingExit => PendingExitAction != ExitAction.None;
+    internal string MainMenuSceneName => mainMenuSceneName;
 
     public void Toggle()
     {
+        if (LevelLoadingScreen.IsLoading) return;
         if (IsPaused) Resume();
         else          Pause();
     }
 
     public void Pause()
     {
-        if (RunSelection.IsPerformanceBenchmark || (spawner != null &&
+        if (LevelLoadingScreen.IsLoading || RunSelection.IsPerformanceBenchmark || (spawner != null &&
             spawner.CurrentPhase is WaveSpawner.Phase.AllCompleted or WaveSpawner.Phase.Defeated)) return;
         PendingExitAction = ExitAction.None;
         IsPaused = true;

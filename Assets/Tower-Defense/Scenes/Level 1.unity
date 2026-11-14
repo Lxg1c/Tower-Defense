@@ -5507,6 +5507,7 @@ MonoBehaviour:
   ultimate: {fileID: 1387095695}
   teleport: {fileID: 1447943141}
   pauseMenu: {fileID: 1447943130}
+  loadingScreen: {fileID: 9197481963319205126, guid: ef26845d9502918478df957928c3e07c, type: 3}
   victory: {fileID: 1447943128}
   defeat: {fileID: 1447943129}
   levelSetup: {fileID: 376337482}

@@ -16,6 +16,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
     [SerializeField] private PlayerUltimate ultimate;
     [SerializeField] private PlayerHomeTeleportButton teleport;
     [SerializeField] private PauseMenu pauseMenu;
+    [SerializeField] private VisualTreeAsset loadingScreen;
     [SerializeField] private VictoryScreen victory;
     [SerializeField] private GameOverScreen defeat;
     [SerializeField] private LevelSetup levelSetup;
@@ -260,7 +261,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         root.Q<Button>("restartButton").clicked += pauseMenu.Restart;
         root.Q<Button>("pauseMenuButton").clicked += pauseMenu.GoToMainMenu;
         root.Q<Button>("exitCancelButton").clicked += pauseMenu.CancelExit;
-        exitConfirmButton.clicked += pauseMenu.ConfirmExit;
+        exitConfirmButton.clicked += ConfirmExit;
         root.Q<Button>("nextLevelButton").clicked += victory.PlayNextLevel;
         root.Q<Button>("replayButton").clicked += victory.Restart;
         root.Q<Button>("victorySkills").clicked += victory.OpenSkills;
@@ -462,6 +463,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         if (confirmingExit)
         {
             bool restarting = pauseMenu.PendingExitAction == PauseMenu.ExitAction.Restart;
+            exitConfirmPanel.EnableInClassList("is-restart", restarting);
             SetText(exitConfirmTitle, restarting
                 ? GameLocalization.Text(LocalizationKeys.RestartQuestion)
                 : GameLocalization.Text(LocalizationKeys.MenuQuestion));
@@ -1066,6 +1068,33 @@ public sealed class GameplayToolkitView : MonoBehaviour
     {
         label.EnableInClassList("is-hidden", !visible);
         if (visible) SetText(label, text);
+    }
+
+    private void ConfirmExit()
+    {
+        if (LevelLoadingScreen.IsLoading) return;
+        if (pauseMenu.PendingExitAction != PauseMenu.ExitAction.MainMenu)
+        {
+            pauseMenu.ConfirmExit();
+            return;
+        }
+
+        string scene = pauseMenu.MainMenuSceneName;
+        if (loadingScreen == null || !Application.CanStreamedLevelBeLoaded(scene))
+        {
+            Debug.LogError("[GameplayToolkitView] Assign the loading screen and include the main menu in the build.", this);
+            return;
+        }
+
+        GameAudioSettings.Save();
+        int coverIndex = levelSetup.CurrentLevel?.progressionId switch
+        {
+            "level-2" => 1,
+            "level-3" => 2,
+            _ => 0
+        };
+        LevelLoadingScreen.Begin(GetComponent<UIDocument>().panelSettings, loadingScreen, root, scene,
+            GameLocalization.Text(LocalizationKeys.MainMenu), index: coverIndex);
     }
 
     private void OpenAudio() { pauseMenu.ShowSettings(); audioOpen = true; RefreshAudio(); }

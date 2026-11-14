@@ -14,7 +14,7 @@ internal sealed class LevelLoadingScreen : MonoBehaviour
     internal static bool IsLoading => active != null;
 
     internal static void Begin(PanelSettings panel, VisualTreeAsset tree, VisualElement menuRoot,
-        string scene, string title, int index, int difficulty)
+        string scene, string title, int index = 0, int? difficulty = null)
     {
         var host = new GameObject("Level Loading Screen");
         host.SetActive(false);
@@ -30,7 +30,7 @@ internal sealed class LevelLoadingScreen : MonoBehaviour
     }
 
     private IEnumerator Load(VisualElement documentRoot, VisualElement menuRoot, string scene,
-        string title, int index, int difficulty)
+        string title, int index, int? difficulty)
     {
         documentRoot.style.position = Position.Absolute;
         documentRoot.style.left = 0;
@@ -47,10 +47,20 @@ internal sealed class LevelLoadingScreen : MonoBehaviour
             _ => LocalizationKeys.Normal
         };
         screen.Q<Label>("loadingTitle").text = title;
-        screen.Q<Label>("loadingDifficulty").text =
-            GameLocalization.Format(LocalizationKeys.LoadingDifficulty, GameLocalization.Text(difficultyKey));
-        screen.Q<Label>("loadingStatus").text = GameLocalization.Text(LocalizationKeys.LoadingLevel);
-        MenuToolkitView.SetLevelArt(screen.Q("loadingCover"), index);
+        var difficultyLabel = screen.Q<Label>("loadingDifficulty");
+        var cover = screen.Q("loadingCover");
+        MenuToolkitView.SetLevelArt(cover, index);
+        if (difficulty.HasValue)
+        {
+            difficultyLabel.text =
+                GameLocalization.Format(LocalizationKeys.LoadingDifficulty, GameLocalization.Text(difficultyKey));
+        }
+        else
+        {
+            difficultyLabel.style.display = DisplayStyle.None;
+        }
+        screen.Q<Label>("loadingStatus").text = GameLocalization.Text(
+            difficulty.HasValue ? LocalizationKeys.LoadingLevel : LocalizationKeys.LoadingMenu);
 
         screen.style.opacity = 0f;
         menuRoot.SetEnabled(false);
@@ -61,7 +71,7 @@ internal sealed class LevelLoadingScreen : MonoBehaviour
         if (operation == null)
         {
             menuRoot.SetEnabled(true);
-            RunSelection.Clear();
+            if (difficulty.HasValue) RunSelection.Clear();
             yield return Fade(screen, 1f, 0f, FadeOutSeconds);
             Destroy(gameObject);
             yield break;

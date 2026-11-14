@@ -879,6 +879,10 @@ MonoBehaviour:
     m_Key: loading-difficulty
     m_Metadata:
       m_Items: []
+  - m_Id: 645446690136064
+    m_Key: loading-menu
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

@@ -16,7 +16,7 @@
 }
 .loading-difficulty { color: #bcd3dc; font-size: 18px; margin: 5px 0 0 18px; padding: 0; }
 .loading-status-row { flex-direction: row; justify-content: space-between; margin-top: 18px; }
-.loading-status, .loading-percent { margin: 0 0 8px; padding: 0; font-size: 17px; -unity-font-style: bold; }
+.loading-status, .loading-percent { margin: 0 0 8px; padding: 0; font-size: 17px; -unity-font-style: bold; white-space: nowrap; }
 .loading-status { color: #8eece8; }
 .loading-percent { color: #eaf9ff; }
 .loading-track {

@@ -332,6 +332,10 @@
   color: #bddde7; font-size: 17px; -unity-text-align: middle-center;
 }
 .pause-confirm .pause-menu-button { flex-grow: 0; flex-basis: auto; height: 52px; }
+.pause-confirm .pause-confirm-cancel { margin-bottom: 0; }
+.pause-confirm.is-restart .pause-confirm-actions { flex-direction: column-reverse; }
+.pause-confirm.is-restart .pause-confirm-submit { margin-bottom: 0; }
+.pause-confirm.is-restart .pause-confirm-cancel { margin-bottom: 15px; }
 .benchmark-hidden { display: none; }
 .benchmark-hud {
   position: absolute; top: 18px; align-self: center; flex-direction: row; align-items: center;
