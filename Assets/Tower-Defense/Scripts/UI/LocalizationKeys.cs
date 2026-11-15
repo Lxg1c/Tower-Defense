@@ -37,6 +37,12 @@ internal static class LocalizationKeys
     internal const string Firepower = "firepower";
     internal const string FirepowerBonus = "firepower-bonus";
     internal const string GraphicsSimple = "graphics-simple";
+    internal const string GraphicsQuality = "graphics-quality";
+    internal const string GraphicsQualityHigh = "graphics-quality-high";
+    internal const string GraphicsQualityBalanced = "graphics-quality-balanced";
+    internal const string GraphicsQualityLow = "graphics-quality-low";
+    internal const string GraphicsQualityReport = "graphics-quality-report";
+    internal const string GraphicsRenderScaleReport = "graphics-render-scale-report";
     internal const string GraphicsStandard = "graphics-standard";
     internal const string GuideAfterCore = "guide-after-core";
     internal const string GuideCannonText = "guide-cannon-text";

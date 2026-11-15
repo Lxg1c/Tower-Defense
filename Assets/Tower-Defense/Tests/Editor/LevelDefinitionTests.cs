@@ -299,6 +299,37 @@ namespace TowerDefense.Tests
         [TestCase(1)]
         [TestCase(2)]
         [TestCase(3)]
+        public void CampaignEscalatesAcrossLocations(int difficulty)
+        {
+            int previousTotal = 0;
+            int previousFinale = 0;
+            for (int location = 1; location <= 3; location++)
+            {
+                var waves = Level(location).CreateWaves(4, difficulty);
+                Assert.That(waves, Has.Length.EqualTo(3 + location * 2));
+                Assert.That(waves.SelectMany(wave => wave.spawnGroups)
+                    .Select(group => group.spawnPointIndex).Distinct().Count(), Is.EqualTo(location));
+
+                var counts = waves.Select(wave => wave.spawnGroups
+                    .SelectMany(group => group.entries).Sum(entry => entry.count)).ToArray();
+                for (int wave = 1; wave < counts.Length; wave++)
+                    Assert.That(counts[wave], Is.GreaterThan(counts[wave - 1]));
+                Assert.That(counts.Sum(), Is.GreaterThan(previousTotal));
+                previousTotal = counts.Sum();
+                if (location > 1)
+                    Assert.That(counts[^1] - previousFinale, Is.GreaterThanOrEqualTo(20));
+                previousFinale = counts[^1];
+
+                var finalWave = waves[^1].spawnGroups.SelectMany(group => group.entries);
+                Assert.That(finalWave.Select(entry => entry.enemy).Distinct().Count(), Is.EqualTo(4));
+                Assert.That(finalWave.Where(entry => entry.enemy.displayName == "Destroyer")
+                    .Sum(entry => entry.count), Is.EqualTo(2 * location - 1));
+            }
+        }
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
         public void HigherDifficultiesContainMoreEnemies(int number)
         {
             var level = Level(number);

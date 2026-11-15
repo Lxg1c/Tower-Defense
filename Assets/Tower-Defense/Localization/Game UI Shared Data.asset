@@ -971,6 +971,34 @@ MonoBehaviour:
     m_Key: perf-render-settings
     m_Metadata:
       m_Items: []
+  - m_Id: 1075409566294016
+    m_Key: graphics-quality
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1075409620819968
+    m_Key: graphics-quality-high
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1075409620819969
+    m_Key: graphics-quality-balanced
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1075409620819970
+    m_Key: graphics-quality-low
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1075409620819971
+    m_Key: graphics-quality-report
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1089121077420032
+    m_Key: graphics-render-scale
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1089121131945984
+    m_Key: graphics-render-scale-report
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

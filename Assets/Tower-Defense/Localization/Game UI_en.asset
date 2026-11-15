@@ -987,6 +987,34 @@ MonoBehaviour:
     m_Localized: "Render scale: {0:0%} \xB7 SSAO: {1} \xB7 Shadows: {2}"
     m_Metadata:
       m_Items: []
+  - m_Id: 1075409566294016
+    m_Localized: Quality
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1075409620819968
+    m_Localized: High
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1075409620819969
+    m_Localized: Medium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1075409620819970
+    m_Localized: Low
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1075409620819971
+    m_Localized: 'Quality preset: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1089121077420032
+    m_Localized: 3D scale
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1089121131945984
+    m_Localized: '3D render scale: {0}%'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

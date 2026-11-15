@@ -94,6 +94,9 @@ select **Repeat hints** in the main menu settings and enter Level 01.
 
 **Settings → Graphics** selects standard or simplified lighting and toggles
 normal maps on supported materials. Changes apply when you enter a level.
+Android also offers High, Medium, and Low render quality. Medium disables SSAO
+and reduces shadow distance. Low also disables dynamic shadows. The separate
+3D render scale slider ranges from 50% to 100% and defaults to 80%.
 Use **Performance test** in Graphics to run a fixed-camera test on the first map.
 It measures six seconds each with 0, 16, 32 and 64 enemy models after a short
 warm-up. It then repeats the 0- and 64-model cases separately with SSAO disabled,

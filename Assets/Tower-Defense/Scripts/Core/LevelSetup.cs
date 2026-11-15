@@ -62,6 +62,7 @@ public sealed class LevelSetup : MonoBehaviour
             int difficulty = RunSelection.Difficulty;
             if (!PlayerProgression.State.IsDifficultyUnlocked(level.progressionId, difficulty))
                 throw new ArgumentException($"Difficulty {difficulty} is locked for {level.displayName}.");
+            GamePerformanceSettings.ApplyAndroidQuality();
             spawner.ConfigureLevel(level, difficulty);
             wallet.ConfigureStartingCoins(level.GetStartingCoins(difficulty));
             CurrentLevel = level;

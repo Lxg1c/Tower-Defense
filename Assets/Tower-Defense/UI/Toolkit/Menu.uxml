@@ -111,50 +111,50 @@
         <ui:VisualElement class="menu-settings-layout" picking-mode="Ignore">
           <ui:VisualElement class="subpage-panel menu-settings-card" picking-mode="Ignore">
             <ui:Label text="Звук" class="subpage-panel-title l10n-audio" />
-            <ui:VisualElement class="menu-volume-row" picking-mode="Ignore">
-              <ui:VisualElement class="menu-volume-caption" picking-mode="Ignore">
-                <ui:Label text="Общая громкость" class="menu-setting-label l10n-master-volume" />
-                <ui:Label name="masterValue" class="menu-volume-value" />
-              </ui:VisualElement>
-              <ui:VisualElement class="menu-volume-input" picking-mode="Ignore">
-                <ui:VisualElement class="menu-volume-track" picking-mode="Ignore"><ui:VisualElement name="masterFill" class="menu-volume-fill" picking-mode="Ignore" /></ui:VisualElement>
-                <ui:Slider name="masterSlider" low-value="0" high-value="1" class="menu-volume-slider l10n-tip-master-volume" tooltip="Общая громкость" />
-              </ui:VisualElement>
-            </ui:VisualElement>
-            <ui:VisualElement class="menu-volume-row menu-setting-divider" picking-mode="Ignore">
-              <ui:VisualElement class="menu-volume-caption" picking-mode="Ignore">
-                <ui:Label text="Музыка" class="menu-setting-label l10n-music" />
-                <ui:Label name="musicValue" class="menu-volume-value" />
-              </ui:VisualElement>
-              <ui:VisualElement class="menu-volume-input" picking-mode="Ignore">
-                <ui:VisualElement class="menu-volume-track" picking-mode="Ignore"><ui:VisualElement name="musicFill" class="menu-volume-fill" picking-mode="Ignore" /></ui:VisualElement>
-                <ui:Slider name="musicSlider" low-value="0" high-value="1" class="menu-volume-slider l10n-tip-music" tooltip="Музыка" />
+            <ui:VisualElement class="menu-setting-row" picking-mode="Ignore">
+              <ui:Label text="Общая громкость" class="menu-setting-label l10n-master-volume" />
+              <ui:VisualElement class="menu-setting-slider" picking-mode="Ignore">
+                <ui:VisualElement class="menu-setting-slider-input" picking-mode="Ignore">
+                  <ui:VisualElement class="menu-volume-track" picking-mode="Ignore"><ui:VisualElement name="masterFill" class="menu-volume-fill" picking-mode="Ignore" /></ui:VisualElement>
+                  <ui:Slider name="masterSlider" low-value="0" high-value="1" class="menu-volume-slider l10n-tip-master-volume" tooltip="Общая громкость" />
+                </ui:VisualElement>
+                <ui:Label name="masterValue" class="menu-volume-value" picking-mode="Ignore" />
               </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement class="menu-volume-row menu-setting-divider" picking-mode="Ignore">
-              <ui:VisualElement class="menu-volume-caption" picking-mode="Ignore">
-                <ui:Label text="Эффекты" class="menu-setting-label l10n-effects" />
-                <ui:Label name="effectsValue" class="menu-volume-value" />
+            <ui:VisualElement class="menu-setting-row" picking-mode="Ignore">
+              <ui:Label text="Музыка" class="menu-setting-label l10n-music" />
+              <ui:VisualElement class="menu-setting-slider" picking-mode="Ignore">
+                <ui:VisualElement class="menu-setting-slider-input" picking-mode="Ignore">
+                  <ui:VisualElement class="menu-volume-track" picking-mode="Ignore"><ui:VisualElement name="musicFill" class="menu-volume-fill" picking-mode="Ignore" /></ui:VisualElement>
+                  <ui:Slider name="musicSlider" low-value="0" high-value="1" class="menu-volume-slider l10n-tip-music" tooltip="Музыка" />
+                </ui:VisualElement>
+                <ui:Label name="musicValue" class="menu-volume-value" picking-mode="Ignore" />
               </ui:VisualElement>
-              <ui:VisualElement class="menu-volume-input" picking-mode="Ignore">
-                <ui:VisualElement class="menu-volume-track" picking-mode="Ignore"><ui:VisualElement name="effectsFill" class="menu-volume-fill" picking-mode="Ignore" /></ui:VisualElement>
-                <ui:Slider name="effectsSlider" low-value="0" high-value="1" class="menu-volume-slider l10n-tip-effects" tooltip="Эффекты" />
+            </ui:VisualElement>
+            <ui:VisualElement class="menu-setting-row menu-setting-row-last" picking-mode="Ignore">
+              <ui:Label text="Эффекты" class="menu-setting-label l10n-effects" />
+              <ui:VisualElement class="menu-setting-slider" picking-mode="Ignore">
+                <ui:VisualElement class="menu-setting-slider-input" picking-mode="Ignore">
+                  <ui:VisualElement class="menu-volume-track" picking-mode="Ignore"><ui:VisualElement name="effectsFill" class="menu-volume-fill" picking-mode="Ignore" /></ui:VisualElement>
+                  <ui:Slider name="effectsSlider" low-value="0" high-value="1" class="menu-volume-slider l10n-tip-effects" tooltip="Эффекты" />
+                </ui:VisualElement>
+                <ui:Label name="effectsValue" class="menu-volume-value" picking-mode="Ignore" />
               </ui:VisualElement>
             </ui:VisualElement>
           </ui:VisualElement>
           <ui:VisualElement class="subpage-panel menu-settings-card" picking-mode="Ignore">
             <ui:Label text="Игра" class="subpage-panel-title l10n-game" />
-            <ui:VisualElement class="menu-extra-setting" picking-mode="Ignore">
+            <ui:VisualElement class="menu-setting-row" picking-mode="Ignore">
               <ui:Label text="Язык" class="menu-setting-label l10n-language" picking-mode="Ignore" />
               <ui:DropdownField name="languageDropdown" class="language-dropdown l10n-tip-language" tooltip="Язык" />
             </ui:VisualElement>
-            <ui:VisualElement class="menu-fps-row" picking-mode="Ignore">
+            <ui:VisualElement class="menu-setting-row" picking-mode="Ignore">
               <ui:Label text="Показывать FPS" class="menu-setting-label l10n-fps" />
               <ui:Button name="fpsToggle" tooltip="Показывать FPS" class="menu-fps-switch l10n-tip-fps">
                 <ui:VisualElement class="menu-fps-track" picking-mode="Ignore"><ui:VisualElement class="menu-fps-knob" picking-mode="Ignore" /></ui:VisualElement>
               </ui:Button>
             </ui:VisualElement>
-            <ui:VisualElement class="menu-extra-setting menu-extra-setting-last" picking-mode="Ignore">
+            <ui:VisualElement class="menu-setting-row menu-setting-row-last" picking-mode="Ignore">
               <ui:Label text="Обучение" class="menu-setting-label l10n-tutorial" picking-mode="Ignore" />
               <ui:Button name="repeatHints" text="Повторить подсказки" class="menu-extra-button l10n-repeat-hints" />
             </ui:VisualElement>
@@ -162,17 +162,33 @@
           </ui:VisualElement>
           <ui:VisualElement class="subpage-panel menu-settings-card" picking-mode="Ignore">
             <ui:Label text="Графика" class="subpage-panel-title l10n-graphics-settings" />
-            <ui:VisualElement class="menu-extra-setting" picking-mode="Ignore">
-              <ui:Label text="Освещение" class="menu-setting-label l10n-graphics-lighting" />
-              <ui:DropdownField name="lightingDropdown" class="language-dropdown graphics-dropdown l10n-tip-graphics-lighting" tooltip="Освещение" />
+            <ui:VisualElement name="graphicsQualityRow" class="menu-setting-row is-hidden" picking-mode="Ignore">
+              <ui:Label text="Качество" class="menu-setting-label l10n-graphics-quality" picking-mode="Ignore" />
+              <ui:DropdownField name="graphicsQualityDropdown" class="language-dropdown l10n-tip-graphics-quality" tooltip="Качество" />
             </ui:VisualElement>
-            <ui:VisualElement class="menu-fps-row" picking-mode="Ignore">
+            <ui:VisualElement name="renderScaleRow" class="menu-setting-row is-hidden" picking-mode="Ignore">
+              <ui:Label text="Масштаб 3D" class="menu-setting-label l10n-graphics-render-scale" picking-mode="Ignore" />
+              <ui:VisualElement class="menu-setting-slider" picking-mode="Ignore">
+                <ui:VisualElement class="menu-setting-slider-input" picking-mode="Ignore">
+                  <ui:VisualElement class="menu-volume-track" picking-mode="Ignore">
+                    <ui:VisualElement name="renderScaleFill" class="menu-volume-fill" picking-mode="Ignore" />
+                  </ui:VisualElement>
+                  <ui:SliderInt name="renderScaleSlider" class="menu-volume-slider l10n-tip-graphics-render-scale" tooltip="Масштаб 3D" />
+                </ui:VisualElement>
+                <ui:Label name="renderScaleValue" class="menu-volume-value" picking-mode="Ignore" />
+              </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="menu-setting-row" picking-mode="Ignore">
+              <ui:Label text="Освещение" class="menu-setting-label l10n-graphics-lighting" />
+              <ui:DropdownField name="lightingDropdown" class="language-dropdown l10n-tip-graphics-lighting" tooltip="Освещение" />
+            </ui:VisualElement>
+            <ui:VisualElement class="menu-setting-row" picking-mode="Ignore">
               <ui:Label text="Карты нормалей" class="menu-setting-label l10n-graphics-normals" />
               <ui:Button name="normalMapsToggle" tooltip="Карты нормалей" class="menu-fps-switch l10n-tip-graphics-normals">
                 <ui:VisualElement class="menu-fps-track" picking-mode="Ignore"><ui:VisualElement class="menu-fps-knob" picking-mode="Ignore" /></ui:VisualElement>
               </ui:Button>
             </ui:VisualElement>
-            <ui:VisualElement class="menu-extra-setting menu-extra-setting-last" picking-mode="Ignore">
+            <ui:VisualElement class="menu-setting-row menu-setting-row-last" picking-mode="Ignore">
               <ui:Button name="startBenchmark" text="Тест производительности" class="menu-extra-button benchmark-start l10n-perf-benchmark" />
             </ui:VisualElement>
             <ui:Label text="Применяется при входе на уровень." class="graphics-note l10n-graphics-next-level" picking-mode="Ignore" />

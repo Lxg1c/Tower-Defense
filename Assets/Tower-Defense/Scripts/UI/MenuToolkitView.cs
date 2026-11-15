@@ -81,6 +81,9 @@ public sealed class MenuToolkitView : MonoBehaviour
     private const string EnglishOption = "English";
     private DropdownField languageDropdown;
     private DropdownField lightingDropdown;
+    private DropdownField graphicsQualityDropdown;
+    private SliderInt renderScaleSlider;
+    private Label renderScaleValue;
     private Button normalMapsToggle;
     private Slider masterSlider;
     private Label fpsLabel;
@@ -170,6 +173,9 @@ public sealed class MenuToolkitView : MonoBehaviour
         overdriveModule = root.Q<Button>("overdriveModule");
         languageDropdown = root.Q<DropdownField>("languageDropdown");
         lightingDropdown = root.Q<DropdownField>("lightingDropdown");
+        graphicsQualityDropdown = root.Q<DropdownField>("graphicsQualityDropdown");
+        renderScaleSlider = root.Q<SliderInt>("renderScaleSlider");
+        renderScaleValue = root.Q<Label>("renderScaleValue");
         normalMapsToggle = root.Q<Button>("normalMapsToggle");
         masterSlider = root.Q<Slider>("masterSlider");
         fpsLabel = root.Q<Label>("fpsLabel");
@@ -191,7 +197,8 @@ public sealed class MenuToolkitView : MonoBehaviour
             rightWeaponPreviews.Any(button => button == null) || skillButtons.Any(button => button == null) ||
             upgradeSkill == null || standardModule == null || overdriveModule == null ||
             fpsLabel == null || fpsToggle == null || languageDropdown == null ||
-            lightingDropdown == null || normalMapsToggle == null ||
+            lightingDropdown == null || graphicsQualityDropdown == null || normalMapsToggle == null ||
+            renderScaleSlider == null || renderScaleValue == null ||
             masterSlider == null || musicSlider == null ||
             effectsSlider == null || startButton == null || difficultyButtons.Any(button => button == null))
         {
@@ -200,6 +207,8 @@ public sealed class MenuToolkitView : MonoBehaviour
             return false;
         }
         languageDropdown.choices = new System.Collections.Generic.List<string> { RussianOption, EnglishOption };
+        renderScaleSlider.lowValue = GamePerformanceSettings.MinRenderScalePercent;
+        renderScaleSlider.highValue = GamePerformanceSettings.MaxRenderScalePercent;
         root.UnregisterCallback<GeometryChangedEvent>(RefreshLayout);
         root.RegisterCallback<GeometryChangedEvent>(RefreshLayout);
         return true;
@@ -308,6 +317,8 @@ public sealed class MenuToolkitView : MonoBehaviour
             int choice = lightingDropdown.choices.IndexOf(evt.newValue);
             if (choice >= 0) GamePerformanceSettings.SetLighting((GamePerformanceSettings.LightingMode)choice);
         });
+        graphicsQualityDropdown.RegisterValueChangedCallback(ChangeGraphicsQuality);
+        renderScaleSlider.RegisterValueChangedCallback(ChangeRenderScale);
         normalMapsToggle.clicked += ToggleNormalMaps;
         root.Q<Button>("startBenchmark").clicked += menu.StartPerformanceBenchmark;
         GameLocalization.Changed += RefreshLanguage;
@@ -336,6 +347,8 @@ public sealed class MenuToolkitView : MonoBehaviour
         GameAudioSettings.Changed -= RefreshAudio;
         GamePerformanceSettings.Changed -= RefreshFps;
         GameLocalization.Changed -= RefreshLanguage;
+        graphicsQualityDropdown.UnregisterValueChangedCallback(ChangeGraphicsQuality);
+        renderScaleSlider.UnregisterValueChangedCallback(ChangeRenderScale);
         normalMapsToggle.clicked -= ToggleNormalMaps;
         root.Q<Button>("startBenchmark").clicked -= menu.StartPerformanceBenchmark;
         bound = false;
@@ -749,6 +762,22 @@ public sealed class MenuToolkitView : MonoBehaviour
 
     private void RefreshGraphics()
     {
+        bool mobile = GamePerformanceSettings.SupportsAndroidQuality;
+        root.Q("graphicsQualityRow").EnableInClassList("is-hidden", !mobile);
+        root.Q("renderScaleRow").EnableInClassList("is-hidden", !mobile);
+        if (mobile)
+        {
+            var qualityChoices = new System.Collections.Generic.List<string>
+            {
+                GameLocalization.Text(LocalizationKeys.GraphicsQualityHigh),
+                GameLocalization.Text(LocalizationKeys.GraphicsQualityBalanced),
+                GameLocalization.Text(LocalizationKeys.GraphicsQualityLow)
+            };
+            graphicsQualityDropdown.choices = qualityChoices;
+            graphicsQualityDropdown.SetValueWithoutNotify(qualityChoices[(int)GamePerformanceSettings.MobileQuality]);
+            renderScaleSlider.SetValueWithoutNotify(GamePerformanceSettings.RenderScalePercent);
+            RefreshRenderScale();
+        }
         var choices = new System.Collections.Generic.List<string>
         {
             GameLocalization.Text(LocalizationKeys.GraphicsStandard),
@@ -757,6 +786,26 @@ public sealed class MenuToolkitView : MonoBehaviour
         lightingDropdown.choices = choices;
         lightingDropdown.SetValueWithoutNotify(choices[(int)GamePerformanceSettings.Lighting]);
         normalMapsToggle.EnableInClassList("is-on", GamePerformanceSettings.NormalMaps);
+    }
+
+    private void ChangeGraphicsQuality(ChangeEvent<string> evt)
+    {
+        int index = graphicsQualityDropdown.choices.IndexOf(evt.newValue);
+        if (index >= 0) GamePerformanceSettings.SetAndroidQuality((GamePerformanceSettings.AndroidQuality)index);
+    }
+
+    private void ChangeRenderScale(ChangeEvent<int> evt)
+    {
+        GamePerformanceSettings.SetRenderScalePercent(evt.newValue);
+        RefreshRenderScale();
+    }
+
+    private void RefreshRenderScale()
+    {
+        int percent = GamePerformanceSettings.RenderScalePercent;
+        renderScaleValue.text = $"{percent}%";
+        float fill = Mathf.InverseLerp(renderScaleSlider.lowValue, renderScaleSlider.highValue, percent);
+        root.Q("renderScaleFill").style.width = Length.Percent(fill * 100f);
     }
 
     private void ToggleNormalMaps()

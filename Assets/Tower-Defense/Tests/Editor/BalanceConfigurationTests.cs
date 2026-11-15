@@ -267,15 +267,17 @@ namespace TowerDefense.Tests
             }
         }
 
-        [Test]
-        public void LevelIntroducesFlightGraduallyAndGrowsInEnemyCount()
+        [TestCase(1, 5)]
+        [TestCase(2, 7)]
+        [TestCase(3, 9)]
+        public void LevelIntroducesFlightGraduallyAndGrowsInEnemyCount(int location, int expectedWaves)
         {
             var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");
             try
             {
                 var spawner = scene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<WaveSpawner>(true)).Single();
-                spawner.ConfigureLevel(AssetDatabase.LoadAssetAtPath<LevelDefinition>("Assets/Tower-Defense/Levels/Level3.asset"));
-                Assert.That(spawner.WaveCount, Is.EqualTo(4));
+                spawner.ConfigureLevel(AssetDatabase.LoadAssetAtPath<LevelDefinition>($"Assets/Tower-Defense/Levels/Level{location}.asset"));
+                Assert.That(spawner.WaveCount, Is.EqualTo(expectedWaves));
                 int previousCount = 0;
                 for (int i = 0; i < spawner.WaveCount; i++)
                 {
@@ -297,9 +299,9 @@ namespace TowerDefense.Tests
                         Assert.That(flyers, Is.LessThanOrEqualTo(entries.Sum(e => e.count) * .25f),
                             "The first flying group should be at most a quarter of the wave.");
                     }
-                    if (i == 3)
+                    if (i == spawner.WaveCount - 1)
                         Assert.That(entries.Any(e => e.Prefab.GetComponent<MobHealth>().MaxHealth >= 300),
-                            Is.True, "The finale should include the previously introduced armored threat.");
+                            Is.True, "The finale should include an armored threat.");
                     previousCount = count;
                 }
             }

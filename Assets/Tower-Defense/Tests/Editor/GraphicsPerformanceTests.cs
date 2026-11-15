@@ -39,6 +39,35 @@ namespace TowerDefense.Tests
         }
 
         [Test]
+        public void AndroidRenderScalePersistsIndependentlyOfQuality()
+        {
+            const string qualityKey = GamePerformanceSettings.AndroidQualityKey;
+            const string scaleKey = GamePerformanceSettings.AndroidRenderScaleKey;
+            int? oldQuality = PlayerPrefs.HasKey(qualityKey) ? PlayerPrefs.GetInt(qualityKey) : null;
+            int? oldScale = PlayerPrefs.HasKey(scaleKey) ? PlayerPrefs.GetInt(scaleKey) : null;
+            try
+            {
+                PlayerPrefs.DeleteKey(scaleKey);
+                GamePerformanceSettings.SetAndroidQuality(GamePerformanceSettings.AndroidQuality.Low);
+                GamePerformanceSettings.LoadGraphicsPreferences();
+                Assert.That(GamePerformanceSettings.RenderScalePercent, Is.EqualTo(80));
+
+                GamePerformanceSettings.SetRenderScalePercent(67);
+                GamePerformanceSettings.SetAndroidQuality(GamePerformanceSettings.AndroidQuality.Balanced);
+                GamePerformanceSettings.LoadGraphicsPreferences();
+                Assert.That(GamePerformanceSettings.MobileQuality, Is.EqualTo(GamePerformanceSettings.AndroidQuality.Balanced));
+                Assert.That(GamePerformanceSettings.RenderScalePercent, Is.EqualTo(67));
+            }
+            finally
+            {
+                Restore(qualityKey, oldQuality);
+                Restore(scaleKey, oldScale);
+                GamePerformanceSettings.LoadGraphicsPreferences();
+                PlayerPrefs.Save();
+            }
+        }
+
+        [Test]
         public void AuthoredVariantsKeepSourceAndRemoveNormalSamplingIndependently()
         {
             var profiles = AssetDatabase.LoadAssetAtPath<GraphicsMaterialProfiles>(

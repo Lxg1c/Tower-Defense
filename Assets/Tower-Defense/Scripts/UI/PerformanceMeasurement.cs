@@ -97,13 +97,29 @@ internal sealed class PerformanceMeasurement : IDisposable
 
     internal static string DeviceReport()
     {
+        string report = GameLocalization.Format(LocalizationKeys.PerfDevice,
+            SystemInfo.graphicsDeviceName, SystemInfo.graphicsDeviceType, Screen.width, Screen.height) + "\n" +
+            GraphicsPreferencesReport();
+        if (!GamePerformanceSettings.SupportsAndroidQuality) return report;
+        return report + "\n" +
+            GameLocalization.Format(LocalizationKeys.GraphicsRenderScaleReport, GamePerformanceSettings.RenderScalePercent);
+    }
+
+    internal static string GraphicsPreferencesReport()
+    {
         string lighting = GamePerformanceSettings.Lighting == GamePerformanceSettings.LightingMode.Simple
             ? GameLocalization.Text(LocalizationKeys.GraphicsSimple) : GameLocalization.Text(LocalizationKeys.GraphicsStandard);
         string normals = GamePerformanceSettings.NormalMaps
             ? GameLocalization.Text(LocalizationKeys.PerfOn) : GameLocalization.Text(LocalizationKeys.PerfOff);
-        return GameLocalization.Format(LocalizationKeys.PerfDevice,
-            SystemInfo.graphicsDeviceName, SystemInfo.graphicsDeviceType, Screen.width, Screen.height) + "\n" +
-            GameLocalization.Format(LocalizationKeys.PerfGraphics, lighting, normals);
+        string graphics = GameLocalization.Format(LocalizationKeys.PerfGraphics, lighting, normals);
+        if (!GamePerformanceSettings.SupportsAndroidQuality) return graphics;
+        string quality = GamePerformanceSettings.MobileQuality switch
+        {
+            GamePerformanceSettings.AndroidQuality.Low => LocalizationKeys.GraphicsQualityLow,
+            GamePerformanceSettings.AndroidQuality.Balanced => LocalizationKeys.GraphicsQualityBalanced,
+            _ => LocalizationKeys.GraphicsQualityHigh
+        };
+        return graphics + "\n" + GameLocalization.Format(LocalizationKeys.GraphicsQualityReport, GameLocalization.Text(quality));
     }
 
     internal string Report(bool benchmark = false)

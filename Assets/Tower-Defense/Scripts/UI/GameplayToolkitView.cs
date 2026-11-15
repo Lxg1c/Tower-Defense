@@ -611,12 +611,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
             ? GameLocalization.Format(LocalizationKeys.PerfMilliseconds, value) : unavailable;
         SetText(performancePanel.Q<Label>("perfDevice"), GameLocalization.Format(LocalizationKeys.PerfDevice,
             SystemInfo.graphicsDeviceName, SystemInfo.graphicsDeviceType, Screen.width, Screen.height));
-        var lighting = GamePerformanceSettings.Lighting == GamePerformanceSettings.LightingMode.Simple
-            ? LocalizationKeys.GraphicsSimple : LocalizationKeys.GraphicsStandard;
-        var normals = GamePerformanceSettings.NormalMaps ? LocalizationKeys.PerfOn : LocalizationKeys.PerfOff;
         SetText(performancePanel.Q<Label>("perfGraphics"),
-            GameLocalization.Format(LocalizationKeys.PerfGraphics, GameLocalization.Text(lighting), GameLocalization.Text(normals)) +
-            "\n" + benchmark.GraphicsAtStage(index));
+            PerformanceMeasurement.GraphicsPreferencesReport() + "\n" + benchmark.GraphicsAtStage(index));
         SetText(performancePanel.Q<Label>("perfFpsValue"), Format(values.AverageFps));
         SetText(performancePanel.Q<Label>("perfFrameValue"), Milliseconds(values.FrameP95));
         SetText(performancePanel.Q<Label>("perfCpuValue"), Milliseconds(values.CpuP95));

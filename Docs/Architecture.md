@@ -259,8 +259,12 @@ attack range, change target, die, or return to the pool. `GameplayToolkitView`
 uses this state for the warning, plays the wave-start clip on the combat phase
 event, and highlights the ultimate when it becomes ready again.
 
-`GamePerformanceSettings` saves the lighting and normal-map choices. At level
-entry and when a mob, building, or ally is created, `GraphicsMaterialProfiles`
+`GamePerformanceSettings` saves lighting, normal maps, Android render quality,
+and the independent Android render scale.
+It selects the saved Android Quality Settings level at startup and on level
+entry. Medium and Low use separate URP assets with an SSAO-disabled renderer.
+The render scale overrides the active profile at startup and level entry.
+At level entry and when a mob, building, or ally is created, `GraphicsMaterialProfiles`
 assigns shared material variants from the catalog baked by **Tools → Tower
 Defense → Refresh Graphics Materials**. The catalog supports opaque URP Lit and
 Simple Lit materials and preserves custom Shader Graph materials.
