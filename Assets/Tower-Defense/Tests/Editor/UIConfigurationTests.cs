@@ -9,6 +9,24 @@ namespace TowerDefense.Tests
 {
     public class UIConfigurationTests
     {
+        [Test]
+        public void PlayerUltimateHasAnExplosionWithUrpParticleMaterials()
+        {
+            var player = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Tower-Defense/Prefabs/Player.prefab");
+            var ultimate = new SerializedObject(player.GetComponentInChildren<PlayerUltimate>(true));
+            var explosion = ultimate.FindProperty("explosionPrefab").objectReferenceValue as GameObject;
+            Assert.That(explosion, Is.Not.Null);
+            var materials = explosion.GetComponentsInChildren<ParticleSystemRenderer>(true)
+                .SelectMany(renderer => renderer.sharedMaterials).Distinct().ToArray();
+            Assert.That(materials, Is.Not.Empty);
+            foreach (var material in materials)
+            {
+                Assert.That(material, Is.Not.Null);
+                Assert.That(material.shader.name, Is.EqualTo("Universal Render Pipeline/Particles/Unlit"));
+                Assert.That(material.IsKeywordEnabled("_SOFTPARTICLES_ON"), Is.False);
+            }
+        }
+
         private static readonly string[] ScenePaths =
         {
             "Assets/Tower-Defense/Scenes/MainMenu.unity",

@@ -251,7 +251,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 1584390202
-    m_Localized: PICK A DEFENSE POINT FOR YOUR SQUAD
+    m_Localized: Mark where the squad should defend on the map
     m_Metadata:
       m_Items: []
   - m_Id: 1584390203
@@ -897,6 +897,94 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 645446690136064
     m_Localized: "Loading menu\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 706062578606080
+    m_Localized: "All waves repelled \xB7 {0}/{0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 706062733795328
+    m_Localized: The central node was destroyed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 706062733795329
+    m_Localized: Run reward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 710660840218624
+    m_Localized: Health
+    m_Metadata:
+      m_Items: []
+  - m_Id: 710660936687616
+    m_Localized: Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 710660936687617
+    m_Localized: Income
+    m_Metadata:
+      m_Items: []
+  - m_Id: 710660936687618
+    m_Localized: Damage dealt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 710660936687619
+    m_Localized: Damage taken
+    m_Metadata:
+      m_Items: []
+  - m_Id: 710660936687620
+    m_Localized: Enemies defeated
+    m_Metadata:
+      m_Items: []
+  - m_Id: 715286809403392
+    m_Localized: '{0} enemies'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 715286884900864
+    m_Localized: '{0} enemies'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 715286884900865
+    m_Localized: '{0:0.0} ms'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 715286884900866
+    m_Localized: Average FPS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 715286884900867
+    m_Localized: Frame time P95
+    m_Metadata:
+      m_Items: []
+  - m_Id: 715286884900868
+    m_Localized: CPU main thread P95
+    m_Metadata:
+      m_Items: []
+  - m_Id: 715286884900869
+    m_Localized: GPU P95
+    m_Metadata:
+      m_Items: []
+  - m_Id: 715286884900870
+    m_Localized: Peak draw calls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1040532481499136
+    m_Localized: Baseline
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1040532569579520
+    m_Localized: No SSAO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1040532569579521
+    m_Localized: No shadows
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1040532569579522
+    m_Localized: Lower scale
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1040532569579523
+    m_Localized: "Render scale: {0:0%} \xB7 SSAO: {1} \xB7 Shadows: {2}"
     m_Metadata:
       m_Items: []
   references:

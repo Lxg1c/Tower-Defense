@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using Object = UnityEngine.Object;
 
 internal sealed class PerformanceBenchmark : IDisposable
@@ -10,24 +12,49 @@ internal sealed class PerformanceBenchmark : IDisposable
     private const float WarmupSeconds = 1f;
     private const float StageSeconds = 6f;
     private const int GridSize = 8;
+    private const float ReducedRenderScale = 0.65f;
+
+    private readonly struct Stage
+    {
+        internal readonly string ProfileKey;
+        internal readonly int Enemies;
+
+        internal Stage(string profileKey, int enemies)
+        {
+            ProfileKey = profileKey;
+            Enemies = enemies;
+        }
+    }
 
     private readonly GameObject container;
     private readonly GameObject[] models = new GameObject[EnemyCounts[^1]];
-    private readonly string[] reports = new string[EnemyCounts.Length];
+    private readonly List<Stage> stages = new();
+    private readonly List<string> reports = new();
+    private readonly List<string> graphicsReports = new();
+    private readonly List<PerformanceMeasurement.StageMetrics> metrics = new();
+    private readonly UniversalRenderPipelineAsset pipeline;
+    private readonly UniversalAdditionalCameraData cameraData;
+    private readonly ScreenSpaceAmbientOcclusion ssao;
+    private readonly float originalScale;
+    private readonly bool originalShadows;
+    private readonly bool originalSsao;
+    private bool disposed;
     private PerformanceMeasurement measurement;
     private int stage;
     private float warmup;
 
-    internal bool IsComplete => stage == EnemyCounts.Length;
-    internal int EnemyCount => IsComplete ? 0 : EnemyCounts[stage];
+    internal bool IsComplete => stage == StageCount;
+    internal int EnemyCount => IsComplete ? 0 : stages[stage].Enemies;
     internal int StageNumber => stage + 1;
-    internal int StageCount => EnemyCounts.Length;
+    internal int StageCount => stages.Count;
+    internal string CurrentProfileKey => stages[stage].ProfileKey;
     internal int SecondsRemaining => Mathf.CeilToInt(warmup + StageSeconds - (float)(measurement?.Elapsed ?? 0d));
     internal string Report { get; private set; }
-    private string reportHeader;
 
-    internal int EnemiesAtStage(int index) => EnemyCounts[index];
-    internal string ReportForStage(int index) => reportHeader + "\n\n" + reports[index];
+    internal int EnemiesAtStage(int index) => stages[index].Enemies;
+    internal string ProfileAtStage(int index) => stages[index].ProfileKey;
+    internal string GraphicsAtStage(int index) => graphicsReports[index];
+    internal PerformanceMeasurement.StageMetrics MetricsAt(int index) => metrics[index];
 
     internal PerformanceBenchmark(WaveSpawner spawner, Camera camera, Vector3 referencePosition)
     {
@@ -53,6 +80,23 @@ internal sealed class PerformanceBenchmark : IDisposable
         }
         if (prefabs.Count == 0 || camera == null)
             throw new InvalidOperationException("The benchmark needs configured enemy prefabs and a camera.");
+
+        pipeline = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
+        camera.TryGetComponent(out cameraData);
+        if (pipeline != null)
+        {
+            originalScale = pipeline.renderScale;
+            // The benchmark camera uses the default renderer in the project's single-renderer profiles.
+            if (pipeline.rendererDataList.Length == 1 && pipeline.rendererDataList[0] != null)
+                pipeline.rendererDataList[0].TryGetRendererFeature(out ssao);
+        }
+        originalSsao = ssao != null && ssao.isActive;
+        originalShadows = cameraData != null && cameraData.renderShadows;
+        foreach (int count in EnemyCounts)
+            stages.Add(new Stage(LocalizationKeys.PerfProfileBaseline, count));
+        if (originalSsao) AddComparison(LocalizationKeys.PerfProfileNoSsao);
+        if (ShadowsEnabled) AddComparison(LocalizationKeys.PerfProfileNoShadows);
+        if (pipeline != null && originalScale > ReducedRenderScale) AddComparison(LocalizationKeys.PerfProfileReducedScale);
 
         container = new GameObject("Performance benchmark models");
         container.SetActive(false);
@@ -101,7 +145,7 @@ internal sealed class PerformanceBenchmark : IDisposable
 
     internal void Tick(float deltaTime)
     {
-        if (IsComplete || deltaTime <= 0f) return;
+        if (disposed || IsComplete || deltaTime <= 0f) return;
         if (warmup > 0f)
         {
             warmup = Mathf.Max(0f, warmup - deltaTime);
@@ -110,13 +154,18 @@ internal sealed class PerformanceBenchmark : IDisposable
         measurement.Tick(deltaTime, 0, false, EnemyCount);
         if (measurement.Elapsed < StageSeconds) return;
 
-        reports[stage] = measurement.Report(benchmark: true);
+        string graphics = GraphicsReport();
+        graphicsReports.Add(graphics);
+        reports.Add(GameLocalization.Text(CurrentProfileKey) + "\n" + graphics + "\n" +
+            measurement.Report(benchmark: true));
+        metrics.Add(measurement.Metrics);
         measurement.Dispose();
         measurement = null;
         stage++;
         if (IsComplete)
         {
-            reportHeader = PerformanceMeasurement.DeviceReport() + "\n" +
+            RestoreGraphics();
+            string reportHeader = PerformanceMeasurement.DeviceReport() + "\n" +
                 GameLocalization.Text(LocalizationKeys.PerfBenchmarkScope);
             Report = reportHeader + "\n\n" + string.Join("\n\n────────────\n\n", reports);
         }
@@ -125,16 +174,48 @@ internal sealed class PerformanceBenchmark : IDisposable
 
     private void StartStage()
     {
+        ApplyGraphics(CurrentProfileKey);
         for (int i = 0; i < models.Length; i++)
             models[i].SetActive(i < EnemyCount);
         measurement = new PerformanceMeasurement();
         warmup = WarmupSeconds;
     }
 
+    private void AddComparison(string profileKey)
+    {
+        stages.Add(new Stage(profileKey, EnemyCounts[0]));
+        stages.Add(new Stage(profileKey, EnemyCounts[^1]));
+    }
+
+    private bool ShadowsEnabled => cameraData != null && cameraData.renderShadows &&
+        pipeline != null && pipeline.shadowDistance > 0f &&
+        (pipeline.supportsMainLightShadows || pipeline.supportsAdditionalLightShadows);
+
+    private void ApplyGraphics(string profileKey)
+    {
+        if (ssao != null) ssao.SetActive(originalSsao && profileKey != LocalizationKeys.PerfProfileNoSsao);
+        if (cameraData != null)
+            cameraData.renderShadows = originalShadows && profileKey != LocalizationKeys.PerfProfileNoShadows;
+        if (pipeline != null)
+            pipeline.renderScale = profileKey == LocalizationKeys.PerfProfileReducedScale ? ReducedRenderScale : originalScale;
+    }
+
+    private void RestoreGraphics() => ApplyGraphics(LocalizationKeys.PerfProfileBaseline);
+
+    private string GraphicsReport()
+    {
+        string Toggle(bool enabled) => GameLocalization.Text(enabled ? LocalizationKeys.PerfOn : LocalizationKeys.PerfOff);
+        return GameLocalization.Format(LocalizationKeys.PerfRenderSettings, pipeline != null ? pipeline.renderScale : 1f,
+            Toggle(ssao != null && ssao.isActive), Toggle(ShadowsEnabled));
+    }
+
     public void Dispose()
     {
+        if (disposed) return;
+        disposed = true;
         measurement?.Dispose();
         measurement = null;
+        if (!IsComplete) RestoreGraphics();
         if (container != null) Object.Destroy(container);
     }
 }

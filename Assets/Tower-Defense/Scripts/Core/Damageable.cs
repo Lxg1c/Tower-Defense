@@ -4,6 +4,8 @@ using UnityEngine.Events;
 [DisallowMultipleComponent]
 public abstract class Damageable : MonoBehaviour
 {
+    internal static event System.Action<Damageable, float, bool> DamageApplied;
+
     [Header("Здоровье")]
     [SerializeField] private float maxHealth = 100f; // Максимальное здоровье. Задаётся в инспекторе и может быть переопределено в подклассах.
 
@@ -54,7 +56,10 @@ public abstract class Damageable : MonoBehaviour
     {
         if (!CanTakeDamage) return;
 
+        float previousHealth = CurrentHealth;
         CurrentHealth = Mathf.Max(CurrentHealth - damage, 0f);
+        if (CurrentHealth < previousHealth)
+            DamageApplied?.Invoke(this, previousHealth - CurrentHealth, !IsAlive);
         onHealthChanged?.Invoke(CurrentHealth);
 
         if (!IsAlive)

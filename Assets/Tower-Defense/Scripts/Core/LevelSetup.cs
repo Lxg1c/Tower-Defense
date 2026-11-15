@@ -20,15 +20,37 @@ public sealed class LevelSetup : MonoBehaviour
         spawner != null && spawner.CurrentPhase == WaveSpawner.Phase.Defeated;
     public int VictoryMoneyReward { get; private set; }
     public int DefeatMoneyReward { get; private set; }
+    internal float DamageDealt { get; private set; }
+    internal float DamageTaken { get; private set; }
+    internal int EnemiesDestroyed { get; private set; }
 
     private void OnEnable()
     {
         if (spawner != null) spawner.onDefeated.AddListener(AwardDefeat);
+        Damageable.DamageApplied += RecordDamage;
     }
 
     private void OnDisable()
     {
         if (spawner != null) spawner.onDefeated.RemoveListener(AwardDefeat);
+        Damageable.DamageApplied -= RecordDamage;
+    }
+
+    private void RecordDamage(Damageable target, float damage, bool lethal)
+    {
+        if (target.gameObject.scene != gameObject.scene || spawner == null ||
+            !spawner.IsCombatPhase || RunSelection.IsPerformanceBenchmark)
+            return;
+
+        if (target is MobHealth)
+        {
+            DamageDealt += damage;
+            if (lethal) EnemiesDestroyed++;
+        }
+        else
+        {
+            DamageTaken += damage;
+        }
     }
 
     private void Awake()

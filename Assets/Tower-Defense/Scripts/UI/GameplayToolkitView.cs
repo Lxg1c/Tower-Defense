@@ -77,8 +77,6 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private Label desktopUltimateCharge;
     private Label fpsLabel;
     private Button fpsToggle;
-    private Button victoryStats;
-    private Button defeatStats;
     private Label benchmarkProgress;
     private VisualElement benchmarkHud;
     private Button benchmarkExit;
@@ -87,16 +85,13 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private bool benchmarkMode;
     private int displayedBenchmarkStage;
     private int displayedBenchmarkSeconds = -1;
-    private bool applicationPaused;
-    private bool skipPerformanceFrame = true;
-    private string runSummary;
-    private string runReport;
     private VisualElement performancePanel;
-    private Label performanceReport;
     private VisualElement benchmarkStages;
+    private VisualElement benchmarkProfiles;
     private string performanceClipboard;
-    private PerformanceMeasurement performanceMeasurement;
     private bool performanceReportOpen;
+    private bool skipPerformanceFrame;
+    private bool applicationPaused;
     private float fpsElapsed;
     private int fpsFrames;
     private RadialProgressElement mobileUltimateRing;
@@ -201,15 +196,13 @@ public sealed class GameplayToolkitView : MonoBehaviour
         desktopUltimateCharge = root.Q<Label>("desktopUltimateCharge");
         fpsLabel = root.Q<Label>("fpsLabel");
         fpsToggle = root.Q<Button>("fpsToggle");
-        victoryStats = root.Q<Button>("victoryStats");
-        defeatStats = root.Q<Button>("defeatStats");
         benchmarkHud = root.Q("benchmarkHud");
         benchmarkProgress = root.Q<Label>("benchmarkProgress");
         benchmarkExit = root.Q<Button>("benchmarkExit");
         performanceBack = root.Q<Button>("performanceBack");
         performancePanel = root.Q("performancePanel");
-        performanceReport = root.Q<Label>("performanceReport");
         benchmarkStages = root.Q("benchmarkStages");
+        benchmarkProfiles = root.Q("benchmarkProfiles");
         startWaveButton = root.Q<Button>("startWaveButton");
         homeButton = root.Q<Button>("homeButton");
         desktopHome = root.Q<Button>("desktopHome");
@@ -233,10 +226,10 @@ public sealed class GameplayToolkitView : MonoBehaviour
             coreAlert == null || coreHealthLabel == null ||
             slowEffect == null || shieldEffect == null ||
             turretEffect == null || mobileUltimateCharge == null || desktopUltimateCharge == null ||
-            fpsLabel == null || fpsToggle == null || victoryStats == null || defeatStats == null ||
+            fpsLabel == null || fpsToggle == null ||
             benchmarkHud == null || benchmarkProgress == null || benchmarkExit == null ||
-            performancePanel == null || performanceReport == null || performanceBack == null ||
-            benchmarkStages == null ||
+            performancePanel == null || performanceBack == null ||
+            benchmarkStages == null || benchmarkProfiles == null ||
             startWaveButton == null || homeButton == null || desktopHome == null ||
             rallyButton == null || desktopRally == null ||
             ultimateButton == null || desktopUltimate == null || masterSlider == null ||
@@ -264,6 +257,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         exitConfirmButton.clicked += ConfirmExit;
         root.Q<Button>("nextLevelButton").clicked += victory.PlayNextLevel;
         root.Q<Button>("replayButton").clicked += victory.Restart;
+        root.Q<Button>("victoryPrimaryReplay").clicked += victory.Restart;
         root.Q<Button>("victorySkills").clicked += victory.OpenSkills;
         root.Q<Button>("victoryMenu").clicked += victory.GoToMainMenu;
         root.Q<Button>("defeatMenu").clicked += defeat.GoToMainMenu;
@@ -278,8 +272,6 @@ public sealed class GameplayToolkitView : MonoBehaviour
         musicSlider.RegisterValueChangedCallback(evt => GameAudioSettings.SetMusic(evt.newValue));
         effectsSlider.RegisterValueChangedCallback(evt => GameAudioSettings.SetEffects(evt.newValue));
         fpsToggle.clicked += GamePerformanceSettings.ToggleFps;
-        victoryStats.clicked += OpenRunReport;
-        defeatStats.clicked += OpenRunReport;
         benchmarkExit.clicked += defeat.GoToMainMenu;
         root.Q<Button>("performanceCopy").clicked += CopyPerformanceReport;
         performanceBack.clicked += ClosePerformanceReport;
@@ -314,8 +306,6 @@ public sealed class GameplayToolkitView : MonoBehaviour
         else
         {
             if (healthBars != null) healthBars.SetPresentationRoot(root);
-            performanceMeasurement = new PerformanceMeasurement();
-            skipPerformanceFrame = true;
         }
         bound = true;
     }
@@ -332,9 +322,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private void RefreshLanguage()
     {
         GameLocalization.ApplyTo(root);
-        if (benchmarkMode)
-            performanceBack.text = GameLocalization.Text(LocalizationKeys.MainMenu);
-        else RefreshBuildCards();
+        if (!benchmarkMode) RefreshBuildCards();
     }
 
     private void OnDisable()
@@ -350,19 +338,15 @@ public sealed class GameplayToolkitView : MonoBehaviour
         GameLocalization.Changed -= RefreshLanguage;
         BaseUpgrade.OnTownHallChanged -= DiscoverGuideBuilding;
         spawner.onCombatPhaseStarted.RemoveListener(PlayWaveStart);
-        victoryStats.clicked -= OpenRunReport;
-        defeatStats.clicked -= OpenRunReport;
         benchmarkExit.clicked -= defeat.GoToMainMenu;
         root.Q<Button>("performanceCopy").clicked -= CopyPerformanceReport;
         performanceBack.clicked -= ClosePerformanceReport;
-        performanceMeasurement?.Dispose();
-        performanceMeasurement = null;
         performanceReportOpen = false;
-        runSummary = null;
-        runReport = null;
         performanceClipboard = null;
         benchmarkStages.Clear();
         benchmarkStages.AddToClassList("is-hidden");
+        benchmarkProfiles.Clear();
+        benchmarkProfiles.AddToClassList("is-hidden");
         benchmark?.Dispose();
         benchmark = null;
         if (benchmarkMode)
@@ -398,7 +382,6 @@ public sealed class GameplayToolkitView : MonoBehaviour
             UpdateBenchmark();
             return;
         }
-        UpdateRunMeasurement();
         if (GamePerformanceSettings.ShowFps)
         {
             fpsElapsed += Time.unscaledDeltaTime;
@@ -433,8 +416,10 @@ public sealed class GameplayToolkitView : MonoBehaviour
             previousCoreHealth = core.CurrentHealth;
             SetText(coreHealthLabel, $"{Mathf.CeilToInt(100f * core.CurrentHealth / core.MaxHealth)}%");
         }
-        coreAlert.EnableInClassList("is-hidden", !spawner.IsCombatPhase || paused || core == null ||
-            (!core.IsUnderAttack && Time.time >= coreAlertUntil));
+        bool coreWarningVisible = spawner.IsCombatPhase && !paused && core != null &&
+            (core.IsUnderAttack || Time.time < coreAlertUntil);
+        coreAlert.EnableInClassList("is-hidden", !coreWarningVisible);
+        fpsLabel.EnableInClassList("fps-below-core-warning", coreWarningVisible);
         fpsLabel.EnableInClassList("is-hidden", !GamePerformanceSettings.ShowFps || modal);
         bool desktop = responsiveHud.IsDesktopLayout;
         root.Q("topBar").EnableInClassList("is-hidden", order || won || lost);
@@ -463,7 +448,6 @@ public sealed class GameplayToolkitView : MonoBehaviour
         if (confirmingExit)
         {
             bool restarting = pauseMenu.PendingExitAction == PauseMenu.ExitAction.Restart;
-            exitConfirmPanel.EnableInClassList("is-restart", restarting);
             SetText(exitConfirmTitle, restarting
                 ? GameLocalization.Text(LocalizationKeys.RestartQuestion)
                 : GameLocalization.Text(LocalizationKeys.MenuQuestion));
@@ -515,10 +499,28 @@ public sealed class GameplayToolkitView : MonoBehaviour
         SetText(mobileUltimateCharge, chargeText);
         SetText(desktopUltimateCharge, chargeText);
         root.Q<Button>("nextLevelButton").EnableInClassList("is-hidden", !victory.CanPlayNextLevel);
-        if (won) SetText(root.Q<Label>("victoryReward"), GameLocalization.Format(LocalizationKeys.Reward, levelSetup.VictoryMoneyReward));
-        if (lost) SetText(defeatReward, GameLocalization.Format(LocalizationKeys.Reward, levelSetup.DefeatMoneyReward));
+        root.Q<Button>("victoryPrimaryReplay").EnableInClassList("is-hidden", victory.CanPlayNextLevel);
+        root.Q<Button>("replayButton").EnableInClassList("is-hidden", !victory.CanPlayNextLevel);
+        if (won)
+        {
+            SetText(root.Q<Label>("victoryCopy"), GameLocalization.Format(LocalizationKeys.OutcomeWaves, totalWaves));
+            SetText(root.Q<Label>("victoryReward"), $"+{levelSetup.VictoryMoneyReward}");
+            UpdateOutcomeStats(victoryPanel);
+        }
+        if (lost)
+        {
+            SetText(defeatReward, $"+{levelSetup.DefeatMoneyReward}");
+            UpdateOutcomeStats(defeatPanel);
+        }
         if (buildModal.IsOpen && buildModal.Revision != lastModalRevision) RefreshBuildCards();
         UpdateSpawnPreview(spawner.IsBuildPhase && !order && !paused && !modal && !won && !lost, desktop);
+    }
+
+    private void UpdateOutcomeStats(VisualElement panel)
+    {
+        SetText(panel.Q<Label>("damageDealt"), levelSetup.DamageDealt.ToString("0"));
+        SetText(panel.Q<Label>("damageTaken"), levelSetup.DamageTaken.ToString("0"));
+        SetText(panel.Q<Label>("enemiesDestroyed"), levelSetup.EnemiesDestroyed.ToString());
     }
 
     private void OnApplicationPause(bool paused)
@@ -526,35 +528,6 @@ public sealed class GameplayToolkitView : MonoBehaviour
         applicationPaused = paused;
         skipPerformanceFrame = true;
         if (paused && movePointer >= 0) ResetMove();
-    }
-
-    private void UpdateRunMeasurement()
-    {
-        if (performanceMeasurement == null) return;
-        var phase = spawner.CurrentPhase;
-        if (phase is WaveSpawner.Phase.AllCompleted or WaveSpawner.Phase.Defeated)
-        {
-            runSummary = performanceMeasurement.Summary();
-            runReport = PerformanceMeasurement.DeviceReport() + "\n\n" + performanceMeasurement.Report();
-            performanceMeasurement.Dispose();
-            performanceMeasurement = null;
-            var button = phase == WaveSpawner.Phase.AllCompleted ? victoryStats : defeatStats;
-            button.text = GameLocalization.Text(LocalizationKeys.PerfRunDetails) + "\n" + runSummary;
-            return;
-        }
-
-        if (pauseMenu.IsPaused || applicationPaused)
-        {
-            skipPerformanceFrame = true;
-            return;
-        }
-        if (skipPerformanceFrame)
-        {
-            skipPerformanceFrame = false;
-            return;
-        }
-        performanceMeasurement.Tick(Time.unscaledDeltaTime, spawner.DisplayWaveNumber,
-            phase == WaveSpawner.Phase.Combat, spawner.AliveMobCount);
     }
 
     private void UpdateBenchmark()
@@ -571,15 +544,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         if (benchmark.IsComplete)
         {
             performanceClipboard = benchmark.Report;
-            for (int i = 0; i < benchmark.StageCount; i++)
-            {
-                int index = i;
-                var button = new Button(() => ShowBenchmarkStage(index)) { text = benchmark.EnemiesAtStage(i).ToString() };
-                button.AddToClassList("benchmark-stage-button");
-                benchmarkStages.Add(button);
-            }
-            benchmarkStages.RemoveFromClassList("is-hidden");
-            ShowBenchmarkStage(0);
+            BuildBenchmarkProfiles();
             performanceReportOpen = true;
             benchmarkHud.AddToClassList("is-hidden");
             screenOverlay.RemoveFromClassList("is-hidden");
@@ -591,22 +556,74 @@ public sealed class GameplayToolkitView : MonoBehaviour
         if (stage == displayedBenchmarkStage && seconds == displayedBenchmarkSeconds) return;
         displayedBenchmarkStage = stage;
         displayedBenchmarkSeconds = seconds;
-        SetText(benchmarkProgress, GameLocalization.Format(LocalizationKeys.PerfBenchmarkProgress, stage, benchmark.StageCount, benchmark.EnemyCount, seconds));
+        SetText(benchmarkProgress, GameLocalization.Text(benchmark.CurrentProfileKey) + "\n" +
+            GameLocalization.Format(LocalizationKeys.PerfBenchmarkProgress, stage, benchmark.StageCount, benchmark.EnemyCount, seconds));
+    }
+
+    private void BuildBenchmarkProfiles()
+    {
+        string previous = null;
+        for (int index = 0; index < benchmark.StageCount; index++)
+        {
+            string profile = benchmark.ProfileAtStage(index);
+            if (profile == previous) continue;
+            previous = profile;
+            var button = new Button(() => SelectBenchmarkProfile(profile)) { text = GameLocalization.Text(profile) };
+            button.AddToClassList("benchmark-stage-button");
+            button.userData = profile;
+            benchmarkProfiles.Add(button);
+        }
+        benchmarkProfiles.EnableInClassList("is-hidden", benchmarkProfiles.childCount <= 1);
+        benchmarkStages.RemoveFromClassList("is-hidden");
+        SelectBenchmarkProfile(benchmark.ProfileAtStage(0));
+    }
+
+    private void SelectBenchmarkProfile(string profile)
+    {
+        benchmarkStages.Clear();
+        foreach (var button in benchmarkProfiles.Children())
+            button.EnableInClassList("benchmark-stage-selected", (string)button.userData == profile);
+        int first = -1;
+        for (int index = 0; index < benchmark.StageCount; index++)
+        {
+            if (benchmark.ProfileAtStage(index) != profile) continue;
+            if (first < 0) first = index;
+            int selectedIndex = index;
+            int enemies = benchmark.EnemiesAtStage(index);
+            string key = enemies is 32 or 64 ? LocalizationKeys.PerfStageTabFew : LocalizationKeys.PerfStageTab;
+            var button = new Button(() => ShowBenchmarkStage(selectedIndex))
+            {
+                text = GameLocalization.Format(key, enemies),
+                userData = selectedIndex
+            };
+            button.AddToClassList("benchmark-stage-button");
+            benchmarkStages.Add(button);
+        }
+        ShowBenchmarkStage(first);
     }
 
     private void ShowBenchmarkStage(int index)
     {
-        performanceReport.text = benchmark.ReportForStage(index);
-        for (int i = 0; i < benchmarkStages.childCount; i++)
-            benchmarkStages[i].EnableInClassList("benchmark-stage-selected", i == index);
-    }
-
-    private void OpenRunReport()
-    {
-        if (runReport == null) return;
-        performanceReport.text = runReport;
-        performanceClipboard = runReport;
-        performanceReportOpen = true;
+        var values = benchmark.MetricsAt(index);
+        string unavailable = GameLocalization.Text(LocalizationKeys.PerfUnavailable);
+        string Format(double value) => value > 0 ? value.ToString("0.0") : unavailable;
+        string Milliseconds(double value) => value > 0
+            ? GameLocalization.Format(LocalizationKeys.PerfMilliseconds, value) : unavailable;
+        SetText(performancePanel.Q<Label>("perfDevice"), GameLocalization.Format(LocalizationKeys.PerfDevice,
+            SystemInfo.graphicsDeviceName, SystemInfo.graphicsDeviceType, Screen.width, Screen.height));
+        var lighting = GamePerformanceSettings.Lighting == GamePerformanceSettings.LightingMode.Simple
+            ? LocalizationKeys.GraphicsSimple : LocalizationKeys.GraphicsStandard;
+        var normals = GamePerformanceSettings.NormalMaps ? LocalizationKeys.PerfOn : LocalizationKeys.PerfOff;
+        SetText(performancePanel.Q<Label>("perfGraphics"),
+            GameLocalization.Format(LocalizationKeys.PerfGraphics, GameLocalization.Text(lighting), GameLocalization.Text(normals)) +
+            "\n" + benchmark.GraphicsAtStage(index));
+        SetText(performancePanel.Q<Label>("perfFpsValue"), Format(values.AverageFps));
+        SetText(performancePanel.Q<Label>("perfFrameValue"), Milliseconds(values.FrameP95));
+        SetText(performancePanel.Q<Label>("perfCpuValue"), Milliseconds(values.CpuP95));
+        SetText(performancePanel.Q<Label>("perfGpuValue"), Milliseconds(values.GpuP95));
+        SetText(performancePanel.Q<Label>("perfDrawsValue"), values.PeakDrawCalls >= 0 ? values.PeakDrawCalls.ToString() : unavailable);
+        foreach (var button in benchmarkStages.Children())
+            button.EnableInClassList("benchmark-stage-selected", (int)button.userData == index);
     }
 
     private void CopyPerformanceReport() => GUIUtility.systemCopyBuffer = performanceClipboard;
@@ -969,22 +986,28 @@ public sealed class GameplayToolkitView : MonoBehaviour
             var title = new Label(GetBuildingName(source.Option).ToUpperInvariant());
             title.AddToClassList("build-card-title");
             summary.Add(title);
-            var description = new Label(GetBuildingDescription(source.Option));
-            description.AddToClassList("build-card-description");
-            summary.Add(description);
+            if (source.CurrentLevel == 0)
+            {
+                var description = new Label(GetBuildingDescription(source.Option));
+                description.AddToClassList("build-card-description");
+                summary.Add(description);
+            }
             header.Add(summary);
             card.Add(header);
             if (source.CurrentLevel > 0 && levels.Count > 0)
             {
                 int currentIndex = Mathf.Clamp(source.CurrentLevel - 1, 0, levels.Count - 1);
                 int nextIndex = Mathf.Min(currentIndex + 1, levels.Count - 1);
-                string current = GameLocalization.Format(LocalizationKeys.BuildingLevel, source.CurrentLevel);
-                string next = nextIndex > currentIndex
-                    ? GameLocalization.Text(LocalizationKeys.BuildingNext) + "  ·  " + FormatLevel(levels[nextIndex])
-                    : GameLocalization.Text(LocalizationKeys.BuildingMax);
-                var progression = new Label($"{current}  ·  {FormatLevel(levels[currentIndex])}\n{next}");
+                var progression = new Label(nextIndex > currentIndex
+                    ? GameLocalization.Format(LocalizationKeys.BuildingLevel, source.CurrentLevel) + $" → {source.CurrentLevel + 1}"
+                    : GameLocalization.Text(LocalizationKeys.BuildingMax));
                 progression.AddToClassList("build-upgrade-summary");
-                card.Add(progression);
+                summary.Add(progression);
+                var current = levels[currentIndex];
+                var next = levels[nextIndex];
+                AddUpgradeStat(card, LocalizationKeys.StatHealth, "build-stat-health", current.Health, next.Health);
+                AddUpgradeStat(card, LocalizationKeys.StatDamage, "build-stat-damage", current.Damage, next.Damage);
+                AddUpgradeStat(card, LocalizationKeys.StatIncome, "build-stat-income", current.Income, next.Income);
             }
             var action = new Button(source.Activate) { tooltip = source.ActionText };
             action.AddToClassList("build-action");
@@ -1014,13 +1037,26 @@ public sealed class GameplayToolkitView : MonoBehaviour
             buildModal.ActiveOffers.Count == 1 && buildModal.ActiveOffers[0].CurrentLevel > 0);
     }
 
-    private static string FormatLevel(BuildingLevelList.Level level)
+    private static void AddUpgradeStat(VisualElement card, string key, string iconClass, float? current, float? next)
     {
-        var values = new List<string>();
-        if (level.Health.HasValue) values.Add(GameLocalization.Format(LocalizationKeys.BuildingHp, level.Health.Value));
-        if (level.Damage.HasValue) values.Add(GameLocalization.Format(LocalizationKeys.Damage, level.Damage.Value));
-        if (level.Income.HasValue) values.Add(GameLocalization.Format(LocalizationKeys.Income, level.Income.Value));
-        return string.Join("  ·  ", values);
+        if (!current.HasValue) return;
+        var row = new VisualElement();
+        row.AddToClassList("build-stat-row");
+        var icon = new VisualElement();
+        icon.AddToClassList("build-stat-icon");
+        icon.AddToClassList(iconClass);
+        row.Add(icon);
+        var label = new Label(GameLocalization.Text(key));
+        label.AddToClassList("build-stat-label");
+        row.Add(label);
+        row.Add(new Label(current.Value.ToString("0.##")));
+        if (next.HasValue && next.Value != current.Value)
+        {
+            var value = new Label($"→  {next.Value:0.##}");
+            value.AddToClassList("build-stat-next");
+            row.Add(value);
+        }
+        card.Add(row);
     }
 
     internal static string GetBuildingName(TowerOption option) => option.displayName switch

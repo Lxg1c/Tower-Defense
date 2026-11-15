@@ -91,6 +91,38 @@ namespace TowerDefense.Tests
         }
 
         [UnityTest]
+        public IEnumerator RunStatsCountActualCombatDamageAndLethalHits()
+        {
+            CreateSceneObjects();
+            var mob = new GameObject("Damage target").AddComponent<MobHealth>();
+            mob.transform.SetParent(root.transform);
+            var defense = new GameObject("Defense target").AddComponent<CombatTestTarget>();
+            defense.transform.SetParent(root.transform);
+            root.SetActive(true);
+            yield return null;
+
+            var spawner = root.GetComponentInChildren<WaveSpawner>();
+            var setup = root.GetComponent<LevelSetup>();
+            var session = new GameSession(new[] { 0 }, _ => { });
+            Set(spawner, "session", session);
+            defense.TakeDamage(10);
+            Assert.That(session.TryStartWave(true, false), Is.True);
+
+            mob.TakeDamage(20);
+            mob.TakeDamage(200);
+            mob.TakeDamage(50);
+            defense.TakeDamage(35);
+            defense.Heal(10);
+            Assert.That(session.TryDefeat(), Is.True);
+            defense.TakeDamage(5);
+
+            const BindingFlags properties = BindingFlags.Instance | BindingFlags.NonPublic;
+            Assert.That(typeof(LevelSetup).GetProperty("DamageDealt", properties).GetValue(setup), Is.EqualTo(100f));
+            Assert.That(typeof(LevelSetup).GetProperty("DamageTaken", properties).GetValue(setup), Is.EqualTo(35f));
+            Assert.That(typeof(LevelSetup).GetProperty("EnemiesDestroyed", properties).GetValue(setup), Is.EqualTo(1));
+        }
+
+        [UnityTest]
         public IEnumerator MissingLevelSetupStopsSessionWithoutVictoryOrReward()
         {
             CreateSceneObjects();

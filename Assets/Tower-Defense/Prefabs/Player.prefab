@@ -712,7 +712,7 @@ MonoBehaviour:
   obstacleMask:
     serializedVersion: 2
     m_Bits: 64
-  explosionPrefab: {fileID: 5740835249752665754, guid: d9547b9d51ee91546836af47fad2d816, type: 3}
+  explosionPrefab: {fileID: 5515657585928804110, guid: 324c18ea5987e794cb1d408cbe50b59b, type: 3}
   explosionLifetime: 1.5
   ultimateCooldown: 5
   minDamage: 30

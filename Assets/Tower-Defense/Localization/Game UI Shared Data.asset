@@ -883,6 +883,94 @@ MonoBehaviour:
     m_Key: loading-menu
     m_Metadata:
       m_Items: []
+  - m_Id: 706062578606080
+    m_Key: outcome-waves
+    m_Metadata:
+      m_Items: []
+  - m_Id: 706062733795328
+    m_Key: outcome-core-destroyed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 706062733795329
+    m_Key: outcome-reward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 710660840218624
+    m_Key: stat-health
+    m_Metadata:
+      m_Items: []
+  - m_Id: 710660936687616
+    m_Key: stat-damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 710660936687617
+    m_Key: stat-income
+    m_Metadata:
+      m_Items: []
+  - m_Id: 710660936687618
+    m_Key: outcome-damage-dealt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 710660936687619
+    m_Key: outcome-damage-taken
+    m_Metadata:
+      m_Items: []
+  - m_Id: 710660936687620
+    m_Key: outcome-enemies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 715286809403392
+    m_Key: perf-stage-tab
+    m_Metadata:
+      m_Items: []
+  - m_Id: 715286884900864
+    m_Key: perf-stage-tab-few
+    m_Metadata:
+      m_Items: []
+  - m_Id: 715286884900865
+    m_Key: perf-milliseconds
+    m_Metadata:
+      m_Items: []
+  - m_Id: 715286884900866
+    m_Key: perf-metric-fps
+    m_Metadata:
+      m_Items: []
+  - m_Id: 715286884900867
+    m_Key: perf-metric-frame
+    m_Metadata:
+      m_Items: []
+  - m_Id: 715286884900868
+    m_Key: perf-metric-cpu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 715286884900869
+    m_Key: perf-metric-gpu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 715286884900870
+    m_Key: perf-metric-draws
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1040532481499136
+    m_Key: perf-profile-baseline
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1040532569579520
+    m_Key: perf-profile-no-ssao
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1040532569579521
+    m_Key: perf-profile-no-shadows
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1040532569579522
+    m_Key: perf-profile-reduced-scale
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1040532569579523
+    m_Key: perf-render-settings
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

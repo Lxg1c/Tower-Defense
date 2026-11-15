@@ -95,9 +95,11 @@ select **Repeat hints** in the main menu settings and enter Level 01.
 **Settings → Graphics** selects standard or simplified lighting and toggles
 normal maps on supported materials. Changes apply when you enter a level.
 Use **Performance test** in Graphics to run a fixed-camera test on the first map.
-It automatically measures six seconds each with 0, 16, 32 and 64 enemy models
-after a short warm-up per stage. The copyable report includes FPS, CPU and GPU
-timings, and average and peak draw calls where available. Enemy combat and AI
+It measures six seconds each with 0, 16, 32 and 64 enemy models after a short
+warm-up. It then repeats the 0- and 64-model cases separately with SSAO disabled,
+camera shadows disabled, and render scale at 65%, where each change applies.
+The comparison report records the settings, FPS, CPU and GPU timings, and
+average and peak draw calls where available. Enemy combat and AI
 are inactive during the test. For the full gameplay workload, open **Run
 statistics** after victory or defeat to see the complete unpaused run.
 

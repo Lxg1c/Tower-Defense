@@ -4,6 +4,21 @@ using UnityEngine;
 
 internal sealed class PerformanceMeasurement : IDisposable
 {
+    internal readonly struct StageMetrics
+    {
+        internal readonly double AverageFps, FrameP95, CpuP95, GpuP95;
+        internal readonly long PeakDrawCalls;
+
+        internal StageMetrics(double averageFps, double frameP95, double cpuP95, double gpuP95, long peakDrawCalls)
+        {
+            AverageFps = averageFps;
+            FrameP95 = frameP95;
+            CpuP95 = cpuP95;
+            GpuP95 = gpuP95;
+            PeakDrawCalls = peakDrawCalls;
+        }
+    }
+
     private const double FrameBudget = 1000d / 60d;
     private readonly TimingDistribution frames = new();
     private readonly TimingDistribution mainThread = new();
@@ -29,6 +44,9 @@ internal sealed class PerformanceMeasurement : IDisposable
 
     internal double Elapsed { get; private set; }
     internal bool HasFrames => frames.Count != 0;
+    internal StageMetrics Metrics =>
+        new(HasFrames ? frames.Count / Elapsed : 0d, frames.Percentile95,
+            mainThread.Percentile95, gpu.Percentile95, drawCallSamples > 0 ? peakDrawCalls : -1);
 
     internal PerformanceMeasurement()
     {

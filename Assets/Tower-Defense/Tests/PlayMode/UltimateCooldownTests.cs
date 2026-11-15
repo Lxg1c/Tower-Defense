@@ -23,6 +23,36 @@ namespace TowerDefense.Tests
         }
 
         [UnityTest]
+        public IEnumerator OrbImpactDamagesTargetAndSpawnsTheAssignedEffect()
+        {
+            var target = new GameObject("Orb target");
+            created.Add(target);
+            target.layer = 8;
+            target.transform.position = Vector3.up * 50f + Vector3.forward * 2f;
+            target.AddComponent<SphereCollider>();
+            var health = target.AddComponent<CombatTestTarget>();
+
+            var effect = new GameObject("Test orb explosion");
+            created.Add(effect);
+            var orb = new GameObject("Impact orb").AddComponent<ChargeOrbProjectile>();
+            created.Add(orb.gameObject);
+            orb.transform.position = Vector3.up * 50f;
+            orb.Init(Vector3.forward, 30f, 25f, 4f, 1f, 1 << target.layer, 0, null, effect);
+            Physics.SyncTransforms();
+
+            float deadline = Time.realtimeSinceStartup + 2f;
+            while (orb != null && Time.realtimeSinceStartup < deadline)
+                yield return null;
+
+            var impact = GameObject.Find("Test orb explosion(Clone)");
+            if (impact != null) created.Add(impact);
+            Assert.That(orb == null, Is.True);
+            Assert.That(health.CurrentHealth, Is.EqualTo(75f));
+            Assert.That(impact, Is.Not.Null);
+            Assert.That(Vector3.Distance(impact.transform.position, target.transform.position), Is.LessThan(1f));
+        }
+
+        [UnityTest]
         public IEnumerator UltimateAddsFixedDelayAfterShortCharge()
         {
             PlayerUltimate ultimate = CreatePlayer();

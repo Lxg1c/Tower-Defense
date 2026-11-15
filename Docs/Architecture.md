@@ -270,6 +270,9 @@ view stops sampling at the outcome and shows a summary with a copyable report.
 The Graphics menu starts `PerformanceBenchmark` on the first map through
 `RunSelection`. It presents the same fixed camera and activates 0, 16, 32 and 64
 enemy models in sequence, sampling each stage separately after warm-up.
+The 0- and 64-model stages are repeated with one temporary graphics change per
+profile. The benchmark restores render scale, camera shadows, and renderer SSAO
+on completion or disposal. The report stores the settings used for each stage.
 Benchmark mode blocks waves and progression rewards.
 
 `ResponsiveGameplayHud` selects Mobile or Desktop UI Toolkit controls from the

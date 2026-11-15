@@ -79,6 +79,10 @@ internal static class LocalizationKeys
     internal const string MaxRank = "max-rank";
     internal const string Melee = "melee";
     internal const string MenuQuestion = "menu-question";
+    internal const string OutcomeWaves = "outcome-waves";
+    internal const string StatHealth = "stat-health";
+    internal const string StatDamage = "stat-damage";
+    internal const string StatIncome = "stat-income";
     internal const string Mine = "mine";
     internal const string MineDesc = "mine-desc";
     internal const string Mortar = "mortar";
@@ -88,6 +92,11 @@ internal static class LocalizationKeys
     internal const string PerfBenchmarkProgress = "perf-benchmark-progress";
     internal const string PerfBenchmarkScope = "perf-benchmark-scope";
     internal const string PerfBenchmarkStage = "perf-benchmark-stage";
+    internal const string PerfProfileBaseline = "perf-profile-baseline";
+    internal const string PerfProfileNoSsao = "perf-profile-no-ssao";
+    internal const string PerfProfileNoShadows = "perf-profile-no-shadows";
+    internal const string PerfProfileReducedScale = "perf-profile-reduced-scale";
+    internal const string PerfRenderSettings = "perf-render-settings";
     internal const string PerfCompactTimings = "perf-compact-timings";
     internal const string PerfCpuLimit = "perf-cpu-limit";
     internal const string PerfDevice = "perf-device";
@@ -95,6 +104,9 @@ internal static class LocalizationKeys
     internal const string PerfFrameCounters = "perf-frame-counters";
     internal const string PerfGpuLimit = "perf-gpu-limit";
     internal const string PerfGraphics = "perf-graphics";
+    internal const string PerfStageTab = "perf-stage-tab";
+    internal const string PerfStageTabFew = "perf-stage-tab-few";
+    internal const string PerfMilliseconds = "perf-milliseconds";
     internal const string PerfNoFrames = "perf-no-frames";
     internal const string PerfOff = "perf-off";
     internal const string PerfOk = "perf-ok";
