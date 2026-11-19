@@ -82,6 +82,7 @@ public sealed class MenuToolkitView : MonoBehaviour
     private DropdownField languageDropdown;
     private DropdownField lightingDropdown;
     private DropdownField graphicsQualityDropdown;
+    private DropdownField screenModeDropdown;
     private SliderInt renderScaleSlider;
     private Label renderScaleValue;
     private Button normalMapsToggle;
@@ -135,6 +136,7 @@ public sealed class MenuToolkitView : MonoBehaviour
 
         root = document.rootVisualElement;
         if (root?.Q("menuRoot") == null) return false;
+        root.Q("menuRoot").EnableInClassList("desktop-menu", ResponsiveGameplayHud.UsesDesktopBuildLayout());
         root.AddToClassList("menu-document-root");
         homePage = root.Q("homePage");
         settingsPage = root.Q("settingsPage");
@@ -174,6 +176,7 @@ public sealed class MenuToolkitView : MonoBehaviour
         languageDropdown = root.Q<DropdownField>("languageDropdown");
         lightingDropdown = root.Q<DropdownField>("lightingDropdown");
         graphicsQualityDropdown = root.Q<DropdownField>("graphicsQualityDropdown");
+        screenModeDropdown = root.Q<DropdownField>("screenModeDropdown");
         renderScaleSlider = root.Q<SliderInt>("renderScaleSlider");
         renderScaleValue = root.Q<Label>("renderScaleValue");
         normalMapsToggle = root.Q<Button>("normalMapsToggle");
@@ -197,7 +200,7 @@ public sealed class MenuToolkitView : MonoBehaviour
             rightWeaponPreviews.Any(button => button == null) || skillButtons.Any(button => button == null) ||
             upgradeSkill == null || standardModule == null || overdriveModule == null ||
             fpsLabel == null || fpsToggle == null || languageDropdown == null ||
-            lightingDropdown == null || graphicsQualityDropdown == null || normalMapsToggle == null ||
+            lightingDropdown == null || graphicsQualityDropdown == null || screenModeDropdown == null || normalMapsToggle == null ||
             renderScaleSlider == null || renderScaleValue == null ||
             masterSlider == null || musicSlider == null ||
             effectsSlider == null || startButton == null || difficultyButtons.Any(button => button == null))
@@ -240,6 +243,7 @@ public sealed class MenuToolkitView : MonoBehaviour
 
     private void BindActions()
     {
+        root.RegisterCallback<NavigationCancelEvent>(OnDesktopMenuCancel);
         previousLevelButton.clicked += () => SelectAdjacentLevel(-1);
         nextLevelButton.clicked += () => SelectAdjacentLevel(1);
         root.Q<Button>("skillsButton").clicked += ShowSkills;
@@ -318,6 +322,7 @@ public sealed class MenuToolkitView : MonoBehaviour
             if (choice >= 0) GamePerformanceSettings.SetLighting((GamePerformanceSettings.LightingMode)choice);
         });
         graphicsQualityDropdown.RegisterValueChangedCallback(ChangeGraphicsQuality);
+        screenModeDropdown.RegisterValueChangedCallback(ChangeScreenMode);
         renderScaleSlider.RegisterValueChangedCallback(ChangeRenderScale);
         normalMapsToggle.clicked += ToggleNormalMaps;
         root.Q<Button>("startBenchmark").clicked += menu.StartPerformanceBenchmark;
@@ -343,11 +348,13 @@ public sealed class MenuToolkitView : MonoBehaviour
     {
         if (!bound) return;
         StopLevelSlide();
+        root.UnregisterCallback<NavigationCancelEvent>(OnDesktopMenuCancel);
         PlayerProgression.Changed -= RefreshAll;
         GameAudioSettings.Changed -= RefreshAudio;
         GamePerformanceSettings.Changed -= RefreshFps;
         GameLocalization.Changed -= RefreshLanguage;
         graphicsQualityDropdown.UnregisterValueChangedCallback(ChangeGraphicsQuality);
+        screenModeDropdown.UnregisterValueChangedCallback(ChangeScreenMode);
         renderScaleSlider.UnregisterValueChangedCallback(ChangeRenderScale);
         normalMapsToggle.clicked -= ToggleNormalMaps;
         root.Q<Button>("startBenchmark").clicked -= menu.StartPerformanceBenchmark;
@@ -762,6 +769,18 @@ public sealed class MenuToolkitView : MonoBehaviour
 
     private void RefreshGraphics()
     {
+        bool desktop = ResponsiveGameplayHud.UsesDesktopBuildLayout();
+        root.Q("screenModeRow").EnableInClassList("is-hidden", !desktop);
+        if (desktop)
+        {
+            screenModeDropdown.choices = new System.Collections.Generic.List<string>
+            {
+                GameLocalization.Text(LocalizationKeys.ScreenFullscreen),
+                GameLocalization.Text(LocalizationKeys.ScreenBorderless),
+                GameLocalization.Text(LocalizationKeys.ScreenWindowed)
+            };
+            screenModeDropdown.SetValueWithoutNotify(screenModeDropdown.choices[(int)GamePerformanceSettings.DesktopWindowMode]);
+        }
         bool mobile = GamePerformanceSettings.SupportsAndroidQuality;
         root.Q("graphicsQualityRow").EnableInClassList("is-hidden", !mobile);
         root.Q("renderScaleRow").EnableInClassList("is-hidden", !mobile);
@@ -792,6 +811,12 @@ public sealed class MenuToolkitView : MonoBehaviour
     {
         int index = graphicsQualityDropdown.choices.IndexOf(evt.newValue);
         if (index >= 0) GamePerformanceSettings.SetAndroidQuality((GamePerformanceSettings.AndroidQuality)index);
+    }
+
+    private void ChangeScreenMode(ChangeEvent<string> evt)
+    {
+        int index = screenModeDropdown.choices.IndexOf(evt.newValue);
+        if (index >= 0) GamePerformanceSettings.SetWindowMode((GamePerformanceSettings.WindowMode)index);
     }
 
     private void ChangeRenderScale(ChangeEvent<int> evt)
@@ -912,5 +937,23 @@ public sealed class MenuToolkitView : MonoBehaviour
         skillsPage.EnableInClassList("is-hidden", page != skillsPage);
         loadoutPage.EnableInClassList("is-hidden", page != loadoutPage);
         guidePage.EnableInClassList("is-hidden", page != guidePage);
+        if (Application.isPlaying && root.Q("menuRoot").ClassListContains("desktop-menu"))
+            page.schedule.Execute(() =>
+            {
+                if (page.ClassListContains("is-hidden")) return;
+                var first = page == homePage && startButton.enabledInHierarchy
+                    ? startButton
+                    : page.Query<Button>().Where(button => button.enabledInHierarchy &&
+                        button.resolvedStyle.display != DisplayStyle.None).First();
+                first?.Focus();
+            });
+    }
+
+    private void OnDesktopMenuCancel(NavigationCancelEvent evt)
+    {
+        if (!root.Q("menuRoot").ClassListContains("desktop-menu") || LevelLoadingScreen.IsLoading ||
+            !homePage.ClassListContains("is-hidden")) return;
+        ShowHome();
+        evt.StopPropagation();
     }
 }

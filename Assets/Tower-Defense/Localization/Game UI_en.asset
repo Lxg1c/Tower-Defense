@@ -1015,6 +1015,31 @@ MonoBehaviour:
     m_Localized: '3D render scale: {0}%'
     m_Metadata:
       m_Items: []
+  - m_Id: 1392640401596416
+    m_Localized: "Arrow keys \u2014 defense point \xB7 Enter \u2014 confirm \xB7
+      B \u2014 switch squad \xB7 Esc \u2014 cancel"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2546188757753856
+    m_Localized: Screen mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2546188820668416
+    m_Localized: Fullscreen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2546188820668417
+    m_Localized: Borderless
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2546188820668418
+    m_Localized: Windowed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2546188820668419
+    m_Localized: Close
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

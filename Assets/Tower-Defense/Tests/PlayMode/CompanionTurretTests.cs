@@ -27,7 +27,7 @@ namespace TowerDefense.Tests
         }
 
         [UnityTest]
-        public IEnumerator PickupGrantsAtMostTwoTurretsAndTheyExpire()
+        public IEnumerator EnemyDoesNotDropCompanionsAndDirectGrantsStillExpire()
         {
             CompanionTurretController controller = CreatePlayer();
             GameObject pickupTemplate = New("Test pickup template");
@@ -54,16 +54,8 @@ namespace TowerDefense.Tests
             CompanionTurretPickup dropped = null;
             foreach (CompanionTurretPickup candidate in Object.FindObjectsByType<CompanionTurretPickup>(FindObjectsSortMode.None))
                 if (candidate != pickupPrefab && candidate.name.StartsWith("Test pickup")) dropped = candidate;
-            Assert.That(dropped, Is.Not.Null, "A configured Shooter must drop its companion pickup.");
-            controller.transform.position = dropped.transform.position;
-            Physics.SyncTransforms();
-            yield return new WaitForFixedUpdate();
-            yield return null;
-            Assert.That(controller.ActiveCount, Is.EqualTo(1));
-            Assert.That(controller.RemainingSeconds, Is.GreaterThan(0f));
-            Assert.That(controller.Progress, Is.GreaterThan(0f));
-            Assert.That(dropped == null, Is.True, "Collecting the pickup removes it.");
-
+            Assert.That(dropped, Is.Null, "Enemy companion drops are disabled.");
+            Assert.That(controller.Grant(1f), Is.True);
             Assert.That(controller.Grant(1f), Is.True);
             Assert.That(controller.Grant(1f), Is.True);
             Assert.That(controller.ActiveCount, Is.EqualTo(2), "A third pickup refreshes one turret.");

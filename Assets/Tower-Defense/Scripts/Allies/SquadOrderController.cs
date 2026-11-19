@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -35,6 +36,7 @@ public sealed class SquadOrderController : MonoBehaviour
     private Vector3 cameraPosition;
     private Quaternion cameraRotation;
     private float cameraOrthographicSize;
+    private Vector2 orderCursor;
 
     private void Awake()
     {
@@ -75,7 +77,8 @@ public sealed class SquadOrderController : MonoBehaviour
             CancelOrder();
             return;
         }
-        if (Time.timeScale <= 0f || TowerSelectionModal.Instance != null && TowerSelectionModal.Instance.IsOpen)
+        if (Time.timeScale <= 0f ||
+            !orderModeActive && TowerSelectionModal.Instance != null && TowerSelectionModal.Instance.IsOpen)
             return;
 
         if (Touchscreen.current != null &&
@@ -111,6 +114,40 @@ public sealed class SquadOrderController : MonoBehaviour
     {
         StopRouteFeedback();
         EndOrderMode();
+    }
+
+    internal void ReadKeyboardOrder(Keyboard keyboard)
+    {
+        if (!isActiveAndEnabled || Time.timeScale <= 0f || playerHealth.IsGhost) return;
+        if (keyboard.bKey.wasPressedThisFrame)
+        {
+            var barracks = FindObjectsByType<BarracksBuilding>(FindObjectsSortMode.None);
+            Array.Sort(barracks, (a, b) => (a.transform.position - playerTarget.position).sqrMagnitude
+                .CompareTo((b.transform.position - playerTarget.position).sqrMagnitude));
+            if (barracks.Length == 0) return;
+            int next = (Array.IndexOf(barracks, selected) + 1) % barracks.Length;
+            CancelOrder();
+            StartOrder(barracks[next]);
+            return;
+        }
+        if (!orderModeActive || selected == null) return;
+        if (keyboard.backspaceKey.wasPressedThisFrame)
+        {
+            selected.ClearGuardPosition();
+            CancelOrder();
+            return;
+        }
+        var direction = new Vector2(
+            (keyboard.rightArrowKey.isPressed ? 1f : 0f) - (keyboard.leftArrowKey.isPressed ? 1f : 0f),
+            (keyboard.upArrowKey.isPressed ? 1f : 0f) - (keyboard.downArrowKey.isPressed ? 1f : 0f));
+        bool confirm = keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame;
+        if (direction == Vector2.zero && !confirm) return;
+        orderCursor += direction.normalized * (0.45f * Time.unscaledDeltaTime);
+        orderCursor.x = Mathf.Clamp(orderCursor.x, 0.04f, 0.96f);
+        orderCursor.y = Mathf.Clamp(orderCursor.y, 0.08f, 0.90f);
+        if (!orderSurface.Raycast(gameplayCamera.ViewportPointToRay(orderCursor), out var ground, 1000f)) return;
+        if (selectionMarker != null) selectionMarker.transform.position = ground.point + Vector3.up * 0.08f;
+        if (confirm) AssignOrder(ground.point);
     }
 
     private void ReadTouch()
@@ -169,12 +206,15 @@ public sealed class SquadOrderController : MonoBehaviour
             return;
         }
 
-        if (orderSurface.Raycast(ray, out RaycastHit groundHit, 1000f) &&
-            selected.TryAssignGuardPosition(groundHit.point, out Vector3[] corners))
-        {
-            ShowRoute(corners);
-            EndOrderMode();
-        }
+        if (orderSurface.Raycast(ray, out RaycastHit groundHit, 1000f))
+            AssignOrder(groundHit.point);
+    }
+
+    private void AssignOrder(Vector3 position)
+    {
+        if (!selected.TryAssignGuardPosition(position, out Vector3[] corners)) return;
+        ShowRoute(corners);
+        EndOrderMode();
     }
 
     private void EnterMapView()
@@ -198,6 +238,7 @@ public sealed class SquadOrderController : MonoBehaviour
                 visibleHalfHeight / Mathf.Tan(halfFov));
             gameplayCamera.transform.position = playerTarget.position + fromPlayer.normalized * distance;
         }
+        orderCursor = gameplayCamera.WorldToViewportPoint(selected.SelectionMarkerPosition);
     }
 
     private void EndOrderMode()

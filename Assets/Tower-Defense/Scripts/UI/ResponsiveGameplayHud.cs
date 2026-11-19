@@ -18,6 +18,13 @@ public sealed class ResponsiveGameplayHud : MonoBehaviour
 #if UNITY_EDITOR
         if (editorPreview == EditorPreviewMode.Mobile) return false;
         if (editorPreview == EditorPreviewMode.Desktop) return true;
+#endif
+        return UsesDesktopBuildLayout();
+    }
+
+    internal static bool UsesDesktopBuildLayout()
+    {
+#if UNITY_EDITOR
         var target = UnityEditor.EditorUserBuildSettings.activeBuildTarget;
         return target != UnityEditor.BuildTarget.Android && target != UnityEditor.BuildTarget.iOS;
 #elif UNITY_ANDROID || UNITY_IOS

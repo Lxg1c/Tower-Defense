@@ -76,8 +76,12 @@ tests the gameplay loop without art and layout changes masking the result.
 On Android and iOS, use the on-screen joystick to move. By default, one tap on
 the ultimate button charges the orb to 65% and fires it automatically; releasing
 the button does not change the shot. Desktop builds use a compact HUD without
-the joystick: move with WASD or the arrow keys and press Space once for the
-ultimate. Use the remaining action buttons with the mouse. The hero aims and
+the joystick: move with WASD or the arrow keys and press Space for the ultimate.
+Use E to start the wave, T to teleport, F to toggle follow, and Esc to pause or
+go back. Press 1–9 to choose a building or upgrade when the blueprint panel is
+open. B opens squad orders or cycles through barracks. Use the arrow keys to move
+the order marker, Enter to confirm, and Backspace to clear the selected squad's
+order. Use Tab, Shift+Tab, and Enter to navigate menus. The hero aims and
 shoots automatically on both platforms. The `Manual Charge` checkbox on
 `PlayerUltimate` restores hold-to-charge input; `Auto Charge Level` sets the
 automatic shot strength. The existing cooldown applies in either mode.
@@ -85,12 +89,18 @@ automatic shot strength. The existing cooldown applies in either mode.
 `Automatic` previews the active build target; the `Editor Preview` field on
 `GameplayControllers` can force Mobile or Desktop during Play Mode and updates the HUD
 immediately. This is not a player setting. Stand in a building zone until its
-progress circle fills to choose a building or upgrade. Use Start Wave to begin
+progress circle fills to choose a building or upgrade. Movement stays available while
+the building panel is open: drive out of the zone to close it without Escape or
+spending credits. Use Start Wave to begin
 combat after the town hall exists. The melee barracks opens at town hall level 2
 and the ranged barracks at level 3; the chosen type stays with that barracks.
 
 Open the building guide from the Main Menu. To see the first-level hints again,
 select **Repeat hints** in the main menu settings and enter Level 01.
+
+Desktop **Settings → Graphics → Screen mode** switches between fullscreen,
+borderless fullscreen, and a window. The choice is saved and applies immediately.
+The default is borderless fullscreen. Building panels have a close button.
 
 **Settings → Graphics** selects standard or simplified lighting and toggles
 normal maps on supported materials. Changes apply when you enter a level.
@@ -150,26 +160,15 @@ coins per reserved cell. Select a
 placed wall and use **Resize wall** to change its length later. Level 1 has one
 Wall point at town hall level 2 and another at level 3.
 
-Spiders can drop cyan slowing pickups. Walk over one to activate slowing shots
-for 12 seconds (up to 24 seconds can be stored). While active, every normal
-shot can slow a surviving enemy to half movement speed for 2.5 seconds. The
-snowflake ring between Pause and the joystick shows the time left. Pickups
-disappear after 12 seconds.
-Destroyers can drop a shield pickup. Collecting it gives 50 shield points for
-12 seconds; another pickup refills the shield and extends the remaining time,
-up to 24 seconds. The snowflake and blue shield rings appear in one HUD row only
-while their effects are active; the row closes gaps automatically. Damage removes
-shield before HP, and either depletion or expiry ends it.
-Shooter enemies can also drop a companion capsule. Collecting one summons an
-automatic turret beside the hero for 18 seconds. Up to two can follow at once;
-another pickup refreshes the one with less time remaining. The companion uses
-the existing projectile targeting and disappears when its time ends or the hero
-dies. Moving glimmers make all three pickup types easier to spot on the ground.
-The in-game effect row shows the active companion count and remaining time.
+Enemy buff drops are disabled. Killing an enemy does not spawn slowing ammo,
+a shield, or a companion capsule. The legacy pickup/effect components and loadout
+data remain in the project, but the wave spawner no longer attaches loot and
+the legacy loot component does not listen for enemy deaths.
+
 The hero passes through enemy colliders, so mobs cannot serve as platforms.
 
 Building panels leave movement available and do not darken the world. Walk out
-of the building zone to dismiss its panel; there is no Close button. A successful
+of the building zone to dismiss its panel, or use its close button. A successful
 build or upgrade also closes the panel and consumes that zone's action for the phase.
 Construction and upgrades share one UI Toolkit build panel. Build choices show
 the role and price; upgrades show current and next-level stats. The current level is shown,
@@ -185,7 +184,7 @@ Base destruction ends the run; clearing the final wave wins.
 
 The blue value above the health bar shows active shield strength, and a
 transparent sphere surrounds the hero while the bonus is active. Shield is
-only gained from pickups; respawning does not restore it.
+not granted by enemy drops; respawning does not restore it.
 
 ### Frame rate and FPS display
 

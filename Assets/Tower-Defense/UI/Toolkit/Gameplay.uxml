@@ -51,7 +51,9 @@
       <ui:Label name="turretEffect" class="effect-chip is-hidden" />
     </ui:VisualElement>
     <ui:VisualElement name="spawnPreview" class="spawn-preview is-hidden" picking-mode="Ignore" />
-    <ui:Button name="startWaveButton" text="НАЧАТЬ ВОЛНУ" class="start-wave-button is-hidden l10n-start-wave" />
+    <ui:Button name="startWaveButton" text="НАЧАТЬ ВОЛНУ" class="start-wave-button is-hidden l10n-start-wave">
+      <ui:Label text="E" class="desktop-key start-wave-key" picking-mode="Ignore" />
+    </ui:Button>
     <ui:VisualElement name="touchControls" class="touch-controls" picking-mode="Ignore">
       <ui:VisualElement name="joystickZone" class="joystick-zone" />
       <ui:VisualElement name="joystick" class="joystick" picking-mode="Ignore">
@@ -92,7 +94,10 @@
             <ui:VisualElement class="action-icon-art rally-icon" picking-mode="Ignore" />
           </ui:VisualElement>
         </ui:VisualElement>
-        <ui:Label text="ЗА МНОЙ" class="action-label l10n-follow" picking-mode="Ignore" />
+        <ui:VisualElement class="desktop-action-caption" picking-mode="Ignore">
+          <ui:Label text="ЗА МНОЙ" class="desktop-action-caption-text l10n-follow" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:Label text="F" class="desktop-key action-key" picking-mode="Ignore" />
       </ui:Button>
       <ui:Button name="desktopHome" class="small-action home-action">
         <ui:VisualElement class="action-disc" picking-mode="Ignore">
@@ -100,21 +105,27 @@
             <ui:VisualElement class="action-icon-art home-icon" picking-mode="Ignore" />
           </ui:VisualElement>
         </ui:VisualElement>
-        <ui:Label text="ТЕЛЕПОРТ" class="action-label l10n-teleport" picking-mode="Ignore" />
+        <ui:VisualElement class="desktop-action-caption" picking-mode="Ignore">
+          <ui:Label text="ТЕЛЕПОРТ" class="desktop-action-caption-text l10n-teleport" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:Label text="T" class="desktop-key action-key" picking-mode="Ignore" />
       </ui:Button>
       <ui:Button name="desktopUltimate" class="ultimate-button">
         <ui:VisualElement class="ultimate-face" picking-mode="Ignore" />
         <ui:VisualElement class="ultimate-ready-halo" picking-mode="Ignore" />
         <ui:Label name="desktopUltimateCharge" class="ultimate-charge" picking-mode="Ignore" />
+        <ui:Label text="Space" class="desktop-key desktop-ultimate-key" picking-mode="Ignore" />
       </ui:Button>
     </ui:VisualElement>
     <ui:VisualElement name="buildPanel" class="side-panel is-hidden" picking-mode="Ignore">
       <ui:Label text="ЧЕРТЕЖИ ПОСТРОЕК" class="panel-overline l10n-blueprints" />
       <ui:Label name="buildHeading" text="ВЫБЕРИТЕ ПОСТРОЙКУ" class="panel-heading l10n-choose-building" />
       <ui:ScrollView name="buildCards" class="build-cards" />
+      <ui:Button name="buildClose" text="×" class="build-close l10n-tip-close" tooltip="Закрыть" />
     </ui:VisualElement>
     <ui:VisualElement name="orderLayer" class="order-layer is-hidden" picking-mode="Ignore">
-      <ui:Label text="ВЫБЕРИТЕ ТОЧКУ ОБОРОНЫ ДЛЯ ОТРЯДА" class="order-instruction l10n-order-instruction" />
+      <ui:Label text="ВЫБЕРИТЕ ТОЧКУ ОБОРОНЫ ДЛЯ ОТРЯДА" class="order-instruction mobile-order-instruction l10n-order-instruction" />
+      <ui:Label text="Стрелки — точка обороны · Enter — подтвердить · B — отряд" class="order-instruction desktop-order-instruction l10n-order-keyboard" />
       <ui:Button name="orderCancel" text="ОТМЕНА" class="order-cancel outcome-button l10n-cancel" />
     </ui:VisualElement>
     <ui:VisualElement name="screenOverlay" class="screen-overlay is-hidden" picking-mode="Ignore">

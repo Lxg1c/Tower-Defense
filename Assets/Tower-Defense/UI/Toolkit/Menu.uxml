@@ -162,6 +162,10 @@
           </ui:VisualElement>
           <ui:VisualElement class="subpage-panel menu-settings-card" picking-mode="Ignore">
             <ui:Label text="Графика" class="subpage-panel-title l10n-graphics-settings" />
+            <ui:VisualElement name="screenModeRow" class="menu-setting-row is-hidden" picking-mode="Ignore">
+              <ui:Label text="Режим экрана" class="menu-setting-label l10n-screen-mode" />
+              <ui:DropdownField name="screenModeDropdown" class="language-dropdown l10n-tip-screen-mode" tooltip="Режим экрана" />
+            </ui:VisualElement>
             <ui:VisualElement name="graphicsQualityRow" class="menu-setting-row is-hidden" picking-mode="Ignore">
               <ui:Label text="Качество" class="menu-setting-label l10n-graphics-quality" picking-mode="Ignore" />
               <ui:DropdownField name="graphicsQualityDropdown" class="language-dropdown l10n-tip-graphics-quality" tooltip="Качество" />

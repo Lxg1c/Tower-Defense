@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
 /// <summary>Screen-space UI Toolkit view over the existing gameplay controllers.</summary>
@@ -107,6 +108,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private Slider musicSlider;
     private Slider effectsSlider;
     private bool audioOpen;
+    private VisualElement keyboardPanel;
     private bool ultimatePointerHeld;
     private int lastModalRevision = -1;
     private bool bound;
@@ -248,6 +250,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         desktopUltimate.Insert(1, desktopUltimateRing);
 
         root.Q<Button>("pauseButton").clicked += pauseMenu.Pause;
+        root.Q<Button>("buildClose").clicked += buildModal.Close;
         root.Q<Button>("resumeButton").clicked += pauseMenu.Resume;
         root.Q<Button>("pauseSettings").clicked += OpenAudio;
         root.Q<Button>("audioBack").clicked += CloseAudio;
@@ -282,6 +285,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         joystickZone.RegisterCallback<PointerCaptureOutEvent>(LostMoveCapture);
         if (root.Q("gameRoot") is { } gameRoot)
         {
+            gameRoot.EnableInClassList("desktop-hud", responsiveHud.UseDesktopLayout());
             gameRoot.RegisterCallback<GeometryChangedEvent>(ResizeJoystick);
             FitJoystick(joystick, gameRoot.layout.size);
         }
@@ -333,6 +337,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         if (!bound) return;
         buildModal.onOpened.RemoveListener(RefreshBuildCards);
         buildModal.onClosed.RemoveListener(ClearBuildCards);
+        root.Q<Button>("buildClose").clicked -= buildModal.Close;
         GameAudioSettings.Changed -= RefreshAudio;
         GamePerformanceSettings.Changed -= RefreshFps;
         GameLocalization.Changed -= RefreshLanguage;
@@ -363,6 +368,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
         ResetMove();
         if (healthBars != null) healthBars.SetPresentationRoot(null);
         movement.ClearToolkitMoveInput();
+        movement.KeyboardInputBlocked = false;
+        keyboardPanel = null;
         if (ultimatePointerHeld) ultimate.Release();
         bound = false;
     }
@@ -379,9 +386,13 @@ public sealed class GameplayToolkitView : MonoBehaviour
         if (!bound) return;
         if (benchmarkMode)
         {
+            if (responsiveHud.IsDesktopLayout && Keyboard.current?.escapeKey.wasPressedThisFrame == true)
+                defeat.GoToMainMenu();
             UpdateBenchmark();
             return;
         }
+        bool desktop = responsiveHud.IsDesktopLayout;
+        if (desktop) ReadDesktopShortcuts();
         if (GamePerformanceSettings.ShowFps)
         {
             fpsElapsed += Time.unscaledDeltaTime;
@@ -421,7 +432,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
         coreAlert.EnableInClassList("is-hidden", !coreWarningVisible);
         fpsLabel.EnableInClassList("fps-below-core-warning", coreWarningVisible);
         fpsLabel.EnableInClassList("is-hidden", !GamePerformanceSettings.ShowFps || modal);
-        bool desktop = responsiveHud.IsDesktopLayout;
+        movement.KeyboardInputBlocked = desktop && (order || paused || won || lost);
+        root.Q("gameRoot").EnableInClassList("desktop-hud", desktop);
         root.Q("topBar").EnableInClassList("is-hidden", order || won || lost);
         root.Q("effectRow").EnableInClassList("is-hidden", order || won || lost);
         bool hideTouchControls = desktop || order || paused || won || lost;
@@ -513,7 +525,78 @@ public sealed class GameplayToolkitView : MonoBehaviour
             UpdateOutcomeStats(defeatPanel);
         }
         if (buildModal.IsOpen && buildModal.Revision != lastModalRevision) RefreshBuildCards();
+        if (desktop)
+            FocusKeyboardPanel(DesktopPanel(won, lost, paused, confirmingExit, modal && !order));
         UpdateSpawnPreview(spawner.IsBuildPhase && !order && !paused && !modal && !won && !lost, desktop);
+    }
+
+    private VisualElement DesktopPanel(bool won, bool lost, bool paused, bool confirmingExit, bool modal)
+    {
+        if (performanceReportOpen) return performancePanel;
+        if (won) return victoryPanel;
+        if (lost) return defeatPanel;
+        if (confirmingExit) return exitConfirmPanel;
+        if (paused) return audioOpen ? audioPanel : pausePanel;
+        return modal ? buildPanel : null;
+    }
+
+    private void FocusKeyboardPanel(VisualElement panel)
+    {
+        if (panel == keyboardPanel) return;
+        if (panel == null && keyboardPanel?.focusController?.focusedElement is VisualElement focused)
+            focused.Blur();
+        keyboardPanel = panel;
+        if (panel == null) return;
+        panel.schedule.Execute(() =>
+        {
+            if (keyboardPanel != panel) return;
+            panel.Query<Button>().Where(button => button.enabledInHierarchy &&
+                button.resolvedStyle.display != DisplayStyle.None).First()?.Focus();
+        });
+    }
+
+    private void ReadDesktopShortcuts()
+    {
+        var keyboard = Keyboard.current;
+        if (keyboard == null || LevelLoadingScreen.IsLoading) return;
+        if (keyboard.escapeKey.wasPressedThisFrame)
+        {
+            if (performanceReportOpen) ClosePerformanceReport();
+            else if (pauseMenu.IsConfirmingExit) pauseMenu.CancelExit();
+            else if (pauseMenu.IsPaused && audioOpen) CloseAudio();
+            else if (pauseMenu.IsPaused) pauseMenu.Resume();
+            else if (orders.IsOrderModeActive) orders.CancelOrder();
+            else if (buildModal.IsOpen) buildModal.Close();
+            else pauseMenu.Pause();
+            return;
+        }
+        if (pauseMenu.IsPaused || performanceReportOpen ||
+            spawner.CurrentPhase is WaveSpawner.Phase.AllCompleted or WaveSpawner.Phase.Defeated) return;
+        if (orders.IsOrderModeActive)
+        {
+            orders.ReadKeyboardOrder(keyboard);
+            return;
+        }
+        if (buildModal.IsOpen)
+        {
+            var offers = buildModal.ActiveOffers;
+            for (int index = 0; index < Mathf.Min(offers.Count, 9); index++)
+            {
+                if (!keyboard[(Key)((int)Key.Digit1 + index)].wasPressedThisFrame) continue;
+                offers[index].Activate();
+                break;
+            }
+            return;
+        }
+        if (playerHealth.IsGhost) return;
+        orders.ReadKeyboardOrder(keyboard);
+        if (orders.IsOrderModeActive) return;
+        if (keyboard.eKey.wasPressedThisFrame && spawner.IsBuildPhase && Base.Instance != null)
+            spawner.StartNextWave();
+        if (keyboard.tKey.wasPressedThisFrame && teleport.gameObject.activeInHierarchy && spawner.IsBuildPhase)
+            teleport.TeleportToHome();
+        if (keyboard.fKey.wasPressedThisFrame && !levelSetup.IsFirstLocation)
+            AllyCommand.ToggleFollowPlayer();
     }
 
     private void UpdateOutcomeStats(VisualElement panel)
@@ -732,8 +815,9 @@ public sealed class GameplayToolkitView : MonoBehaviour
                 "desktopUltimateCharge");
         }
 
-        gameRoot?.EnableInClassList("editor-hud-preview-desktop",
-            responsiveHud == null || responsiveHud.UseDesktopLayout());
+        bool desktop = responsiveHud == null || responsiveHud.UseDesktopLayout();
+        gameRoot?.EnableInClassList("editor-hud-preview-desktop", desktop);
+        gameRoot?.EnableInClassList("desktop-hud", desktop);
     }
 
     private static void AddEditorUltimatePreview(Button button, string ringName, string labelName)
@@ -850,6 +934,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
         Vector2 center = new(width * 0.5f, height * 0.5f);
         Rect actions = (desktop ? desktopActions : touchActions).worldBound;
         Rect stick = desktop ? default : joystick.worldBound;
+        Rect startWave = desktop && !startWaveButton.ClassListContains("is-hidden")
+            ? startWaveButton.worldBound : default;
         foreach (SpawnMarker marker in spawnMarkers)
         {
             if (marker.Point == null)
@@ -873,6 +959,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
                 float limit = height - previewHeight - 124f;
                 if (!desktop && left < stick.xMax) limit = Mathf.Min(limit, stick.yMin - previewHeight - 8f);
                 if (left + marker.PreviewWidth > actions.xMin) limit = Mathf.Min(limit, actions.yMin - previewHeight - 8f);
+                if (startWave.width > 0 && left < startWave.xMax && left + marker.PreviewWidth > startWave.xMin)
+                    limit = Mathf.Min(limit, startWave.yMin - previewHeight - 8f);
                 marker.Visible.style.left = left;
                 marker.Visible.style.top = Mathf.Clamp(target.y - previewHeight - 12f, 112f, Mathf.Max(112f, limit));
             }
@@ -888,6 +976,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
                 float limit = height - 148f;
                 if (!desktop && edgePosition.x - 40f < stick.xMax) limit = Mathf.Min(limit, stick.yMin - 56f);
                 if (edgePosition.x + 40f > actions.xMin) limit = Mathf.Min(limit, actions.yMin - 56f);
+                if (startWave.width > 0 && edgePosition.x + 40f > startWave.xMin && edgePosition.x - 40f < startWave.xMax)
+                    limit = Mathf.Min(limit, startWave.yMin - 56f);
                 marker.Edge.style.left = edgePosition.x - SpawnBadgeRadius;
                 marker.Edge.style.top = Mathf.Clamp(edgePosition.y, 142f, Mathf.Max(142f, limit)) - SpawnBadgeRadius;
                 Vector3 offset = marker.Point.position - movement.transform.position;
@@ -1007,6 +1097,12 @@ public sealed class GameplayToolkitView : MonoBehaviour
             }
             var action = new Button(source.Activate) { tooltip = source.ActionText };
             action.AddToClassList("build-action");
+            if (responsiveHud.IsDesktopLayout && displayedCards <= 9)
+            {
+                var key = new Label(displayedCards.ToString());
+                key.AddToClassList("build-key");
+                action.Add(key);
+            }
             var actionLabel = new Label(source.ActionText);
             actionLabel.AddToClassList("build-action-label");
             action.Add(actionLabel);

@@ -7,6 +7,9 @@ public static class GamePerformanceSettings
 {
     public enum LightingMode { Standard, Simple }
     public enum AndroidQuality { High, Balanced, Low }
+    public enum WindowMode { Fullscreen, Borderless, Windowed }
+    internal const string WindowModeKey = "Display.WindowMode";
+    internal static WindowMode DesktopWindowMode { get; private set; } = WindowMode.Borderless;
 
     public const string ShowFpsKey = "Display.ShowFPS";
     public const string LightingKey = "Display.Lighting";
@@ -46,6 +49,7 @@ public static class GamePerformanceSettings
         ShowFps = PlayerPrefs.GetInt(ShowFpsKey, 0) != 0;
         LoadGraphicsPreferences();
         ApplyAndroidQuality();
+        ApplyWindowMode();
         Application.quitting += RestoreRenderScale;
         QualitySettings.vSyncCount = 0;
         OnDemandRendering.renderFrameInterval = 1;
@@ -58,6 +62,9 @@ public static class GamePerformanceSettings
         Lighting = PlayerPrefs.GetInt(LightingKey) == (int)LightingMode.Simple
             ? LightingMode.Simple : LightingMode.Standard;
         NormalMaps = PlayerPrefs.GetInt(NormalMapsKey, 1) != 0;
+        int windowMode = PlayerPrefs.GetInt(WindowModeKey, (int)WindowMode.Borderless);
+        DesktopWindowMode = windowMode >= 0 && windowMode <= (int)WindowMode.Windowed
+            ? (WindowMode)windowMode : WindowMode.Borderless;
         int quality = PlayerPrefs.GetInt(AndroidQualityKey, (int)AndroidQuality.High);
         MobileQuality = quality >= 0 && quality < AndroidQualityNames.Length ? (AndroidQuality)quality : AndroidQuality.High;
         RenderScalePercent = Mathf.Clamp(PlayerPrefs.GetInt(AndroidRenderScaleKey, DefaultRenderScalePercent),
@@ -71,6 +78,30 @@ public static class GamePerformanceSettings
         MobileQuality = quality;
         PlayerPrefs.SetInt(AndroidQualityKey, (int)quality);
         PlayerPrefs.Save();
+    }
+
+    internal static void SetWindowMode(WindowMode mode)
+    {
+        if ((uint)mode > (uint)WindowMode.Windowed) throw new ArgumentOutOfRangeException(nameof(mode));
+        DesktopWindowMode = mode;
+        PlayerPrefs.SetInt(WindowModeKey, (int)mode);
+        PlayerPrefs.Save();
+        ApplyWindowMode();
+    }
+
+    private static void ApplyWindowMode()
+    {
+#if UNITY_STANDALONE && !UNITY_EDITOR
+        var display = Screen.currentResolution;
+        var mode = DesktopWindowMode switch
+        {
+            WindowMode.Fullscreen => FullScreenMode.ExclusiveFullScreen,
+            WindowMode.Windowed => FullScreenMode.Windowed,
+            _ => FullScreenMode.FullScreenWindow
+        };
+        float size = DesktopWindowMode == WindowMode.Windowed ? 0.8f : 1f;
+        Screen.SetResolution(Mathf.RoundToInt(display.width * size), Mathf.RoundToInt(display.height * size), mode);
+#endif
     }
 
     internal static void ApplyAndroidQuality()

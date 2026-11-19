@@ -19,6 +19,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector2       moveInput;
     private bool          toolkitJoystickActive;
     private Vector2       toolkitMoveInput;
+    internal bool KeyboardInputBlocked { get; set; }
 
     public void SetToolkitMoveInput(Vector2 input)
     {
@@ -57,16 +58,19 @@ public class PlayerMovement : MonoBehaviour
 
         if (Keyboard.current == null) return;
         Keyboard keyboard = Keyboard.current;
-        float horizontal = (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed ? 1f : 0f)
-            - (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed ? 1f : 0f);
-        float vertical = (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed ? 1f : 0f)
-            - (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed ? 1f : 0f);
-        Vector2 keys = new(horizontal, vertical);
-        if (keys.sqrMagnitude > 0f)
-            moveInput = keys.normalized;
+        if (!KeyboardInputBlocked)
+        {
+            float horizontal = (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed ? 1f : 0f)
+                - (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed ? 1f : 0f);
+            float vertical = (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed ? 1f : 0f)
+                - (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed ? 1f : 0f);
+            Vector2 keys = new(horizontal, vertical);
+            if (keys.sqrMagnitude > 0f)
+                moveInput = keys.normalized;
 
-        if (Time.timeScale > 0f && keyboard.spaceKey.wasPressedThisFrame)
-            ultimate?.BeginCharge();
+            if (Time.timeScale > 0f && keyboard.spaceKey.wasPressedThisFrame)
+                ultimate?.BeginCharge();
+        }
         if (keyboard.spaceKey.wasReleasedThisFrame)
             ultimate?.Release();
     }

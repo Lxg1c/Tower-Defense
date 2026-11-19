@@ -381,19 +381,7 @@ public class WaveSpawner : MonoBehaviour
         mob.ConfigureDifficulty(prefab.GetComponent<MobHealth>().MaxHealth * enemyHealthMultiplier,
             enemyDamageMultiplier, enemySpeedMultiplier);
 
-        if (option != null)
-        {
-            if (enemyLoadout == null ||
-                !enemyLoadout.TryGetEntry(option, out var entry))
-                Debug.LogError($"[WaveSpawner] Configure loot for {option.name} in EnemyLoadout.", this);
-            else
-            {
-                var loot = mob.GetComponent<MobLootDrop>();
-                if (loot == null) loot = mob.gameObject.AddComponent<MobLootDrop>();
-                loot.Configure(entry, enemyLoadout.slowAmmoPickupPrefab,
-                    enemyLoadout.shieldPickupPrefab, enemyLoadout.companionPickupPrefab);
-            }
-        }
+        // Enemy buff drops are disabled; pooled enemies do not receive a loot component.
 
         var member = mob.GetComponent<MobPoolMember>();
         if (member == null) member = mob.gameObject.AddComponent<MobPoolMember>();

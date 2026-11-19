@@ -38,6 +38,10 @@ internal static class LocalizationKeys
     internal const string FirepowerBonus = "firepower-bonus";
     internal const string GraphicsSimple = "graphics-simple";
     internal const string GraphicsQuality = "graphics-quality";
+    internal const string ScreenMode = "screen-mode";
+    internal const string ScreenFullscreen = "screen-fullscreen";
+    internal const string ScreenBorderless = "screen-borderless";
+    internal const string ScreenWindowed = "screen-windowed";
     internal const string GraphicsQualityHigh = "graphics-quality-high";
     internal const string GraphicsQualityBalanced = "graphics-quality-balanced";
     internal const string GraphicsQualityLow = "graphics-quality-low";

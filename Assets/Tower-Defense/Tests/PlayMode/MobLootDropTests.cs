@@ -26,7 +26,7 @@ namespace TowerDefense.Tests
         }
 
         [UnityTest]
-        public IEnumerator EachMobDropsExactlyOnePickupWhenChancesTotalOne()
+        public IEnumerator MobDeathsDoNotDropBuffsEvenWhenLegacyChancesTotalOne()
         {
             SlowAmmoPickup slow = Template<SlowAmmoPickup>("Test loot slow template");
             ShieldPickup shield = Template<ShieldPickup>("Test loot shield template");
@@ -51,8 +51,8 @@ namespace TowerDefense.Tests
                 MobHealth health = mob.AddComponent<MobHealth>();
                 mob.AddComponent<MobLootDrop>().Configure(entry, slow, shield, companion);
                 health.TakeDamage(health.MaxHealth);
-                Assert.That(CountDrops(slow, shield, companion), Is.EqualTo(i + 1),
-                    $"Mob {i} should add exactly one pickup.");
+                Assert.That(CountDrops(slow, shield, companion), Is.Zero,
+                    $"Mob {i} must not create a disabled buff pickup.");
             }
             yield return null;
         }

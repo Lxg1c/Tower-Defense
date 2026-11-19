@@ -8,6 +8,35 @@ namespace TowerDefense.Tests
     public sealed class GraphicsPerformanceTests
     {
         [Test]
+        public void DesktopWindowModePersistsAndDefaultsToBorderless()
+        {
+            const string key = GamePerformanceSettings.WindowModeKey;
+            int? saved = PlayerPrefs.HasKey(key) ? PlayerPrefs.GetInt(key) : null;
+            try
+            {
+                PlayerPrefs.DeleteKey(key);
+                GamePerformanceSettings.LoadGraphicsPreferences();
+                Assert.That(GamePerformanceSettings.DesktopWindowMode,
+                    Is.EqualTo(GamePerformanceSettings.WindowMode.Borderless));
+                foreach (var mode in new[] { GamePerformanceSettings.WindowMode.Fullscreen,
+                    GamePerformanceSettings.WindowMode.Windowed, GamePerformanceSettings.WindowMode.Borderless })
+                {
+                    GamePerformanceSettings.SetWindowMode(mode);
+                    GamePerformanceSettings.LoadGraphicsPreferences();
+                    Assert.That(GamePerformanceSettings.DesktopWindowMode, Is.EqualTo(mode));
+                }
+                Assert.Throws<System.ArgumentOutOfRangeException>(() =>
+                    GamePerformanceSettings.SetWindowMode((GamePerformanceSettings.WindowMode)99));
+            }
+            finally
+            {
+                Restore(key, saved);
+                GamePerformanceSettings.LoadGraphicsPreferences();
+                PlayerPrefs.Save();
+            }
+        }
+
+        [Test]
         public void LightingAndNormalMapsAreIndependentAndPersist()
         {
             var lightingKey = GamePerformanceSettings.LightingKey;

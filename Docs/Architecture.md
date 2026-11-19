@@ -197,17 +197,13 @@ Rally button temporarily switches all squads to following the hero and restores
 their own guard/default modes when switched off. A lightweight world ring shows
 the selected barracks and each assigned guard point.
 
-## Timed slowing bonus
+## Disabled enemy buff drops
 
-`EnemyLoadout.asset` holds one entry per enemy option with slow-ammo, shield and
-companion drop chances and durations. The chances are mutually exclusive and
-sum to at most 100%; the remaining probability means no pickup. It also holds
-the shared pickup prefabs. The Spider entry
-currently drops a 12-second slowing bonus at 25% chance. `WaveSpawner` validates the
-table when the level is configured, then configures a
-`MobLootDrop` on each spawned or pooled enemy. The drop subscribes to
-`MobHealth.OnDeathHandled` and creates a standalone pickup before the enemy
-returns to its pool. `SlowAmmoPickup` grants bonus time on player contact.
+Enemy drops are disabled. WaveSpawner no longer attaches or configures MobLootDrop,
+and MobLootDrop no longer subscribes to MobHealth.OnDeathHandled. This also
+prevents drops from old prefabs that still carry the component. Legacy loadout
+chances and pickup/effect components are retained for compatibility; the
+following effect implementations are inactive during normal gameplay.
 
 `SlowAmmoInventory` owns the player's remaining bonus time (capped at 24 seconds).
 While it is active, every normal projectile from the player's `Shooter`
@@ -280,12 +276,15 @@ on completion or disposal. The report stores the settings used for each stage.
 Benchmark mode blocks waves and progression rewards.
 
 `ResponsiveGameplayHud` selects Mobile or Desktop UI Toolkit controls from the
-build target. Editor `Automatic` previews the active build target; the Inspector
-override can switch layouts during Play Mode. `PlayerMovement` accepts WASD/arrow input and
-movement from the UI Toolkit joystick. `PlayerUltimate` owns the input mode: by default, one press
-charges to the configured fraction and fires automatically; `Manual Charge`
-restores press-and-release control. `GameplayToolkitView` routes touch and desktop
-Space input to that rule and places the enemy spawn previews on screen.
+build target. Editor `Automatic` previews the active build target. The Inspector
+override can switch the HUD during Play Mode. The main menu and HUD share the
+desktop platform check and reuse their UXML with desktop layout rules.
+`PlayerMovement` accepts WASD, arrow keys, and movement from the UI Toolkit
+joystick. Space and the HUD button call `PlayerUltimate`, which owns automatic
+and manual charging. `GameplayToolkitView` dispatches desktop HUD shortcuts to
+the same actions as the buttons and routes focus to the current panel. During
+squad orders, `SquadOrderController` moves the order point with the arrow keys
+and validates the route through the same code used for pointer orders.
 
 ## Upgrade data and display
 

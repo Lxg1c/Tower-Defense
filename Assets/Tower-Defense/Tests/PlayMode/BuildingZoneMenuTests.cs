@@ -4,6 +4,8 @@ using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 
 namespace TowerDefense.Tests
 {
@@ -271,6 +273,31 @@ namespace TowerDefense.Tests
             Assert.That(selection.Owner, Is.EqualTo(zone));
         }
 
+        [UnityTest]
+        public IEnumerator KeyboardMovementLeavesBuildZoneWithoutEscapeOrPurchase()
+        {
+            Keyboard previous = Keyboard.current;
+            Keyboard keyboard = InputSystem.AddDevice<Keyboard>();
+            try
+            {
+                int coins = wallet.Coins;
+                Vector3 start = wallet.transform.position;
+                InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.D));
+                for (int i = 0; i < 35; i++) yield return new WaitForFixedUpdate();
+                Assert.That(Vector3.Distance(start, wallet.transform.position), Is.GreaterThan(1.2f));
+                Assert.That(selection.IsOpen, Is.False);
+                Assert.That(selection.Owner, Is.Null);
+                Assert.That(zone.IsBuilt, Is.False);
+                Assert.That(wallet.Coins, Is.EqualTo(coins));
+                InputSystem.QueueStateEvent(keyboard, new KeyboardState());
+                yield return null;
+            }
+            finally
+            {
+                InputSystem.RemoveDevice(keyboard);
+                if (previous != null && previous.added) previous.MakeCurrent();
+            }
+        }
         [UnityTest]
         public IEnumerator ClickAfterLeavingCannotBuildOrSpendBeforeNextZoneUpdate()
         {
