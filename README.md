@@ -102,7 +102,8 @@ Desktop **Settings → Graphics → Screen mode** switches between fullscreen,
 borderless fullscreen, and a window. The choice is saved and applies immediately.
 The default is borderless fullscreen. Building panels have a close button.
 Standalone builds use the Desktop quality profile with the PC render pipeline,
-100% render scale and 4x MSAA. Android keeps its separate mobile quality profiles
+100% render scale and 4x MSAA. The desktop renderer disables SSAO and additional-light
+shadows, and uses two main-light shadow cascades over 32 meters. Android keeps its separate mobile quality profiles
 and render-scale setting.
 
 **Settings → Graphics** selects standard or simplified lighting and toggles
