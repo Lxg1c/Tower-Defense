@@ -8,6 +8,57 @@ namespace TowerDefense.Tests
     public sealed class GraphicsPerformanceTests
     {
         [Test]
+        public void DesktopBuildUsesNativeResolutionAndMsaaWithoutChangingAndroidDefault()
+        {
+            var asset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/QualitySettings.asset").First();
+            var settings = new SerializedObject(asset);
+            var levels = settings.FindProperty("m_QualitySettings");
+            int desktop = Enumerable.Range(0, levels.arraySize).Single(i =>
+                levels.GetArrayElementAtIndex(i).FindPropertyRelative("name").stringValue == "Desktop");
+            var pipeline = levels.GetArrayElementAtIndex(desktop).FindPropertyRelative("customRenderPipeline")
+                .objectReferenceValue;
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(pipeline.name, Is.EqualTo("PC_RPAsset"));
+            Assert.That(new SerializedObject(pipeline).FindProperty("m_RenderScale").floatValue, Is.EqualTo(1f));
+            Assert.That(new SerializedObject(pipeline).FindProperty("m_MSAA").intValue, Is.EqualTo(4));
+            var defaults = settings.FindProperty("m_PerPlatformDefaultQuality");
+            int DefaultFor(string platform) => Enumerable.Range(0, defaults.arraySize)
+                .Select(i => defaults.GetArrayElementAtIndex(i))
+                .Single(p => p.FindPropertyRelative("first").stringValue == platform)
+                .FindPropertyRelative("second").intValue;
+            Assert.That(DefaultFor("Standalone"), Is.EqualTo(desktop));
+            int android = DefaultFor("Android");
+            Assert.That(levels.GetArrayElementAtIndex(android).FindPropertyRelative("name").stringValue,
+                Is.EqualTo("Mobile"));
+        }
+
+        [Test]
+        public void UltimateEffectPreservesMobileAlphaAndAdditiveGlow()
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/Tower-Defense/Prefabs/Effects/UltimateExplosion.prefab");
+            var renderers = prefab.GetComponentsInChildren<ParticleSystemRenderer>(true);
+            Assert.That(renderers, Is.Not.Empty);
+            foreach (var renderer in renderers)
+            foreach (var material in renderer.sharedMaterials)
+            {
+                Assert.That(material.mainTexture, Is.Not.Null, material.name);
+                var importer = (TextureImporter)AssetImporter.GetAtPath(
+                    AssetDatabase.GetAssetPath(material.mainTexture));
+                var android = importer.GetPlatformTextureSettings("Android");
+                Assert.That(importer.DoesSourceTextureHaveAlpha(), Is.True, material.name);
+                Assert.That(android.overridden, Is.True, material.name);
+                Assert.That(android.format, Is.EqualTo(TextureImporterFormat.ETC2_RGBA8), material.name);
+                Assert.That(android.allowsAlphaSplitting, Is.False, material.name);
+                Assert.That(material.GetFloat("_Surface"), Is.EqualTo(1f), material.name);
+                Assert.That(material.GetFloat("_ZWrite"), Is.Zero, material.name);
+                Assert.That(material.GetFloat("_SoftParticlesEnabled"), Is.Zero, material.name);
+                if (material.name.EndsWith("_ADD"))
+                    Assert.That(material.GetFloat("_DstBlend"),
+                        Is.EqualTo((float)UnityEngine.Rendering.BlendMode.One), material.name);
+            }
+        }
+        [Test]
         public void DesktopWindowModePersistsAndDefaultsToBorderless()
         {
             const string key = GamePerformanceSettings.WindowModeKey;
