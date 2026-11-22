@@ -1,16 +1,26 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(AudioSource))]
 public class BackgroundMusic : MonoBehaviour
 {
+    private const float FadeSeconds = 1.1f;
+
     public static BackgroundMusic Instance { get; private set; }
 
     [SerializeField] private AudioClip musicClip;
+    [SerializeField] private AudioClip combatClip;
     [SerializeField, Range(0f, 1f)] private float volume = 0.5f;
+    [SerializeField, Range(0f, 1f)] private float combatVolume = 0.28f;
     [SerializeField] private bool playOnAwake = true;
 
-    private AudioSource audioSource;
+    private AudioSource calmSource;
+    private AudioSource combatSource;
+    private WaveSpawner spawner;
+    private bool playing;
+    private bool inCombat;
+    private float combatMix;
 
     private void Awake()
     {
@@ -23,8 +33,10 @@ public class BackgroundMusic : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        audioSource = GetComponent<AudioSource>();
-        ConfigureSource();
+        calmSource = GetComponent<AudioSource>();
+        combatSource = gameObject.AddComponent<AudioSource>();
+        ConfigureSource(calmSource, musicClip);
+        ConfigureSource(combatSource, combatClip);
     }
 
     private void Start()
@@ -37,23 +49,82 @@ public class BackgroundMusic : MonoBehaviour
     {
         if (Instance != this) return;
         GameAudioSettings.Changed += ApplyVolume;
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
         ApplyVolume();
     }
 
-    private void OnDisable() => GameAudioSettings.Changed -= ApplyVolume;
+    private void OnDisable()
+    {
+        GameAudioSettings.Changed -= ApplyVolume;
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        UnbindSpawner();
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (mode != LoadSceneMode.Single) return;
+        UnbindSpawner();
+        spawner = WaveSpawner.Instance;
+        if (spawner != null && spawner.gameObject.scene == scene)
+        {
+            spawner.onBuildPhaseStarted.AddListener(OnBuildStarted);
+            spawner.onCombatPhaseStarted.AddListener(OnCombatStarted);
+            spawner.onAllWavesCompleted.AddListener(OnCombatEnded);
+            spawner.onDefeated.AddListener(OnCombatEnded);
+        }
+        else
+        {
+            spawner = null;
+        }
+        SetCombat(spawner != null && spawner.IsCombatPhase);
+    }
+
+    private void UnbindSpawner()
+    {
+        if (spawner == null) return;
+        spawner.onBuildPhaseStarted.RemoveListener(OnBuildStarted);
+        spawner.onCombatPhaseStarted.RemoveListener(OnCombatStarted);
+        spawner.onAllWavesCompleted.RemoveListener(OnCombatEnded);
+        spawner.onDefeated.RemoveListener(OnCombatEnded);
+        spawner = null;
+    }
+
+    private void OnBuildStarted(int wave, int total, int reward) => SetCombat(false);
+
+    private void OnCombatStarted(int wave, int total, int reward) => SetCombat(true);
+
+    private void OnCombatEnded() => SetCombat(false);
+
+    private void SetCombat(bool active)
+    {
+        bool useCombat = active && combatClip != null;
+        if (inCombat == useCombat) return;
+        inCombat = useCombat;
+        if (!playing) return;
+
+        PlaySource(inCombat ? combatSource : calmSource);
+        if (combatMix == (inCombat ? 1f : 0f))
+            (inCombat ? calmSource : combatSource).Stop();
+    }
+
+    private void Update()
+    {
+        if (!playing) return;
+        float target = inCombat ? 1f : 0f;
+        if (combatMix == target) return;
+
+        combatMix = Mathf.MoveTowards(combatMix, target, Time.unscaledDeltaTime / FadeSeconds);
+        ApplyVolume();
+        if (combatMix == target)
+            (inCombat ? calmSource : combatSource).Stop();
+    }
 
     private void ApplyVolume()
     {
-        if (audioSource != null) audioSource.volume = volume * GameAudioSettings.Master * GameAudioSettings.Music;
-    }
-
-    private void OnValidate()
-    {
-        if (audioSource == null)
-            audioSource = GetComponent<AudioSource>();
-
-        if (audioSource != null)
-            ConfigureSource();
+        float gain = GameAudioSettings.Master * GameAudioSettings.Music;
+        calmSource.volume = gain * volume * (1f - combatMix);
+        combatSource.volume = gain * combatVolume * combatMix;
     }
 
     private void OnDestroy()
@@ -64,28 +135,33 @@ public class BackgroundMusic : MonoBehaviour
 
     public void Play()
     {
-        if (audioSource == null)
-            audioSource = GetComponent<AudioSource>();
-
-        ConfigureSource();
-
-        if (audioSource.clip != null && !audioSource.isPlaying)
-            audioSource.Play();
+        if (Instance != this || playing) return;
+        playing = true;
+        combatMix = inCombat ? 1f : 0f;
+        ApplyVolume();
+        PlaySource(inCombat ? combatSource : calmSource);
     }
 
     public void Stop()
     {
-        if (audioSource != null)
-            audioSource.Stop();
+        if (Instance != this) return;
+        playing = false;
+        calmSource.Stop();
+        combatSource.Stop();
     }
 
-    private void ConfigureSource()
+    private static void PlaySource(AudioSource source)
     {
-        audioSource.clip = musicClip;
-        audioSource.ignoreListenerVolume = true;
-        ApplyVolume();
-        audioSource.loop = true;
-        audioSource.playOnAwake = false;
-        audioSource.spatialBlend = 0f;
+        if (source.clip != null && !source.isPlaying)
+            source.Play();
+    }
+
+    private static void ConfigureSource(AudioSource source, AudioClip clip)
+    {
+        source.clip = clip;
+        source.ignoreListenerVolume = true;
+        source.loop = true;
+        source.playOnAwake = false;
+        source.spatialBlend = 0f;
     }
 }

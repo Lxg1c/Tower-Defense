@@ -35,6 +35,30 @@ namespace TowerDefense.Tests
         };
 
         [Test]
+        public void PlayableScenesShareBothStreamingMusicTracks()
+        {
+            foreach (string path in ScenePaths)
+            {
+                var scene = EditorSceneManager.OpenPreviewScene(path);
+                try
+                {
+                    var music = scene.GetRootGameObjects()
+                        .SelectMany(root => root.GetComponentsInChildren<BackgroundMusic>(true)).Single();
+                    var config = new SerializedObject(music);
+                    var calm = (AudioClip)config.FindProperty("musicClip").objectReferenceValue;
+                    var combat = (AudioClip)config.FindProperty("combatClip").objectReferenceValue;
+                    Assert.That(calm, Is.Not.Null, path);
+                    Assert.That(combat, Is.Not.Null, path);
+                    Assert.That(calm.name, Is.EqualTo("BuildAndMenuTheme"), path);
+                    Assert.That(combat.name, Is.EqualTo("CombatTheme"), path);
+                    Assert.That(calm.loadType, Is.EqualTo(AudioClipLoadType.Streaming), path);
+                    Assert.That(combat.loadType, Is.EqualTo(AudioClipLoadType.Streaming), path);
+                }
+                finally { EditorSceneManager.ClosePreviewScene(scene); }
+            }
+        }
+
+        [Test]
         public void PlayableScenesUseToolkitWithoutCanvas()
         {
             var panel = AssetDatabase.LoadAssetAtPath<PanelSettings>(

@@ -527,10 +527,11 @@ licenses for third-party assets and packages.
 
 ### Main menu and sound
 
-The home screen opens level selection, audio settings, or exits the game. Music and
-sound effects have separate sliders (0–100%). Changes apply immediately and persist
-in PlayerPrefs. Music uses BackgroundMusic; other AudioSources follow the effects
-volume. Back returns to the home screen.
+The home screen opens level selection, audio settings, or exits the game. Master,
+music and sound effects have separate sliders (0–100%). Changes apply immediately
+and persist in PlayerPrefs. The same calm music plays in the menu and preparation
+phase. Starting a wave crossfades to the combat loop. Clearing the wave or ending
+the run returns to the calm loop. Back returns to the home screen.
 
 During gameplay, Pause offers Resume, Settings, Restart and Main Menu. Audio
 settings work while paused and share the saved music/effects volumes with the
