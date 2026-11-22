@@ -103,6 +103,9 @@ internal static class LocalizationKeys
     internal const string PerfBenchmarkScope = "perf-benchmark-scope";
     internal const string PerfBenchmarkStage = "perf-benchmark-stage";
     internal const string PerfProfileBaseline = "perf-profile-baseline";
+    internal const string PerfProfileCombat = "perf-profile-combat";
+    internal const string PerfCombatWorkload = "perf-combat-workload";
+    internal const string PerfDefenseStage = "perf-defense-stage";
     internal const string PerfProfileNoSsao = "perf-profile-no-ssao";
     internal const string PerfProfileNoShadows = "perf-profile-no-shadows";
     internal const string PerfProfileReducedScale = "perf-profile-reduced-scale";

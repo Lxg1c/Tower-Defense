@@ -35,7 +35,6 @@ Transform:
   m_LocalScale: {x: 1.1, y: 1.1, z: 1.1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1363712725896235592}
   - {fileID: 1498179519714404686}
   - {fileID: 3429764092774947039}
   m_Father: {fileID: 0}
@@ -128,6 +127,8 @@ MonoBehaviour:
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
+  turretPivot: {fileID: 7844500805772396130}
+  turnSpeed: 360
   muzzle: {fileID: 1363712725896235592}
   shellPrefab: {fileID: 162378168565305158, guid: a28832112a8099f4584dfe881d102ee7, type: 3}
 --- !u!114 &2023810233855498754
@@ -460,7 +461,8 @@ Transform:
   m_LocalPosition: {x: -0, y: 0.010411723, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1363712725896235592}
   m_Father: {fileID: 5203336724292362012}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8206513160796530696
@@ -518,10 +520,10 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8563516396899023280}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.4, z: 0.55}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0.7071069, y: -0.00000008429368, z: -0.00000008429371, w: 0.70710665}
+  m_LocalPosition: {x: -3.6530157e-10, y: 0.0009045098, z: 0.0015321849}
+  m_LocalScale: {x: 0.013888888, y: 0.01388889, z: 0.01388889}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2742061376191096945}
+  m_Father: {fileID: 5260695601215262917}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

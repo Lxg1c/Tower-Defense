@@ -1023,6 +1023,26 @@ MonoBehaviour:
     m_Key: close
     m_Metadata:
       m_Items: []
+  - m_Id: 3181361471938560
+    m_Key: perf-profile-combat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3181361576796160
+    m_Key: perf-defense-stage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3181361576796161
+    m_Key: perf-combat-workload
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3188683682340864
+    m_Key: graphics-ssao
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3188683766226944
+    m_Key: tip-graphics-ssao
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

@@ -14,6 +14,7 @@ public static class GamePerformanceSettings
     public const string ShowFpsKey = "Display.ShowFPS";
     public const string LightingKey = "Display.Lighting";
     public const string NormalMapsKey = "Display.NormalMaps";
+    internal const string AmbientOcclusionKey = "Display.SSAO";
     internal const string AndroidQualityKey = "Display.AndroidQuality";
     internal const string AndroidRenderScaleKey = "Display.AndroidRenderScale";
     internal const int MinRenderScalePercent = 50;
@@ -22,9 +23,12 @@ public static class GamePerformanceSettings
     private static readonly string[] AndroidQualityNames = { "Mobile", "Mobile Balanced", "Mobile Low" };
     private static UniversalRenderPipelineAsset scaledPipeline;
     private static float originalScale;
+    private static bool? ambientOcclusionPreference;
     public static bool ShowFps { get; private set; }
     public static LightingMode Lighting { get; private set; }
     public static bool NormalMaps { get; private set; } = true;
+    internal static bool AmbientOcclusion => ambientOcclusionPreference ??
+        (SupportsAndroidQuality && MobileQuality == AndroidQuality.High);
     internal static AndroidQuality MobileQuality { get; private set; }
     internal static int RenderScalePercent { get; private set; } = DefaultRenderScalePercent;
     internal static bool SupportsAndroidQuality =>
@@ -62,6 +66,12 @@ public static class GamePerformanceSettings
         Lighting = PlayerPrefs.GetInt(LightingKey) == (int)LightingMode.Simple
             ? LightingMode.Simple : LightingMode.Standard;
         NormalMaps = PlayerPrefs.GetInt(NormalMapsKey, 1) != 0;
+        ambientOcclusionPreference = PlayerPrefs.GetInt(AmbientOcclusionKey, -1) switch
+        {
+            0 => false,
+            1 => true,
+            _ => null
+        };
         int windowMode = PlayerPrefs.GetInt(WindowModeKey, (int)WindowMode.Borderless);
         DesktopWindowMode = windowMode >= 0 && windowMode <= (int)WindowMode.Windowed
             ? (WindowMode)windowMode : WindowMode.Borderless;
@@ -133,6 +143,39 @@ public static class GamePerformanceSettings
         RenderScalePercent = Mathf.Clamp(percent, MinRenderScalePercent, MaxRenderScalePercent);
         PlayerPrefs.SetInt(AndroidRenderScaleKey, RenderScalePercent);
         PlayerPrefs.Save();
+    }
+
+    internal static void SetAmbientOcclusion(bool enabled)
+    {
+        ambientOcclusionPreference = enabled;
+        PlayerPrefs.SetInt(AmbientOcclusionKey, enabled ? 1 : 0);
+        PlayerPrefs.Save();
+    }
+
+    internal static bool ApplyAmbientOcclusion(UniversalAdditionalCameraData camera, bool enabled)
+    {
+        if (camera == null || GraphicsSettings.currentRenderPipeline is not UniversalRenderPipelineAsset pipeline)
+            return false;
+
+        int index = FindAmbientOcclusionRenderer(pipeline, enabled);
+        if (index < 0)
+            return false;
+
+        camera.SetRenderer(index);
+        return enabled;
+    }
+
+    internal static int FindAmbientOcclusionRenderer(UniversalRenderPipelineAsset pipeline, bool enabled)
+    {
+        var renderers = pipeline.rendererDataList;
+        for (int index = 0; index < renderers.Length; index++)
+        {
+            if (renderers[index] != null &&
+                renderers[index].TryGetRendererFeature(out ScreenSpaceAmbientOcclusion feature) &&
+                feature.isActive == enabled)
+                return index;
+        }
+        return -1;
     }
 
     private static void RestoreRenderScale()

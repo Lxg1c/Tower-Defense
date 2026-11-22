@@ -1,5 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
   <ui:Style src="Menu.uss" />
+  <ui:Style src="Motion.uss" />
   <ui:VisualElement name="menuRoot" class="menu-root campaign-open" picking-mode="Ignore">
     <ui:VisualElement class="menu-shade" picking-mode="Ignore" />
     <ui:VisualElement class="menu-shell" picking-mode="Ignore">
@@ -189,6 +190,12 @@
             <ui:VisualElement class="menu-setting-row" picking-mode="Ignore">
               <ui:Label text="Карты нормалей" class="menu-setting-label l10n-graphics-normals" />
               <ui:Button name="normalMapsToggle" tooltip="Карты нормалей" class="menu-fps-switch l10n-tip-graphics-normals">
+                <ui:VisualElement class="menu-fps-track" picking-mode="Ignore"><ui:VisualElement class="menu-fps-knob" picking-mode="Ignore" /></ui:VisualElement>
+              </ui:Button>
+            </ui:VisualElement>
+            <ui:VisualElement class="menu-setting-row" picking-mode="Ignore">
+              <ui:Label text="Затенение (SSAO)" class="menu-setting-label l10n-graphics-ssao" />
+              <ui:Button name="ambientOcclusionToggle" tooltip="Мягкое затенение в углах и на стыках" class="menu-fps-switch l10n-tip-graphics-ssao">
                 <ui:VisualElement class="menu-fps-track" picking-mode="Ignore"><ui:VisualElement class="menu-fps-knob" picking-mode="Ignore" /></ui:VisualElement>
               </ui:Button>
             </ui:VisualElement>

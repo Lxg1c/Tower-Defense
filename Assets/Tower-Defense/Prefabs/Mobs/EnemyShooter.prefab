@@ -85,7 +85,7 @@ NavMeshAgent:
   m_Radius: 1.51
   m_Speed: 1.7600001
   m_Acceleration: 12
-  avoidancePriority: 50
+  avoidancePriority: 65
   m_AngularSpeed: 120
   m_StoppingDistance: 0
   m_AutoTraverseOffMeshLink: 1
@@ -133,7 +133,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 7
   fireRate: 1
-  attackRange: 12
+  attackRange: 15
   projectilePrefab: {fileID: 2491343143989108405, guid: d2fd2cf53f87d3749987c517c35bfdc7, type: 3}
   firePoint: {fileID: 236214221977401056}
   obstacleMask:
@@ -166,7 +166,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b11f77ae3a1fe0449a616e5330105823, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  awarenessRadius: 30
+  formationRole: 2
+  awarenessRadius: 43
+  playerAggroRadius: 8
   refreshInterval: 0.5
   targetSelectorRef: {fileID: -7600653012223684338}
   combatBehaviorRef: {fileID: 1478087958002418405}
@@ -185,7 +187,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   threatMask:
     serializedVersion: 2
-    m_Bits: 4872
+    m_Bits: 5888
   maxCandidates: 32
   logSelections: 0
 --- !u!135 &7349995503806379566

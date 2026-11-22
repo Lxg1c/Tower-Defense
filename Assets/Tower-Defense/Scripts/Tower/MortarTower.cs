@@ -10,6 +10,8 @@ public sealed class MortarTower : MonoBehaviour
     [SerializeField, Min(0.1f)] private float splashRadius = 2.5f;
     [SerializeField, Min(0.01f)] private float flightDuration = 0.7f;
     [SerializeField] private LayerMask enemyMask;
+    [SerializeField] private Transform turretPivot;
+    [SerializeField, Min(1f)] private float turnSpeed = 360f;
     [SerializeField] private Transform muzzle;
     [SerializeField] private MortarShell shellPrefab;
 
@@ -23,25 +25,39 @@ public sealed class MortarTower : MonoBehaviour
     private void Awake()
     {
         detection = GetComponent<DetectionZone>();
-        if (muzzle == null || shellPrefab == null || enemyMask.value == 0)
+        if (turretPivot == null || muzzle == null || shellPrefab == null || enemyMask.value == 0)
         {
-            Debug.LogError("[MortarTower] Assign a muzzle, MortarShell prefab, and enemy mask.", this);
+            Debug.LogError("[MortarTower] Assign a turret pivot, muzzle, MortarShell prefab, and enemy mask.", this);
             enabled = false;
         }
     }
 
     private void Update()
     {
-        if (Time.time < nextShotTime)
-            return;
-
         Damageable target = detection.GetClosest();
         if (target == null)
             return;
 
         Vector3 landing = target.transform.position;
-        MortarShell shell = Instantiate(shellPrefab, muzzle.position, Quaternion.identity);
-        shell.Launch(landing, damage, splashRadius, flightDuration, enemyMask);
+        Vector3 direction = Vector3.ProjectOnPlane(landing - turretPivot.position, Vector3.up);
+        if (direction.sqrMagnitude > .0001f)
+        {
+            Quaternion aim = Quaternion.LookRotation(direction);
+            turretPivot.rotation = Quaternion.RotateTowards(turretPivot.rotation, aim, turnSpeed * Time.deltaTime);
+            if (Quaternion.Angle(turretPivot.rotation, aim) > .1f)
+                return;
+        }
+
+        if (Time.time < nextShotTime)
+            return;
+
+        Vector3 barrelForward = Vector3.ProjectOnPlane(muzzle.forward, Vector3.up).normalized;
+        float forwardDistance = Vector3.Dot(landing - muzzle.position, barrelForward);
+        if (forwardDistance < .05f)
+            landing += barrelForward * (.05f - forwardDistance);
+
+        MortarShell shell = Instantiate(shellPrefab, muzzle.position, muzzle.rotation);
+        shell.Launch(landing, damage, splashRadius, flightDuration, enemyMask, transform, followMuzzleAngle: true);
         nextShotTime = Time.time + attackInterval;
     }
 }

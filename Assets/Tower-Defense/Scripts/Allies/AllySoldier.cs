@@ -236,7 +236,7 @@ public class AllySoldier : Damageable
                 return;
 
             Projectile shot = Instantiate(projectilePrefab, firePoint.position, Quaternion.LookRotation(direction));
-            shot.Init(currentTarget, damage);
+            shot.Init(currentTarget, damage, owner: transform);
         }
         else
         {

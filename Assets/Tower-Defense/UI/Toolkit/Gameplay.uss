@@ -449,7 +449,7 @@
   border-bottom-left-radius: 25px; border-bottom-right-radius: 25px;
 }
 .pause-settings {
-  width: 720px; height: 522px; max-width: 94%; max-height: 96%; padding: 19px 29px 24px;
+  width: 720px; height: 558px; max-width: 94%; max-height: 96%; padding: 19px 29px 24px;
   background-color: #102535; border-width: 1.5px; border-color: #5b9ca8; border-radius: 27px;
 }
 .pause-settings-header {
@@ -459,14 +459,18 @@
 .pause-settings-back {
   width: 55px; height: 55px; margin: 0; padding: 0; border-width: 1.5px;
   border-color: #315566; border-radius: 15px; background-color: #162f40;
-  color: #82ece4; font-size: 30px; -unity-font-style: bold; -unity-text-align: middle-center;
+  flex-shrink: 0; align-items: center; justify-content: center;
+}
+.pause-settings-back-icon {
+  width: 54%; height: 54%; -unity-background-scale-mode: scale-to-fit;
+  background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/menu-back-penpot.png");
 }
 .pause-settings-back:hover { background-color: #204457; }
 .pause-settings-title {
   margin: 0 0 0 21px; padding: 0; color: #edf9fb; font-size: 36px; -unity-font-style: bold;
 }
 .pause-volume-row {
-  flex-grow: 1; flex-basis: 0; min-height: 0; padding: 0 6px; justify-content: center;
+  flex-grow: 1; flex-basis: 0; min-height: 0; margin-top: 8px; padding: 0 6px; justify-content: center;
 }
 .pause-volume-caption { flex-direction: row; align-items: center; justify-content: space-between; }
 .pause-settings-label, .pause-volume-value {

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -9,6 +10,7 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class ChargeOrbProjectile : MonoBehaviour
 {
+    [SerializeField, Min(0.01f)] private float collisionRadius = 0.15f;
     private Vector3    direction;
     private float      speed;
     private float      damage;
@@ -50,6 +52,7 @@ public class ChargeOrbProjectile : MonoBehaviour
 
     private void Update()
     {
+        if (hasExploded) return;
         age += Time.deltaTime;
         if (age >= lifetime)
         {
@@ -59,7 +62,8 @@ public class ChargeOrbProjectile : MonoBehaviour
 
         float moveDistance = speed * Time.deltaTime;
         float allowedDistance = moveDistance;
-        if (HitsObstacle(moveDistance, out RaycastHit obstacleHit))
+        bool blocked = HitsObstacle(moveDistance, out RaycastHit obstacleHit);
+        if (blocked)
             allowedDistance = obstacleHit.distance;
 
         if (HitsTarget(allowedDistance, out Vector3 hitPoint))
@@ -69,9 +73,10 @@ public class ChargeOrbProjectile : MonoBehaviour
             return;
         }
 
-        if (allowedDistance < moveDistance)
+        if (blocked)
         {
-            Destroy(gameObject);
+            transform.position = obstacleHit.point + obstacleHit.normal * 0.02f;
+            Explode();
             return;
         }
 
@@ -99,18 +104,16 @@ public class ChargeOrbProjectile : MonoBehaviour
     {
         hasExploded = true;
 
-        // Находим ВСЕХ врагов в радиусе взрыва
-        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, explosionRadius, buffer, hitMask, QueryTriggerInteraction.Collide);
-        
-        // Наносим урон каждому врагу в радиусе
-        for (int i = 0; i < hitCount; i++)
+        Collider[] hits = Physics.OverlapSphere(transform.position, explosionRadius, hitMask,
+            QueryTriggerInteraction.Collide);
+        var damaged = new HashSet<Damageable>();
+        foreach (Collider hit in hits)
         {
-            var d = buffer[i].GetComponentInParent<Damageable>();
-            if (d == null || d == owner) continue;
-            if (!d.IsTargetable) continue;
-            if (!HasLineOfSight(d)) continue;
-            
-            d.TakeDamage(damage);
+            var target = hit.GetComponentInParent<Damageable>();
+            if (target == null || target == owner || !target.IsTargetable || damaged.Contains(target)) continue;
+            if (!HasLineOfSight(target)) continue;
+            damaged.Add(target);
+            target.TakeDamage(damage);
         }
 
         // Спавним визуальный эффект взрыва
@@ -127,20 +130,8 @@ public class ChargeOrbProjectile : MonoBehaviour
     // Опционально: визуализация радиуса взрыва в редакторе
     private bool HitsObstacle(float distance, out RaycastHit hit)
     {
-        if (obstacleMask.value == 0)
-        {
-            hit = default;
-            return false;
-        }
-
-        return Physics.SphereCast(
-            transform.position,
-            GetCollisionRadius(),
-            direction,
-            out hit,
-            distance,
-            obstacleMask,
-            QueryTriggerInteraction.Ignore);
+        return ProjectileObstacles.Cast(transform.position, GetCollisionRadius(), direction, distance,
+            owner != null ? owner.transform : null, null, transform, out hit, obstacleMask);
     }
 
     private bool HitsTarget(float distance, out Vector3 hitPoint)
@@ -179,12 +170,13 @@ public class ChargeOrbProjectile : MonoBehaviour
 
     private float GetCollisionRadius()
     {
-        return Mathf.Max(0.05f, explosionRadius);
+        Vector3 scale = transform.lossyScale;
+        return collisionRadius * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z));
     }
 
     private bool HasLineOfSight(Damageable target)
     {
-        if (obstacleMask.value == 0 || target == null)
+        if (target == null)
             return true;
 
         Vector3 targetPoint = GetTargetPoint(target);
@@ -193,12 +185,8 @@ public class ChargeOrbProjectile : MonoBehaviour
         if (distance <= 0.001f)
             return true;
 
-        return !Physics.Raycast(
-            transform.position,
-            toTarget / distance,
-            distance,
-            obstacleMask,
-            QueryTriggerInteraction.Ignore);
+        return !ProjectileObstacles.Cast(transform.position, 0.001f, toTarget / distance, distance,
+            owner != null ? owner.transform : null, target.transform, transform, out _, obstacleMask);
     }
 
     private Vector3 GetTargetPoint(Damageable target)

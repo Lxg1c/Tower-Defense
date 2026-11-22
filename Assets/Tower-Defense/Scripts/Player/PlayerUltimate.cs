@@ -41,8 +41,8 @@ public class PlayerUltimate : MonoBehaviour
     
     [Tooltip("How long the orb keeps flying after launch (seconds).")]
     [SerializeField] private float projectileLifetime = 4f;
-    [Tooltip("Hit radius of the orb's overlap check. Match this roughly to the visual size at full charge.")]
-    [SerializeField] private float hitRadius = 1f;
+    [Tooltip("Damage radius of the explosion. The orb's contact radius is configured separately.")]
+    [SerializeField] private float hitRadius = 2.5f;
     [Tooltip("Layers the orb damages (enemies, base, towers).")]
     [SerializeField] private LayerMask hitMask = ~0;
     [Tooltip("Layers that block the orb and explosion damage.")]

@@ -157,7 +157,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b11f77ae3a1fe0449a616e5330105823, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  awarenessRadius: 30
+  formationRole: 0
+  awarenessRadius: 45
+  playerAggroRadius: 0
   refreshInterval: 0.5
   targetSelectorRef: {fileID: 5444323294618663240}
   combatBehaviorRef: {fileID: 1414560376758818262}
@@ -174,7 +176,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b279c75fc21db574c980226a4f714f2c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 3.2
+  speed: 5.4
   rotationSpeed: 8
   hoverHeight: 5
   separationRadius: 1.25
@@ -197,7 +199,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 12
   fireRate: 1.5
-  attackRange: 8
+  attackRange: 9.5
   projectilePrefab: {fileID: 4170860961368634674, guid: f8aeacb6bfec51b429574649f8f42dca, type: 3}
   firePoint: {fileID: 2635500410294942620}
   obstacleMask:

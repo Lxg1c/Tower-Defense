@@ -1,0 +1,52 @@
+.ui-motion-panel {
+  opacity: 1; scale: 1 1; translate: 0 0;
+  transition-property: opacity, scale, translate;
+  transition-duration: 180ms;
+  transition-timing-function: ease-out-cubic;
+}
+.ui-motion-panel.ui-motion-entering {
+  opacity: 0; scale: 0.985 0.985; translate: 0 8px; transition-duration: 0ms;
+}
+.ui-motion-panel.ui-motion-exiting {
+  opacity: 0; scale: 0.99 0.99; transition-duration: 100ms;
+}
+.ui-motion-panel.ui-motion-fade.ui-motion-entering,
+.ui-motion-panel.ui-motion-fade.ui-motion-exiting { scale: 1 1; translate: 0 0; }
+
+.primary-button, .menu-button, .lab-button, .quiet-button, .back-button,
+.campaign-start, .campaign-action, .campaign-side, .campaign-difficulty,
+.subpage-back, .menu-extra-button, .skill-upgrade, .preview-card,
+.loadout-slot, .loadout-tab, .guide-entry, .module-button,
+.screen-button, .pause-menu-button, .pause-settings-back, .outcome-button, .benchmark-stage-button, .build-action, .build-close,
+.icon-button, .small-action, .ultimate-button, .start-wave-button, .order-cancel {
+  transition-property: background-color, border-top-color, border-right-color,
+    border-bottom-color, border-left-color, color, -unity-background-image-tint-color, scale;
+  transition-duration: 100ms;
+  transition-timing-function: ease-out;
+}
+.primary-button:active, .menu-button:active, .lab-button:active,
+.quiet-button:active, .back-button:active, .campaign-start:active,
+.campaign-action:active, .campaign-side:active, .campaign-difficulty:active,
+.subpage-back:active, .menu-extra-button:active, .skill-upgrade:active,
+.preview-card:active, .loadout-slot:active, .loadout-tab:active,
+.guide-entry:active, .module-button:active, .screen-button:active,
+.pause-menu-button:active, .pause-settings-back:active, .outcome-button:active,
+.benchmark-stage-button:active, .build-action:active, .build-close:active,
+.icon-button:active, .small-action:active, .ultimate-button:active,
+.start-wave-button:active, .order-cancel:active {
+  scale: 0.97 0.97; transition-duration: 60ms;
+}
+.campaign-action-disc {
+  transition-property: background-color, border-top-color, border-right-color,
+    border-bottom-color, border-left-color;
+  transition-duration: 100ms;
+}
+.menu-fps-track, .pause-fps-track {
+  transition-property: background-color, border-top-color, border-right-color, border-bottom-color, border-left-color;
+  transition-duration: 150ms;
+}
+.menu-fps-knob, .pause-fps-knob {
+  transition-property: left, background-color;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out-cubic;
+}

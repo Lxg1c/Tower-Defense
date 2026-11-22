@@ -61,7 +61,8 @@ public class FlyingNav : MonoBehaviour, INavigationModifier
         if (toAttackPoint.sqrMagnitude > stop * stop)
         {
             Vector3 dir = GetMoveDirection(toHoverPoint.normalized);
-            transform.position += dir * speed * SpeedMultiplier * Time.deltaTime;
+            float step = Mathf.Min(speed * SpeedMultiplier * Time.deltaTime, toHoverPoint.magnitude);
+            transform.position += dir * step;
 
             Vector3 flat = new Vector3(dir.x, 0f, dir.z);
             if (flat.sqrMagnitude > 0.0001f)

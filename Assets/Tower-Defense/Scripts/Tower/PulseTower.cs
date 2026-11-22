@@ -9,7 +9,7 @@ using UnityEngine.Events;
 /// every Damageable in <see cref="range"/> and applies a fading slow to mobs.
 ///
 /// Pure logic — animator is driven separately by <see cref="PulseTowerAnimator"/>
-/// via <see cref="onAttack"/> and the <see cref="HasTarget"/> property.
+/// via <see cref="onAttackWindup"/> and <see cref="onAttack"/>.
 /// </summary>
 [DisallowMultipleComponent]
 public class PulseTower : MonoBehaviour
@@ -18,6 +18,7 @@ public class PulseTower : MonoBehaviour
     [SerializeField] private float damage         = 15f;
     [SerializeField] private float range          = 4f;
     [SerializeField] private float attackInterval = 1.5f;
+    [SerializeField, Min(0f)] private float attackWindup;
     [SerializeField] private LayerMask targetMask = ~0;
     [Tooltip("Tag of targets the pulse should NEVER affect (e.g. \"Flying\"). Leave empty to hit everything in the mask.")]
     [SerializeField] private string ignoreTag = "Flying";
@@ -30,6 +31,8 @@ public class PulseTower : MonoBehaviour
     [SerializeField] private float slowDuration = 2f;
 
     [Header("Events")]
+    public UnityEvent onAttackWindup = new();
+
     /// <summary>Fired once each time a pulse goes off. Wire animation / SFX / VFX here.</summary>
     public UnityEvent onAttack;
 
@@ -42,6 +45,7 @@ public class PulseTower : MonoBehaviour
     public float SlowDuration   { get => slowDuration;   set => slowDuration   = Mathf.Max(0.01f, value); }
 
     private float    nextAttackTime;
+    private float    impactTime = -1f;
     private static Collider[] buffer = new Collider[32];
     private readonly HashSet<Damageable> hitThisPulse = new();
 
@@ -59,16 +63,29 @@ public class PulseTower : MonoBehaviour
     private void OnDisable()
     {
         HasTarget = false;
+        impactTime = -1f;
     }
 
     private void Update()
     {
         HasTarget = HasValidTargetInRange();
-        if (!HasTarget) return;
-        if (Time.time < nextAttackTime) return;
+        if (impactTime >= 0f)
+        {
+            if (Time.time < impactTime) return;
+            impactTime = -1f;
+            Pulse();
+            return;
+        }
 
-        Pulse();
-        nextAttackTime = Time.time + attackInterval;
+        if (!HasTarget || Time.time < nextAttackTime) return;
+
+        nextAttackTime = Time.time + Mathf.Max(attackWindup, attackInterval);
+        onAttackWindup?.Invoke();
+        if (!isActiveAndEnabled) return;
+        if (attackWindup > 0f)
+            impactTime = Time.time + attackWindup;
+        else
+            Pulse();
     }
 
     /// <summary>True if there's at least one Damageable in range that is NOT tagged ignoreTag.</summary>

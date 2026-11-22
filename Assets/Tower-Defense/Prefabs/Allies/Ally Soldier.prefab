@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6702763205681912560}
   - component: {fileID: 7671267319009896938}
   - component: {fileID: 2101274974682063437}
+  - component: {fileID: 3826598160555716801}
   m_Layer: 12
   m_Name: Ally Soldier
   m_TagString: Untagged
@@ -216,6 +217,29 @@ MonoBehaviour:
   target: {fileID: 6702763205681912560}
   anchor: {fileID: 1382569708230873742}
   hideOnDeath: 1
+--- !u!136 &3826598160555716801
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 281495221090297757}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &9171877603907572674
 GameObject:
   m_ObjectHideFlags: 0

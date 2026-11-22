@@ -27,17 +27,32 @@ namespace TowerDefense.Tests
         {
             var target = new GameObject("Orb target");
             created.Add(target);
-            target.layer = 8;
+            target.layer = LayerMask.NameToLayer("Enemy");
             target.transform.position = Vector3.up * 50f + Vector3.forward * 2f;
             target.AddComponent<SphereCollider>();
             var health = target.AddComponent<CombatTestTarget>();
+
+            var nearby = new GameObject("Nearby orb target");
+            created.Add(nearby);
+            nearby.layer = target.layer;
+            nearby.transform.position = target.transform.position + Vector3.right * 1.8f;
+            nearby.AddComponent<SphereCollider>();
+            nearby.AddComponent<BoxCollider>();
+            var nearbyHealth = nearby.AddComponent<CombatTestTarget>();
+
+            var distant = new GameObject("Outside explosion radius");
+            created.Add(distant);
+            distant.layer = target.layer;
+            distant.transform.position = target.transform.position + Vector3.right * 3.5f;
+            distant.AddComponent<SphereCollider>();
+            var distantHealth = distant.AddComponent<CombatTestTarget>();
 
             var effect = new GameObject("Test orb explosion");
             created.Add(effect);
             var orb = new GameObject("Impact orb").AddComponent<ChargeOrbProjectile>();
             created.Add(orb.gameObject);
             orb.transform.position = Vector3.up * 50f;
-            orb.Init(Vector3.forward, 30f, 25f, 4f, 1f, 1 << target.layer, 0, null, effect);
+            orb.Init(Vector3.forward, 30f, 25f, 4f, 2.5f, 1 << target.layer, 0, null, effect);
             Physics.SyncTransforms();
 
             float deadline = Time.realtimeSinceStartup + 2f;
@@ -48,8 +63,41 @@ namespace TowerDefense.Tests
             if (impact != null) created.Add(impact);
             Assert.That(orb == null, Is.True);
             Assert.That(health.CurrentHealth, Is.EqualTo(75f));
+            Assert.That(nearbyHealth.CurrentHealth, Is.EqualTo(75f), "Multiple colliders must not multiply splash damage.");
+            Assert.That(distantHealth.CurrentHealth, Is.EqualTo(distantHealth.MaxHealth));
             Assert.That(impact, Is.Not.Null);
             Assert.That(Vector3.Distance(impact.transform.position, target.transform.position), Is.LessThan(1f));
+        }
+
+        [UnityTest]
+        public IEnumerator OrbExplodesOnDefaultLayerSceneryAndDoesNotDamageThroughIt()
+        {
+            var target = new GameObject("Covered orb target");
+            created.Add(target);
+            target.layer = LayerMask.NameToLayer("Enemy");
+            target.transform.position = new Vector3(0, 50, 8);
+            target.AddComponent<SphereCollider>();
+            var health = target.AddComponent<CombatTestTarget>();
+            var wall = new GameObject("Default layer house");
+            created.Add(wall);
+            wall.transform.position = new Vector3(0, 50, 3);
+            wall.AddComponent<BoxCollider>().size = new Vector3(4, 4, .05f);
+            var effect = new GameObject("Scenery orb explosion");
+            created.Add(effect);
+            var orb = new GameObject("Blocked orb").AddComponent<ChargeOrbProjectile>();
+            created.Add(orb.gameObject);
+            orb.transform.position = Vector3.up * 50;
+            orb.Init(Vector3.forward, 5000f, 25f, 4f, 10f, 1 << target.layer,
+                LayerMask.GetMask("Obstacle"), null, effect);
+            Physics.SyncTransforms();
+            yield return null;
+            yield return null;
+            Assert.That(orb == null, Is.True);
+            Assert.That(health.CurrentHealth, Is.EqualTo(health.MaxHealth));
+            var impact = GameObject.Find("Scenery orb explosion(Clone)");
+            if (impact != null) created.Add(impact);
+            Assert.That(impact, Is.Not.Null);
+            Assert.That(impact.transform.position.z, Is.LessThan(3.05f));
         }
 
         [UnityTest]

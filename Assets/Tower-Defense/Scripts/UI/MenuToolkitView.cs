@@ -8,6 +8,7 @@ using UnityEngine.UIElements;
 [RequireComponent(typeof(UIDocument))]
 public sealed class MenuToolkitView : MonoBehaviour
 {
+    private readonly ToolkitPanelMotion motion = new();
     [SerializeField] private MainMenu menu;
     [UnityEngine.Serialization.FormerlySerializedAs("legacyScreens")]
     [SerializeField] private MainMenuScreens screens;
@@ -86,6 +87,7 @@ public sealed class MenuToolkitView : MonoBehaviour
     private SliderInt renderScaleSlider;
     private Label renderScaleValue;
     private Button normalMapsToggle;
+    private Button ambientOcclusionToggle;
     private Slider masterSlider;
     private Label fpsLabel;
     private Button fpsToggle;
@@ -180,6 +182,7 @@ public sealed class MenuToolkitView : MonoBehaviour
         renderScaleSlider = root.Q<SliderInt>("renderScaleSlider");
         renderScaleValue = root.Q<Label>("renderScaleValue");
         normalMapsToggle = root.Q<Button>("normalMapsToggle");
+        ambientOcclusionToggle = root.Q<Button>("ambientOcclusionToggle");
         masterSlider = root.Q<Slider>("masterSlider");
         fpsLabel = root.Q<Label>("fpsLabel");
         fpsToggle = root.Q<Button>("fpsToggle");
@@ -201,6 +204,7 @@ public sealed class MenuToolkitView : MonoBehaviour
             upgradeSkill == null || standardModule == null || overdriveModule == null ||
             fpsLabel == null || fpsToggle == null || languageDropdown == null ||
             lightingDropdown == null || graphicsQualityDropdown == null || screenModeDropdown == null || normalMapsToggle == null ||
+            ambientOcclusionToggle == null ||
             renderScaleSlider == null || renderScaleValue == null ||
             masterSlider == null || musicSlider == null ||
             effectsSlider == null || startButton == null || difficultyButtons.Any(button => button == null))
@@ -325,6 +329,7 @@ public sealed class MenuToolkitView : MonoBehaviour
         screenModeDropdown.RegisterValueChangedCallback(ChangeScreenMode);
         renderScaleSlider.RegisterValueChangedCallback(ChangeRenderScale);
         normalMapsToggle.clicked += ToggleNormalMaps;
+        ambientOcclusionToggle.clicked += ToggleAmbientOcclusion;
         root.Q<Button>("startBenchmark").clicked += menu.StartPerformanceBenchmark;
         GameLocalization.Changed += RefreshLanguage;
         PlayerProgression.Changed += RefreshAll;
@@ -346,6 +351,7 @@ public sealed class MenuToolkitView : MonoBehaviour
 
     private void OnDisable()
     {
+        motion.Clear();
         if (!bound) return;
         StopLevelSlide();
         root.UnregisterCallback<NavigationCancelEvent>(OnDesktopMenuCancel);
@@ -357,6 +363,7 @@ public sealed class MenuToolkitView : MonoBehaviour
         screenModeDropdown.UnregisterValueChangedCallback(ChangeScreenMode);
         renderScaleSlider.UnregisterValueChangedCallback(ChangeRenderScale);
         normalMapsToggle.clicked -= ToggleNormalMaps;
+        ambientOcclusionToggle.clicked -= ToggleAmbientOcclusion;
         root.Q<Button>("startBenchmark").clicked -= menu.StartPerformanceBenchmark;
         bound = false;
     }
@@ -805,12 +812,15 @@ public sealed class MenuToolkitView : MonoBehaviour
         lightingDropdown.choices = choices;
         lightingDropdown.SetValueWithoutNotify(choices[(int)GamePerformanceSettings.Lighting]);
         normalMapsToggle.EnableInClassList("is-on", GamePerformanceSettings.NormalMaps);
+        RefreshAmbientOcclusion();
     }
 
     private void ChangeGraphicsQuality(ChangeEvent<string> evt)
     {
         int index = graphicsQualityDropdown.choices.IndexOf(evt.newValue);
-        if (index >= 0) GamePerformanceSettings.SetAndroidQuality((GamePerformanceSettings.AndroidQuality)index);
+        if (index < 0) return;
+        GamePerformanceSettings.SetAndroidQuality((GamePerformanceSettings.AndroidQuality)index);
+        RefreshAmbientOcclusion();
     }
 
     private void ChangeScreenMode(ChangeEvent<string> evt)
@@ -837,6 +847,15 @@ public sealed class MenuToolkitView : MonoBehaviour
     {
         GamePerformanceSettings.ToggleNormalMaps();
         normalMapsToggle.EnableInClassList("is-on", GamePerformanceSettings.NormalMaps);
+    }
+
+    private void RefreshAmbientOcclusion() =>
+        ambientOcclusionToggle.EnableInClassList("is-on", GamePerformanceSettings.AmbientOcclusion);
+
+    private void ToggleAmbientOcclusion()
+    {
+        GamePerformanceSettings.SetAmbientOcclusion(!GamePerformanceSettings.AmbientOcclusion);
+        RefreshAmbientOcclusion();
     }
 
     private void ShowHome() { screens.ShowHome(); Show(homePage); }
@@ -932,11 +951,11 @@ public sealed class MenuToolkitView : MonoBehaviour
         root.Q("menuRoot").EnableInClassList("subpage-open", page != homePage);
         root.Q("menuRoot").EnableInClassList("campaign-open", page == homePage);
         root.Q("menuRoot").EnableInClassList("loadout-open", page == loadoutPage);
-        homePage.EnableInClassList("is-hidden", page != homePage);
-        settingsPage.EnableInClassList("is-hidden", page != settingsPage);
-        skillsPage.EnableInClassList("is-hidden", page != skillsPage);
-        loadoutPage.EnableInClassList("is-hidden", page != loadoutPage);
-        guidePage.EnableInClassList("is-hidden", page != guidePage);
+        motion.SetVisible(homePage, page == homePage, Application.isPlaying && page == homePage, fadeOnly: true);
+        motion.SetVisible(settingsPage, page == settingsPage, Application.isPlaying && page == settingsPage, fadeOnly: true);
+        motion.SetVisible(skillsPage, page == skillsPage, Application.isPlaying && page == skillsPage, fadeOnly: true);
+        motion.SetVisible(loadoutPage, page == loadoutPage, Application.isPlaying && page == loadoutPage, fadeOnly: true);
+        motion.SetVisible(guidePage, page == guidePage, Application.isPlaying && page == guidePage, fadeOnly: true);
         if (Application.isPlaying && root.Q("menuRoot").ClassListContains("desktop-menu"))
             page.schedule.Execute(() =>
             {

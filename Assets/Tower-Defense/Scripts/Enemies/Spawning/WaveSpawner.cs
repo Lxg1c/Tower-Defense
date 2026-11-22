@@ -19,6 +19,13 @@ public class WaveSpawner : MonoBehaviour
     public static WaveSpawner Instance { get; private set; }
 
     public enum Phase { Build, Combat, AllCompleted, Defeated }
+    private const float VanguardLeadSeconds = 1.6f;
+    private static readonly MobCore.FormationRole[] SpawnOrder =
+    {
+        MobCore.FormationRole.Vanguard,
+        MobCore.FormationRole.Regular,
+        MobCore.FormationRole.Rearguard
+    };
 
     [System.Serializable]
     public class MobEntry
@@ -320,45 +327,45 @@ public class WaveSpawner : MonoBehaviour
     {
         if (wave == null) yield break;
 
-        if (wave.spawnGroups != null && wave.spawnGroups.Length > 0)
+        foreach (var (entry, point) in OrderedEntries(wave))
         {
-            foreach (var group in wave.spawnGroups)
-            {
-                if (group?.entries == null) continue;
-                Transform point = GetSpawnPoint(group.spawnPointIndex);
-
-                foreach (var entry in group.entries)
-                {
-                    MobCore prefab = entry?.Prefab;
-                    if (prefab == null || entry.count <= 0) continue;
-
-                    for (int i = 0; i < entry.count; i++)
-                    {
-                        SpawnOne(entry.enemy, prefab, point);
-                        if (entry.spawnInterval > 0f)
-                            yield return new WaitForSeconds(entry.spawnInterval);
-                    }
-                }
-            }
-
-            yield break;
-        }
-
-        if (wave.entries == null) yield break;
-
-        foreach (var entry in wave.entries)
-        {
-            MobCore prefab = entry?.Prefab;
-            if (prefab == null || entry.count <= 0) continue;
-
+            MobCore prefab = entry.Prefab;
             for (int i = 0; i < entry.count; i++)
             {
-                SpawnOne(entry.enemy, prefab, GetRandomSpawnPoint());
-                if (entry.spawnInterval > 0f)
-                    yield return new WaitForSeconds(entry.spawnInterval);
+                SpawnOne(entry.enemy, prefab, point != null ? point : GetRandomSpawnPoint());
+                float interval = prefab.ProvidesCover ? Mathf.Max(VanguardLeadSeconds, entry.spawnInterval) : entry.spawnInterval;
+                if (interval > 0f)
+                    yield return new WaitForSeconds(interval);
             }
         }
     }
+
+    internal IEnumerable<(MobEntry entry, Transform point)> OrderedEntries(Wave wave)
+    {
+        // Stable within each role, including entries from different spawn points.
+        foreach (var role in SpawnOrder)
+        {
+            if (wave.spawnGroups != null && wave.spawnGroups.Length > 0)
+            {
+                foreach (var group in wave.spawnGroups)
+                {
+                    if (group?.entries == null) continue;
+                    foreach (var entry in group.entries)
+                        if (MatchesRole(entry, role))
+                            yield return (entry, GetSpawnPoint(group.spawnPointIndex));
+                }
+            }
+            else if (wave.entries != null)
+            {
+                foreach (var entry in wave.entries)
+                    if (MatchesRole(entry, role))
+                        yield return (entry, null);
+            }
+        }
+    }
+
+    private static bool MatchesRole(MobEntry entry, MobCore.FormationRole role) =>
+        entry?.Prefab != null && entry.count > 0 && entry.Prefab.Role == role;
 
     private void SpawnOne(EnemyOption option, MobCore prefab, Transform point)
     {

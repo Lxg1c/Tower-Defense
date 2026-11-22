@@ -101,7 +101,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 6
   attackRate: 1
-  attackRange: 2.2
+  attackRange: 3.4
   multipliers: []
   attackTriggerName: Attack
 --- !u!114 &6808108943145072710
@@ -129,7 +129,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b11f77ae3a1fe0449a616e5330105823, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  awarenessRadius: 30
+  formationRole: 0
+  awarenessRadius: 40
+  playerAggroRadius: 6
   refreshInterval: 0.5
   targetSelectorRef: {fileID: 8728594604824303527}
   combatBehaviorRef: {fileID: 3757345882780779894}
@@ -148,7 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   threatMask:
     serializedVersion: 2
-    m_Bits: 4872
+    m_Bits: 5888
   maxCandidates: 32
   logSelections: 0
 --- !u!135 &6676510510867403037

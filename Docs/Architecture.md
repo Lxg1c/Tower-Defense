@@ -17,6 +17,19 @@ vendor packages stay in their original folders under `Assets` or `Packages`.
 
 ## Start reading here
 
+Mixed waves spawn vanguard enemies first, ordinary enemies and flying raiders
+next, and ranged ground enemies last. Each entry keeps its authored spawn point.
+The giant has a minimum lead interval and intercepts ordinary projectiles aimed
+at enemies behind it. Flying raiders select mines first, then nearby towers,
+then the core. Ground enemies can target barracks soldiers through their
+Ally-layer colliders. PulseTowerAnimator expands a ring on each pulse attack.
+
+Level 1's `High Tech Services` prefab contains baked service equipment and floor
+inlays. `HighTechEnvironmentSetup` is an Editor-only authoring command: it combines
+selected Kenney source submeshes by shared material, checks building/interaction
+footprints, and creates static collisions with stationary NavMesh carving. It
+does not generate geometry at runtime or overwrite the floor/NavMesh asset.
+
 1. `GameSession`, then `WaveSpawner.Start`, `StartNextWave` and `RunCombat`: the session rules and build/combat loop.
 2. `Damageable.TakeDamage` and `MobHealth.OnDeath`: damage and wave completion.
 3. `MobCore.Update`: enemy targeting, navigation and attack coordination.
@@ -123,7 +136,8 @@ and the LevelGrid Inspector can move either the building with its marker or
 just the marker, or delete the pair. Placement checks ignore the selected
 zone's old cells during a move, while all other occupied cells still block it.
 Unity Undo handles creation, movement, deletion and type changes; at runtime
-the wall uses only the saved footprint to determine its length and price.
+the saved footprint determines wall length. The build option sets one price for
+the whole wall.
 Each grid is independent; the Scene view painter checks zones across the scene
 for occupied cells. A temporary purple model follows the pointer. Each
 grid-created zone stores an automatically chosen representative preview prefab
@@ -255,8 +269,11 @@ attack range, change target, die, or return to the pool. `GameplayToolkitView`
 uses this state for the warning, plays the wave-start clip on the combat phase
 event, and highlights the ultimate when it becomes ready again.
 
-`GamePerformanceSettings` saves lighting, normal maps, Android render quality,
-and the independent Android render scale.
+`GamePerformanceSettings` saves lighting, normal maps, SSAO, Android render
+quality, and the independent Android render scale. Each URP asset includes
+renderers with and without SSAO so both variants are available in Player builds.
+The level camera selects the renderer on entry, and the benchmark temporarily
+switches the camera renderer for its comparison stage.
 It selects the saved Android Quality Settings level at startup and on level
 entry. Medium and Low use separate URP assets with an SSAO-disabled renderer.
 The render scale overrides the active profile at startup and level entry.
@@ -273,7 +290,12 @@ enemy models in sequence, sampling each stage separately after warm-up.
 The 0- and 64-model stages are repeated with one temporary graphics change per
 profile. The benchmark restores render scale, camera shadows, and renderer SSAO
 on completion or disposal. The report stores the settings used for each stage.
-Benchmark mode blocks waves and progression rewards.
+The Combat tab measures live AI and combat with the same target of 32 active
+enemies and 0, 6 or 12 towers. The setup uses the level's tower loadout and mixes
+cannon, pulse and mortar towers. Enemies spawn at 0.07 second intervals until
+the target count is reached and deaths are replaced during the sample. The
+report includes the number of enemies spawned and the observed peak. Benchmark
+mode blocks campaign waves and progression rewards.
 
 `ResponsiveGameplayHud` selects Mobile or Desktop UI Toolkit controls from the
 build target. Editor `Automatic` previews the active build target. The Inspector
@@ -323,8 +345,9 @@ instant damage, and missing wallets cannot make upgrade menus assume unlimited m
 height difference. A physics box query collects colliders; aim-point checks narrow
 them to a cylinder and deduplicate damageable entities. This keeps aerial coverage
 consistent with the ground range indicator. `GetClosest` uses horizontal distance
-and drops dead/out-of-range cached targets. `Shooter` still checks line of sight
-and delivers damage through projectiles. Tower range upgrades change the radius;
+and drops dead/out-of-range cached targets. `Shooter` picks the nearest enemy
+with a clear projectile path and checks each muzzle again before firing,
+including delayed shots in a volley. Tower range upgrades change the radius;
 vertical reach is configured separately. See `Docs/Balance.md` for tuning targets.
 
 ## Session ownership
@@ -436,6 +459,12 @@ keyboard movement uses its existing path. `TowerSelectionModal` exposes build
 offers without instantiating uGUI cards. `GameplayToolkitView` renders those
 offers, zone progress, spawn previews and combat overlays. `HealthBarManager`
 projects entity health into the same panel.
+`ToolkitPanelMotion` owns cancellable panel visibility transitions, using the
+unscaled UI scheduler and shared `Motion.uss`. Hidden panels stop receiving
+input as closing begins; reopening cancels pending hiding, and disabling a view
+cleans up scheduled callbacks. Menu pages fade in at full size. Gameplay overlays
+remove the outgoing panel from layout before animating the incoming panel so it
+stays centered while switching between pause, settings, and confirmations.
 
 ## Next boundaries to improve
 
@@ -494,3 +523,20 @@ cooldown, for eight to ten seconds total. `GameplayToolkitView` shows the remain
 seconds and charge progress. Both
 normal bullet prefabs fly faster; `Projectile` checks the movement
 segment each frame so it cannot step across a target without hitting it.
+
+
+## Projectile obstruction
+
+ProjectileObstacles performs reusable swept sphere queries against solid Default,
+Obstacle, Tower, Base and Mine colliders. It excludes the projectile, its shooter
+and (for direct shots) its intended damage target. Projectile checks cover before
+applying contact damage, including when a fast shot crosses its whole path in
+one frame. Shooter, RangedAttack and AllySoldier supply the firing transform.
+ChargeOrbProjectile uses a physical collision radius separate from blast radius
+and explodes on scenery as well as enemies. MortarShell subdivides its parabolic
+path and detonates at the first obstruction. Both splash paths check cover before
+damage. Bullets use the short ProjectileImpact effect. MortarTower turns its
+upper rig toward the target and launches along the muzzle angle. MortarShell
+reuses the player's UltimateOrb visual and UltimateExplosion effect.
+PulseTower separates attack windup from impact. The animation starts on windup,
+then damage and the visible ring occur together when the head strikes.

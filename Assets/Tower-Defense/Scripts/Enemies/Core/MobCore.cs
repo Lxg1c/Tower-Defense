@@ -14,6 +14,12 @@ using UnityEngine.AI;
 [RequireComponent(typeof(MobHealth))]
 public class MobCore : MonoBehaviour
 {
+    internal enum FormationRole { Regular, Vanguard, Rearguard }
+
+    [SerializeField] private FormationRole formationRole;
+    internal FormationRole Role => formationRole;
+    internal bool ProvidesCover => formationRole == FormationRole.Vanguard;
+
     [Header("Awareness")]
     [Tooltip("Radius in meters used by target selectors to find candidates.")]
     [SerializeField] private float awarenessRadius = 30f;
@@ -173,7 +179,7 @@ public class MobCore : MonoBehaviour
     {
         if (TargetSelector == null) return;
 
-        if (nearbyPlayer == null)
+        if (TargetSelector is not MineFirstSelector && nearbyPlayer == null)
             nearbyPlayer = FindFirstObjectByType<PlayerHealth>();
         Damageable newTarget = IsPlayerInAggroRange(nearbyPlayer)
             ? nearbyPlayer : TargetSelector.GetTarget(this);
@@ -195,7 +201,8 @@ public class MobCore : MonoBehaviour
 
     internal bool IsPlayerInAggroRange(PlayerHealth player)
     {
-        if (player == null || !player.IsTargetable || player.gameObject.scene != gameObject.scene)
+        if (TargetSelector is MineFirstSelector || player == null ||
+            !player.IsTargetable || player.gameObject.scene != gameObject.scene)
             return false;
 
         var offset = player.transform.position - transform.position;

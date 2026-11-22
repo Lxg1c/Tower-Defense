@@ -113,6 +113,29 @@ namespace TowerDefense.Tests
         }
 
         [Test]
+        public void ProjectilePrefabsKeepTheirShortImpactEffect()
+        {
+            foreach (string path in new[] {
+                         "Assets/Tower-Defense/Prefabs/Projectiles/GreenBullet.prefab",
+                         "Assets/Tower-Defense/Prefabs/Projectiles/PinkBullet.prefab",
+                         "Assets/Tower-Defense/Prefabs/Buildings/MortarShell.prefab" })
+            {
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                Component projectile = prefab.GetComponent<Projectile>();
+                if (projectile == null) projectile = prefab.GetComponent<MortarShell>();
+                var effect = new SerializedObject(projectile).FindProperty("impactPrefab")
+                    .objectReferenceValue as GameObject;
+                Assert.That(effect, Is.Not.Null, path);
+                var particles = effect.GetComponent<ParticleSystem>();
+                Assert.That(particles, Is.Not.Null, path);
+                Assert.That(particles.main.loop, Is.False, path);
+                Assert.That(particles.main.stopAction, Is.EqualTo(ParticleSystemStopAction.Destroy), path);
+                Assert.That(particles.GetComponent<ParticleSystemRenderer>().sharedMaterial.mainTexture,
+                    Is.Not.Null, path);
+            }
+        }
+
+        [Test]
         public void GameplayToolkitContainsBuildCombatAndOrderControls()
         {
             var tree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(

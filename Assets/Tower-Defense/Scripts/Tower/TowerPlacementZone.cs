@@ -84,8 +84,7 @@ public class TowerPlacementZone : MonoBehaviour
     private TowerLoadout ActiveLoadout => IsFirstLocation && firstLocationLoadout != null
         ? firstLocationLoadout : loadout;
     private BuildingSlot Slot => slot ??= new BuildingSlot(ActiveLoadout, allowedType,
-        requiredTownHallLevel, allowedType == BuildSlotType.Wall
-            ? GetWallLength() : 1);
+        requiredTownHallLevel);
     private bool IsBuildPhase => !(IsFirstLocation && unavailableOnFirstLocation) &&
         (WaveSpawner.Instance == null || WaveSpawner.Instance.IsBuildPhase);
     private bool PrerequisiteBuilt => requiredBuiltZone == null ||
@@ -94,14 +93,6 @@ public class TowerPlacementZone : MonoBehaviour
         Slot.CanInteract(IsBuildPhase, GetTownHallLevel());
 
     public int GetOptionCost(TowerOption option) => Slot.GetCost(option);
-
-    private int GetWallLength()
-    {
-        LevelGridPlacedZone placement = GetComponent<LevelGridPlacedZone>();
-        if (placement == null || placement.SourceGrid == null)
-            throw new System.InvalidOperationException("Wall zones must be placed with LevelGrid.");
-        return Mathf.Max(placement.BuildingCells.width, placement.BuildingCells.height);
-    }
 
     private void Awake()
     {

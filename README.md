@@ -35,10 +35,29 @@ contains Unity packages. The main project folders follow responsibility:
 | `Editor`, `Tests` | Authoring tools and Unity Test Framework suites |
 | `UI/Toolkit` | UXML, USS and panel settings for the current menu and gameplay screens |
 
+Level 1's high-tech service scenery uses selected models from Kenney's Space Kit
+2.0 (CC0); its original license is in `Art/Environment/HighTech/KenneySpaceKit`.
+The `High Tech Services` scene root adds roof equipment, floor inlays and exterior
+yards for freight, power and communications. It preserves the open arena, its
+authored floor texture and build
+cells. Six shared mesh/material groups avoid a renderer for every small detail;
+the scenery adds no lights or shadow casters. Solid equipment has collision and
+stationary NavMesh carving. To rebuild after editing the layout, open Level 1 and
+use **Tools > Tower Defense > Rebuild Level 1 High Tech Services**, then review
+and save the scene. The tool refuses equipment overlapping reserved building or
+interaction cells. See [asset credits](Docs/ThirdPartyAssets.md).
+
 See [Docs/Architecture.md](Docs/Architecture.md) for code ownership and
 asset references. Unity GUIDs were retained during the asset reorganization.
 
 ## Open and play
+
+The build display name is **Tower Defense**. Application icons for desktop,
+Android and iOS are assigned in Player Settings from `Art/UI/AppIcons`.
+
+On Android, Low quality uses soft ground contact shadows for actors,
+buildings and the main scenery. The shadows share one mesh and use no URP
+shadow map. The performance benchmark includes them on the Low profile.
 
 1. Install **Unity 6000.0.72f1** through Unity Hub. This is the version recorded in
    `ProjectSettings/ProjectVersion.txt`.
@@ -59,6 +78,11 @@ four waves test a single approach, ranged pressure from another direction,
 then a stronger mixed attack. The lab has its own level asset and NavMesh; it
 is separate from campaign level selection and awards no campaign money. Changes
 to its waves or placements do not change Level 1.
+
+In mixed waves, giants advance first and absorb ordinary shots that hit them
+before their intended enemy target. Ground shooters spawn last. Flying raiders
+move faster and prioritize mines, then other structures. Barracks troops can be
+targeted by ground enemies, and each pulse tower attack shows its radius briefly.
 
 The lab's neutral floor is 120×120 m. The `Traversal Probe` markers near its
 west and east edges give a 90 m route for checking hero movement and camera
@@ -95,6 +119,12 @@ spending credits. Use Start Wave to begin
 combat after the town hall exists. The melee barracks opens at town hall level 2
 and the ranged barracks at level 3; the chosen type stays with that barracks.
 
+Bullets, ultimate orbs, and mortar shells collide with solid buildings and level
+scenery, including Default-layer meshes. Bullets create a brief spark impact.
+Mortar shells arc through the air with the same green orb and explosion as the
+player's ultimate. The shooter and trigger volumes are ignored.
+Cover blocks the blast from reaching targets behind it.
+
 Open the building guide from the Main Menu. To see the first-level hints again,
 select **Repeat hints** in the main menu settings and enter Level 01.
 
@@ -107,7 +137,8 @@ shadows, and uses two main-light shadow cascades over 32 meters. Android keeps i
 and render-scale setting.
 
 **Settings → Graphics** selects standard or simplified lighting and toggles
-normal maps on supported materials. Changes apply when you enter a level.
+normal maps on supported materials. The separate ambient occlusion (SSAO)
+switch applies on level entry and leaves shadow settings unaffected.
 Android also offers High, Medium, and Low render quality. Medium disables SSAO
 and reduces shadow distance. Low also disables dynamic shadows. The separate
 3D render scale slider ranges from 50% to 100% and defaults to 80%.
@@ -131,6 +162,10 @@ on-screen joystick follows the first touch in the lower-left control area
 and feeds `PlayerMovement` directly, while desktop movement
 still uses the existing keyboard path. The UI Toolkit building panel leaves
 movement available so stepping out of a zone closes the panel.
+Menu pages and gameplay panels use brief opacity/scale transitions; buttons have
+hover and press feedback. Panel closing blocks repeat clicks, runs during pause,
+and cancels safely when reopened. Settings rows have additional vertical space
+in both full-height and compact layouts.
 The top HUD uses separate compact wave, time, enemy and supply indicators. The
 Main Menu **Equipment** screen lets the player buy the Overdrive gun module for
 300 permanent money and equip either module before a level. Standard preserves
@@ -151,16 +186,17 @@ each squad's station order (or its default barracks behavior). Station orders
 remain in force between waves and after soldiers respawn.
 
 Defense build choices appear from cheapest to most expensive. The Mortar unlocks
-at town hall level 3 and fires an arcing shell at an enemy's position; its impact
-damages nearby enemies once each. A Wall is a separate build-zone type and blocks
+at town hall level 3. Its turret turns toward the enemy before firing an arcing
+shell from the raised barrel. The pulse tower winds up and releases its wave
+as the head strikes down. A Wall is a separate build-zone type and blocks
 movement while intact. It opens the path when destroyed and is repaired after a
 wave like other buildings. To author a Wall point, select a `LevelGrid`, start
 placing zones, press **5**, click the first and last wall cells, then click a
 highlighted cell along one of its long sides for the interaction marker. The
 span follows the horizontal or vertical grid axis, and the chosen side sets
 the wall's facing. The built wall reveals one section per cell from left to right; its
-Height Multiplier is adjustable on the Wall prefab. The card costs 3 build
-coins per reserved cell. Select a
+Height Multiplier is adjustable on the Wall prefab. The whole wall costs 3 build
+coins. Select a
 placed wall and use **Resize wall** to change its length later. Level 1 has one
 Wall point at town hall level 2 and another at level 3.
 

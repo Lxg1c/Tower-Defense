@@ -96,7 +96,7 @@ public class RangedAttack : MonoBehaviour, ICombatBehavior
         {
             float finalDamage = damage * mob.DamageMultiplier * GetMultiplierFor(target);
             if (finalDamage > 0f) mob.ReportAttack(target);
-            proj.Init(target, finalDamage);
+            proj.Init(target, finalDamage, owner: mob.transform);
         }
 
         TriggerAttackAnimation();

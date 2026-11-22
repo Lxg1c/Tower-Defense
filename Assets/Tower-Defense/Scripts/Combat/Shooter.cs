@@ -30,10 +30,14 @@ public class Shooter : MonoBehaviour
 
     private DetectionZone detectionZone;
     private SlowAmmoInventory slowAmmo;
+    private Projectile projectileTemplate;
+    private Transform shotOwner;
+    private System.Predicate<Damageable> canTarget;
     private float fireCooldown;
     private Damageable volleyTarget;
     private int nextFirePoint;
     private float nextShotTime;
+    private bool volleyHasFired;
 
     private void Awake()
     {
@@ -43,7 +47,11 @@ public class Shooter : MonoBehaviour
         {
             Debug.LogError($"[Shooter] {error}", this);
             enabled = false;
+            return;
         }
+        projectileTemplate = projectilePrefab.GetComponent<Projectile>();
+        shotOwner = GetComponentInParent<Damageable>()?.transform ?? transform;
+        canTarget = HasLineOfSight;
     }
 
     public bool ValidateConfiguration(out string error)
@@ -78,7 +86,7 @@ public class Shooter : MonoBehaviour
     {
         fireCooldown -= Time.deltaTime;
 
-        CurrentTarget = FindBestTarget();
+        CurrentTarget = detectionZone.GetClosest(canTarget);
 
         if (CurrentTarget == null)
         {
@@ -99,7 +107,7 @@ public class Shooter : MonoBehaviour
     private void LateUpdate()
     {
         AimFirePoints(CurrentTarget);
-        if (volleyTarget != null && (!volleyTarget.IsTargetable || SuppressFire))
+        if (volleyTarget != null && (!volleyTarget.IsTargetable || SuppressFire || CurrentTarget == null))
             volleyTarget = null;
 
         if (volleyTarget == null && CurrentTarget != null && fireCooldown <= 0f && !SuppressFire)
@@ -107,19 +115,20 @@ public class Shooter : MonoBehaviour
             volleyTarget = CurrentTarget;
             nextFirePoint = 0;
             nextShotTime = Time.time;
-            fireCooldown = 1f / fireRate;
+            volleyHasFired = false;
         }
 
         while (volleyTarget != null && Time.time >= nextShotTime)
         {
-            ShootFrom(firePoints[nextFirePoint++], volleyTarget);
+            bool fired = ShootFrom(firePoints[nextFirePoint++], volleyTarget);
             if (volleyTarget == null || !isActiveAndEnabled || nextFirePoint >= firePoints.Length
                 || SuppressFire || !volleyTarget.IsTargetable)
             {
                 volleyTarget = null;
                 break;
             }
-            nextShotTime = Time.time + delayBetweenFirePoints;
+            if (fired)
+                nextShotTime = Time.time + delayBetweenFirePoints;
         }
     }
 
@@ -128,60 +137,57 @@ public class Shooter : MonoBehaviour
         if (target == null)
             return;
 
+        Vector3 aimPoint = Projectile.GetTargetPoint(target, target.GetComponentInChildren<Collider>());
         for (int i = 0; i < firePoints.Length; i++)
-            AimFirePoint(firePoints[i], target);
+            AimFirePoint(firePoints[i], aimPoint);
     }
 
-    private void AimFirePoint(Transform point, Damageable target)
+    private static void AimFirePoint(Transform point, Vector3 aimPoint)
     {
         if (point == null)
             return;
 
-        Vector3 fireDir = target.transform.position - point.position;
+        Vector3 fireDir = aimPoint - point.position;
         if (fireDir.sqrMagnitude > 0.001f)
             point.rotation = Quaternion.LookRotation(fireDir);
     }
 
-    private Damageable FindBestTarget()
-    {
-        Damageable closest = detectionZone.GetClosest();
-        if (closest == null)
-            return null;
-
-        // Raycast to check line of sight
-        if (!HasLineOfSight(closest))
-            return null;
-
-        return closest;
-    }
-
     private bool HasLineOfSight(Damageable target)
     {
-        Vector3 origin = firePoints[0].position;
-        Vector3 dir = target.transform.position - origin;
-        float dist = dir.magnitude;
-
-        if (Physics.Raycast(origin, dir.normalized, dist, obstacleMask))
-            return false; // Something blocking the way
-
-        return true;
+        Collider collider = target.GetComponentInChildren<Collider>();
+        Vector3 aimPoint = Projectile.GetTargetPoint(target, collider);
+        foreach (Transform point in firePoints)
+            if (point != null && projectileTemplate.CanReach(point.position, target, collider, aimPoint,
+                    shotOwner, obstacleMask))
+                return true;
+        return false;
     }
 
-    private void ShootFrom(Transform point, Damageable target)
+    private bool ShootFrom(Transform point, Damageable target)
     {
-        if (target == null)
-            return;
+        if (point == null)
+            return false;
 
         Vector3 origin = point.position;
-        Vector3 dir = (target.transform.position - origin).normalized;
+        Collider collider = target.GetComponentInChildren<Collider>();
+        Vector3 aimPoint = Projectile.GetTargetPoint(target, collider);
+        if (!projectileTemplate.CanReach(origin, target, collider, aimPoint, shotOwner, obstacleMask))
+            return false;
 
-        GameObject go = Instantiate(projectilePrefab, origin, Quaternion.LookRotation(dir));
+        AimFirePoint(point, aimPoint);
+        Projectile shot = Instantiate(projectileTemplate, origin, point.rotation);
         if (slowAmmo != null && slowAmmo.IsActive)
-            go.GetComponent<Projectile>().Init(target, damage, slowAmmo.SlowMultiplier, slowAmmo.SlowDuration);
+            shot.Init(target, damage, slowAmmo.SlowMultiplier, slowAmmo.SlowDuration, shotOwner);
         else
-            go.GetComponent<Projectile>().Init(target, damage);
+            shot.Init(target, damage, owner: shotOwner);
 
+        if (!volleyHasFired)
+        {
+            fireCooldown = 1f / fireRate;
+            volleyHasFired = true;
+        }
         onFired?.Invoke();
+        return true;
     }
 
 }

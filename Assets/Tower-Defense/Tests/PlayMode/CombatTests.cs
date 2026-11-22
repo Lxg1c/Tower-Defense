@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
@@ -11,6 +12,94 @@ namespace TowerDefense.Tests
     public class CombatTests
     {
         private readonly List<GameObject> created = new();
+
+        [Test]
+        public void MixedWaveOrdersRolesAcrossSpawnPoints()
+        {
+            var spawner = NewObject("Spawner", false).AddComponent<WaveSpawner>();
+            var first = NewObject("First spawn").transform;
+            var second = NewObject("Second spawn").transform;
+            Set(spawner, "spawnPoints", new[] { first, second });
+            var giant = NewObject("Giant", false).AddComponent<MobCore>();
+            var spider = NewObject("Spider", false).AddComponent<MobCore>();
+            var shooter = NewObject("Shooter", false).AddComponent<MobCore>();
+            Set(giant, "formationRole", MobCore.FormationRole.Vanguard);
+            Set(shooter, "formationRole", MobCore.FormationRole.Rearguard);
+            var wave = new WaveSpawner.Wave
+            {
+                spawnGroups = new[]
+                {
+                    new WaveSpawner.SpawnGroup { spawnPointIndex = 0, entries = new[] {
+                        new WaveSpawner.MobEntry { prefab = shooter },
+                        new WaveSpawner.MobEntry { prefab = spider } } },
+                    new WaveSpawner.SpawnGroup { spawnPointIndex = 1, entries = new[] {
+                        new WaveSpawner.MobEntry { prefab = giant } } }
+                }
+            };
+            var ordered = spawner.OrderedEntries(wave).ToArray();
+            Assert.That(ordered.Select(item => item.entry.Prefab), Is.EqualTo(new[] { giant, spider, shooter }));
+            Assert.That(ordered.Select(item => item.point), Is.EqualTo(new[] { second, first, first }));
+        }
+
+        [UnityTest]
+        public IEnumerator GroundEnemyCanKillAnAlliedSoldier()
+        {
+            var enemy = NewObject("Ground enemy", false);
+            var selector = enemy.AddComponent<NearestThreatSelector>();
+            var attack = enemy.AddComponent<StandardAttack>();
+            var navigation = enemy.AddComponent<DefaultNav>();
+            var mob = enemy.AddComponent<MobCore>();
+            Set(selector, "threatMask", (LayerMask)LayerMask.GetMask("Ally"));
+            Set(attack, "damage", 1000f);
+            Set(attack, "attackRange", 3.4f);
+            Set(mob, "targetSelectorRef", selector);
+            Set(mob, "combatBehaviorRef", attack);
+            Set(mob, "navigationModifierRef", navigation);
+
+            var soldier = NewObject("Barracks soldier", false);
+            soldier.layer = LayerMask.NameToLayer("Ally");
+            soldier.transform.position = Vector3.forward * 3f;
+            soldier.AddComponent<CapsuleCollider>();
+            var ally = soldier.AddComponent<AllySoldier>();
+            soldier.GetComponent<NavMeshAgent>().enabled = false;
+            soldier.SetActive(true);
+            enemy.SetActive(true);
+            Physics.SyncTransforms();
+            yield return new WaitUntil(() => !ally.IsAlive, System.TimeSpan.FromSeconds(3),
+                () => Assert.Fail("The enemy did not kill the ally within attack range."));
+        }
+
+        [UnityTest]
+        public IEnumerator GiantInterceptsProjectileAimedAtAnotherEnemy()
+        {
+            MobCore Enemy(string name, float z, MobCore.FormationRole role)
+            {
+                var go = NewObject(name, false);
+                go.layer = LayerMask.NameToLayer("Enemy");
+                go.transform.position = Vector3.forward * z;
+                go.AddComponent<SphereCollider>();
+                var selector = go.AddComponent<BaseOnlySelector>();
+                var attack = go.AddComponent<StandardAttack>();
+                var navigation = go.AddComponent<DefaultNav>();
+                var mob = go.AddComponent<MobCore>();
+                Set(mob, "targetSelectorRef", selector);
+                Set(mob, "combatBehaviorRef", attack);
+                Set(mob, "navigationModifierRef", navigation);
+                Set(mob, "formationRole", role);
+                go.SetActive(true);
+                return mob;
+            }
+
+            var giant = Enemy("Cover", 3f, MobCore.FormationRole.Vanguard);
+            var shooter = Enemy("Covered target", 6f, MobCore.FormationRole.Rearguard);
+            var projectile = NewObject("Shot").AddComponent<Projectile>();
+            Physics.SyncTransforms();
+            projectile.Init(shooter.Health, 5f);
+            yield return new WaitUntil(() => projectile == null, System.TimeSpan.FromSeconds(3),
+                () => Assert.Fail("The projectile did not resolve its hit."));
+            Assert.That(giant.Health.CurrentHealth, Is.EqualTo(giant.Health.MaxHealth - 5f));
+            Assert.That(shooter.Health.CurrentHealth, Is.EqualTo(shooter.Health.MaxHealth));
+        }
 
         [UnityTest]
         public IEnumerator PlayerOnlyDivertsEnemyWhileClose()
@@ -135,6 +224,8 @@ namespace TowerDefense.Tests
             var baseObject = NewObject("Base").AddComponent<Base>();
             var mine = Target(Vector3.right * 3f);
             mine.gameObject.AddComponent<MineIncome>();
+            var player = NewObject("Player beside raider").AddComponent<PlayerHealth>();
+            Assert.That(mob.IsPlayerInAggroRange(player), Is.False);
             Assert.That(selector.GetTarget(mob), Is.SameAs(mine));
 
             mine.TakeDamage(mine.MaxHealth);
@@ -250,6 +341,36 @@ namespace TowerDefense.Tests
         }
 
         [UnityTest]
+        public IEnumerator PulseDealsDamageWhenTheWindupFinishes()
+        {
+            var tower = NewObject("Pulse windup", false);
+            var pulse = tower.AddComponent<PulseTower>();
+            int enemyLayer = LayerMask.NameToLayer("Enemy");
+            Set(pulse, "targetMask", (LayerMask)(1 << enemyLayer));
+            Set(pulse, "attackWindup", .28f);
+            pulse.Damage = 10f;
+            var target = Target(Vector3.forward * 2f);
+            target.gameObject.layer = enemyLayer;
+            int windups = 0;
+            int impacts = 0;
+            pulse.onAttackWindup.AddListener(() => windups++);
+            pulse.onAttack = new UnityEngine.Events.UnityEvent();
+            pulse.onAttack.AddListener(() => impacts++);
+            tower.SetActive(true);
+            Physics.SyncTransforms();
+
+            yield return null;
+            Assert.That(windups, Is.EqualTo(1));
+            Assert.That(impacts, Is.Zero);
+            Assert.That(target.CurrentHealth, Is.EqualTo(target.MaxHealth));
+
+            yield return new WaitUntil(() => impacts > 0, System.TimeSpan.FromSeconds(2),
+                () => Assert.Fail("The pulse did not land after the windup."));
+            Assert.That(impacts, Is.EqualTo(1));
+            Assert.That(target.CurrentHealth, Is.EqualTo(target.MaxHealth - 10f));
+        }
+
+        [UnityTest]
         public IEnumerator PulseSlowsGroundEnemiesAndLeavesFlyingEnemiesUntouched()
         {
             GameObject ground = NewObject("Ground enemy", false);
@@ -308,6 +429,48 @@ namespace TowerDefense.Tests
         }
 
         [UnityTest]
+        public IEnumerator MortarTurnsBeforeFiringFromItsAngledMuzzle()
+        {
+            Vector3 origin = Vector3.up * 50f;
+            var tower = NewObject("Turning mortar", false);
+            tower.transform.position = origin;
+            var pivot = NewObject("Turret pivot").transform;
+            pivot.SetParent(tower.transform, false);
+            var muzzle = NewObject("Angled muzzle").transform;
+            muzzle.SetParent(pivot, false);
+            muzzle.localPosition = new Vector3(0f, 1.5f, .7f);
+            muzzle.localRotation = Quaternion.Euler(-38f, 0f, 0f);
+            var template = NewObject("Mortar template").AddComponent<MortarShell>();
+            var mortar = tower.AddComponent<MortarTower>();
+            int enemyLayer = LayerMask.NameToLayer("Enemy");
+            Set(mortar, "turretPivot", pivot);
+            Set(mortar, "muzzle", muzzle);
+            Set(mortar, "shellPrefab", template);
+            Set(mortar, "enemyMask", (LayerMask)(1 << enemyLayer));
+            var target = Target(origin + Vector3.right * 5f);
+            target.gameObject.layer = enemyLayer;
+            tower.SetActive(true);
+            Physics.SyncTransforms();
+
+            yield return null;
+            Assert.That(Object.FindObjectsByType<MortarShell>(FindObjectsSortMode.None), Has.Length.EqualTo(1),
+                "The mortar must finish turning before launching.");
+            MortarShell fired = null;
+            yield return new WaitUntil(() =>
+            {
+                fired = Object.FindObjectsByType<MortarShell>(FindObjectsSortMode.None)
+                    .FirstOrDefault(shell => shell != template);
+                return fired != null;
+            }, System.TimeSpan.FromSeconds(2), () => Assert.Fail("The mortar did not fire after turning."));
+
+            Assert.That(Vector3.Angle(pivot.forward, Vector3.right), Is.LessThan(.5f));
+            Assert.That(Vector3.Angle(fired.transform.forward, muzzle.forward), Is.LessThan(.5f));
+            var launch = (Vector3)typeof(MortarShell).GetField("launchPosition",
+                BindingFlags.Instance | BindingFlags.NonPublic).GetValue(fired);
+            Assert.That(Vector3.Distance(launch, muzzle.position), Is.LessThan(.01f));
+        }
+
+        [UnityTest]
         public IEnumerator MortarSplashDamagesEachEnemyOnceAndIgnoresDistantTargets()
         {
             Time.timeScale = 1f;
@@ -358,6 +521,70 @@ namespace TowerDefense.Tests
             Assert.That(shots, Is.GreaterThanOrEqualTo(2), "A completed single-muzzle volley must allow another volley.");
             Assert.That(Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None).Length, Is.GreaterThanOrEqualTo(3));
             Assert.That(target.CurrentHealth, Is.EqualTo(target.MaxHealth), "Damage occurs on projectile hit, not firing.");
+        }
+
+        [UnityTest]
+        public IEnumerator ShooterSkipsBlockedTargetAndResumesWhenPathClears()
+        {
+            Vector3 origin = Vector3.up * 50f;
+            var hidden = Target(origin + Vector3.forward * 5f);
+            var wall = SolidObstacle(origin + Vector3.forward * 2f);
+            wall.GetComponent<BoxCollider>().size = new Vector3(1, 4, .1f);
+            var shooter = CreateShooter(origin, out GameObject shooterObject);
+            Set(shooter, "firePoints", new[] { shooterObject.transform });
+            int shots = 0;
+            shooter.onFired.AddListener(() => shots++);
+            shooterObject.SetActive(true);
+            Physics.SyncTransforms();
+            yield return new WaitForSeconds(.3f);
+
+            Assert.That(shots, Is.Zero);
+            Assert.That(shooter.HasTarget, Is.False);
+            Assert.That(hidden.CurrentHealth, Is.EqualTo(hidden.MaxHealth));
+
+            var visible = Target(origin + new Vector3(5f, 0f, 5f));
+            Physics.SyncTransforms();
+            yield return new WaitUntil(() => visible.CurrentHealth < visible.MaxHealth,
+                System.TimeSpan.FromSeconds(2), () => Assert.Fail("The shooter did not hit the visible enemy."));
+            Assert.That(shooter.CurrentTarget, Is.SameAs(visible));
+            Assert.That(hidden.CurrentHealth, Is.EqualTo(hidden.MaxHealth));
+
+            wall.SetActive(false);
+            Physics.SyncTransforms();
+            yield return new WaitUntil(() => hidden.CurrentHealth < hidden.MaxHealth,
+                System.TimeSpan.FromSeconds(2), () => Assert.Fail("The shooter did not resume fire at the nearer enemy."));
+        }
+
+        [UnityTest]
+        public IEnumerator ShooterRechecksEachMuzzleBeforeItsDelayedShot()
+        {
+            Vector3 origin = Vector3.up * 50f;
+            var target = Target(origin + Vector3.forward * 8f);
+            var blocker = SolidObstacle(origin + new Vector3(1.5f, 0f, 2f));
+            blocker.GetComponent<BoxCollider>().size = new Vector3(.6f, 4, .1f);
+            blocker.SetActive(false);
+            var shooter = CreateShooter(origin, out GameObject shooterObject);
+            var secondMuzzle = NewObject("Second muzzle").transform;
+            secondMuzzle.SetParent(shooterObject.transform, false);
+            secondMuzzle.localPosition = Vector3.right * 2f;
+            Set(shooter, "firePoints", new[] { shooterObject.transform, secondMuzzle });
+            Set(shooter, "delayBetweenFirePoints", .1f);
+            shooter.FireRate = 1f;
+            int shots = 0;
+            shooter.onFired.AddListener(() =>
+            {
+                shots++;
+                blocker.SetActive(true);
+                Physics.SyncTransforms();
+            });
+            shooterObject.SetActive(true);
+            Physics.SyncTransforms();
+            yield return new WaitUntil(() => shots > 0, System.TimeSpan.FromSeconds(2),
+                () => Assert.Fail("The open muzzle did not fire."));
+            yield return new WaitForSeconds(.3f);
+
+            Assert.That(shots, Is.EqualTo(1));
+            Assert.That(target.CurrentHealth, Is.LessThan(target.MaxHealth));
         }
 
         [UnityTest]
@@ -553,6 +780,158 @@ namespace TowerDefense.Tests
             Assert.That(target.CurrentHealth, Is.EqualTo(target.MaxHealth - 12f));
             yield return null;
             Assert.That(projectile == null, Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator FastProjectileStopsAtThinSceneryAndCreatesImpact()
+        {
+            var target = Target(new Vector3(0, 50, 8));
+            SolidObstacle(new Vector3(0, 50, 3));
+            var effect = NewObject("Bullet impact marker");
+            var projectile = NewObject("Blocked projectile").AddComponent<Projectile>();
+            projectile.transform.position = Vector3.up * 50;
+            Set(projectile, "speed", 5000f);
+            Set(projectile, "impactPrefab", effect);
+            projectile.Init(target, 12f);
+            Physics.SyncTransforms();
+            yield return null;
+            yield return null;
+            Assert.That(projectile == null, Is.True);
+            Assert.That(target.CurrentHealth, Is.EqualTo(target.MaxHealth));
+            var impact = GameObject.Find("Bullet impact marker(Clone)");
+            if (impact != null) created.Add(impact);
+            Assert.That(impact, Is.Not.Null);
+            Assert.That(impact.transform.position.z, Is.EqualTo(2.975f).Within(.06f));
+        }
+
+        [UnityTest]
+        public IEnumerator ProjectileReachesTargetBeforeAnObstacleBehindIt()
+        {
+            var target = Target(new Vector3(0, 50, 2));
+            SolidObstacle(new Vector3(0, 50, 6));
+            var projectile = NewObject("Target first projectile").AddComponent<Projectile>();
+            projectile.transform.position = Vector3.up * 50;
+            Set(projectile, "speed", 5000f);
+            projectile.Init(target, 12f);
+            Physics.SyncTransforms();
+            yield return null;
+            Assert.That(target.CurrentHealth, Is.EqualTo(target.MaxHealth - 12f));
+        }
+
+        [UnityTest]
+        public IEnumerator OwnerAndTriggerVolumesDoNotStopProjectile()
+        {
+            var owner = SolidObstacle(Vector3.up * 50);
+            owner.GetComponent<BoxCollider>().size = Vector3.one * 2f;
+            SolidObstacle(new Vector3(0, 50, 4)).GetComponent<BoxCollider>().isTrigger = true;
+            var target = Target(new Vector3(0, 50, 8));
+            var projectile = NewObject("Owned projectile").AddComponent<Projectile>();
+            projectile.transform.position = owner.transform.position;
+            Set(projectile, "speed", 5000f);
+            projectile.Init(target, 12f, owner: owner.transform);
+            Physics.SyncTransforms();
+            yield return null;
+            Assert.That(target.CurrentHealth, Is.EqualTo(target.MaxHealth - 12f));
+        }
+
+        [UnityTest]
+        public IEnumerator ProjectileImpactAppearsAtTheTargetsSurface()
+        {
+            var target = Target(new Vector3(0, 50, 8));
+            target.GetComponent<SphereCollider>().radius = 2f;
+            var effect = NewObject("Body surface impact");
+            var projectile = NewObject("Body surface projectile").AddComponent<Projectile>();
+            projectile.transform.position = Vector3.up * 50;
+            Set(projectile, "speed", 5000f);
+            Set(projectile, "impactPrefab", effect);
+            projectile.Init(target, 12f);
+            Physics.SyncTransforms();
+            yield return null;
+            var impact = GameObject.Find("Body surface impact(Clone)");
+            if (impact != null) created.Add(impact);
+            Assert.That(impact, Is.Not.Null);
+            Assert.That(impact.transform.position.z, Is.EqualTo(6f).Within(.01f));
+            Assert.That(target.CurrentHealth, Is.EqualTo(target.MaxHealth - 12f));
+        }
+
+        [UnityTest]
+        public IEnumerator ProjectileAimsAtRaisedBodyInsteadOfTheGroundUnderItsRoot()
+        {
+            var ground = SolidObstacle(new Vector3(0, 48.5f, 4));
+            ground.GetComponent<BoxCollider>().size = new Vector3(20, 1, 20);
+            var target = Target(new Vector3(0, 49, 8));
+            target.GetComponent<SphereCollider>().center = Vector3.up;
+            var projectile = NewObject("Raised body projectile").AddComponent<Projectile>();
+            projectile.transform.position = Vector3.up * 50;
+            Set(projectile, "speed", 5000f);
+            projectile.Init(target, 12f);
+            Physics.SyncTransforms();
+            yield return null;
+            Assert.That(target.CurrentHealth, Is.EqualTo(target.MaxHealth - 12f));
+        }
+
+        [UnityTest]
+        public IEnumerator ProjectileCanDamageItsIntendedBuildingTarget()
+        {
+            var target = Target(new Vector3(0, 50, 3));
+            target.gameObject.layer = LayerMask.NameToLayer("Tower");
+            var projectile = NewObject("Building target projectile").AddComponent<Projectile>();
+            projectile.transform.position = Vector3.up * 50;
+            Set(projectile, "speed", 5000f);
+            projectile.Init(target, 12f);
+            Physics.SyncTransforms();
+            yield return null;
+            Assert.That(target.CurrentHealth, Is.EqualTo(target.MaxHealth - 12f));
+        }
+
+        [UnityTest]
+        public IEnumerator MortarHitsSceneryAlongItsArcAndCannotDamageThroughIt()
+        {
+            var target = Target(new Vector3(0, 50, 8));
+            target.gameObject.layer = LayerMask.NameToLayer("Enemy");
+            var wall = SolidObstacle(new Vector3(0, 54, 3));
+            wall.GetComponent<BoxCollider>().size = new Vector3(4, 20, .05f);
+            var effect = NewObject("Mortar impact marker");
+            var shell = NewObject("Blocked mortar").AddComponent<MortarShell>();
+            Set(shell, "impactPrefab", effect);
+            shell.transform.position = Vector3.up * 50;
+            shell.Launch(target.transform.position, 20f, 10f, .05f, 1 << target.gameObject.layer);
+            Physics.SyncTransforms();
+            float deadline = Time.realtimeSinceStartup + 1f;
+            while (shell != null && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(shell == null, Is.True);
+            Assert.That(target.CurrentHealth, Is.EqualTo(target.MaxHealth));
+            var impact = GameObject.Find("Mortar impact marker(Clone)");
+            if (impact != null) created.Add(impact);
+            Assert.That(impact, Is.Not.Null);
+            Assert.That(impact.transform.position.z, Is.LessThan(3.05f));
+        }
+
+        private GameObject SolidObstacle(Vector3 position)
+        {
+            var obstacle = NewObject("Solid scenery");
+            obstacle.transform.position = position;
+            obstacle.AddComponent<BoxCollider>().size = new Vector3(4, 4, .05f);
+            return obstacle;
+        }
+
+        private Shooter CreateShooter(Vector3 origin, out GameObject shooterObject)
+        {
+            var template = NewObject("Projectile template", false);
+            template.transform.position = Vector3.right * 1000f;
+            var projectile = template.AddComponent<Projectile>();
+            Set(projectile, "speed", 100f);
+            Set(projectile, "lifeTime", 100f);
+            Set(projectile, "missOvershootDistance", 10000f);
+            projectile.Init(null, 0f);
+            template.SetActive(true);
+
+            shooterObject = NewObject("Auto shooter", false);
+            shooterObject.transform.position = origin;
+            var shooter = shooterObject.AddComponent<Shooter>();
+            Set(shooter, "projectilePrefab", template);
+            shooter.FireRate = 10f;
+            return shooter;
         }
 
         private GameObject NewObject(string name, bool active = true)

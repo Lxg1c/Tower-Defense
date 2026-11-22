@@ -1,5 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
   <ui:Style src="Gameplay.uss" />
+  <ui:Style src="Motion.uss" />
   <ui:VisualElement name="gameRoot" class="game-root" picking-mode="Ignore">
     <ui:VisualElement name="topBar" class="top-bar" picking-mode="Ignore">
       <ui:Button name="pauseButton" class="icon-button pause-button">
@@ -171,7 +172,9 @@
       </ui:VisualElement>
       <ui:VisualElement name="audioPanel" class="pause-settings is-hidden" picking-mode="Position">
         <ui:VisualElement class="pause-settings-header" picking-mode="Ignore">
-          <ui:Button name="audioBack" text="←" tooltip="Назад к паузе" class="pause-settings-back l10n-tip-back-pause" />
+          <ui:Button name="audioBack" tooltip="Назад к паузе" class="pause-settings-back l10n-tip-back-pause">
+            <ui:VisualElement class="pause-settings-back-icon" picking-mode="Ignore" />
+          </ui:Button>
           <ui:Label text="Настройки" class="pause-settings-title l10n-settings" />
         </ui:VisualElement>
         <ui:VisualElement class="pause-volume-row" picking-mode="Ignore">

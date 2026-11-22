@@ -857,7 +857,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 73056113385476
-    m_Localized: "First map \xB7 fixed camera \xB7 enemy models"
+    m_Localized: "First location \xB7 fixed camera \xB7 enemy models and combat scenarios"
     m_Metadata:
       m_Items: []
   - m_Id: 73056113385477
@@ -1038,6 +1038,26 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 2546188820668419
     m_Localized: Close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3181361471938560
+    m_Localized: Combat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3181361576796160
+    m_Localized: 'Towers: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3181361576796161
+    m_Localized: "Towers: {0} \xB7 Enemies spawned: {1} \xB7 Peak alive: {2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3188683682340864
+    m_Localized: Ambient occlusion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3188683766226944
+    m_Localized: Soft shading in corners and at contact points
     m_Metadata:
       m_Items: []
   references:

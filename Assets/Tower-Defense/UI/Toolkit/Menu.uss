@@ -432,16 +432,15 @@
 }
 .subpage-panel-title { margin: 0 0 14px; padding: 0; color: #edf9fb; font-size: 28px; -unity-font-style: bold; }
 .menu-settings-layout { margin-top: 10px; }
-.menu-settings-card { width: 32.3%; height: 382px; max-height: 100%; padding-left: 20px; padding-right: 20px; }
+.menu-settings-card { width: 32.3%; height: 508px; max-height: 100%; padding-left: 20px; padding-right: 20px; }
 .menu-settings-card .subpage-panel-title { flex-shrink: 0; }
-.desktop-menu .menu-settings-card { height: 424px; }
 .desktop-menu .menu-setting-row .language-dropdown { width: 60%; }
 
 .menu-extra-button.benchmark-start { width: 100%; }
 .graphics-note { white-space: normal; color: #b1cdd5; margin: 0; padding: 0; font-size: 16px; }
 .menu-setting-row {
   flex-direction: row; align-items: center; justify-content: space-between;
-  height: 52px; flex-shrink: 0; border-bottom-width: 1px; border-bottom-color: #315566;
+  height: 60px; flex-shrink: 0; border-bottom-width: 1px; border-bottom-color: #315566;
 }
 .menu-setting-row-last { border-bottom-color: rgba(0,0,0,0); }
 .menu-setting-label, .menu-volume-value { margin: 0; padding: 0; -unity-font-style: bold; }
@@ -470,7 +469,7 @@
 }
 .menu-setting-row .language-dropdown, .menu-setting-row .menu-extra-button { height: 42px; flex-shrink: 0; }
 .menu-setting-row .language-dropdown { width: 52%; min-width: 0; }
-.repeat-hints-status { margin: -5px 0 0; padding: 0; color: #82ece4; font-size: 15px; white-space: normal; }
+.repeat-hints-status { margin: 4px 0 0; padding: 0; color: #82ece4; font-size: 15px; white-space: normal; }
 .guide-page { flex-grow: 1; }
 .guide-layout { flex-direction: row; flex-grow: 1; min-height: 0; }
 .guide-entries { width: 40%; margin-right: 2%; padding: 19px; }
@@ -653,9 +652,9 @@
 .subpage-short .subpage-panel { padding: 17px 20px; }
 .subpage-short .subpage-panel-title { font-size: 22px; margin-bottom: 7px; }
 .subpage-short .menu-settings-layout { margin-top: 5px; }
-.subpage-short .menu-settings-card { height: 288px; }
+.subpage-short .menu-settings-card { height: 394px; }
 .subpage-short .menu-setting-label, .subpage-short .menu-volume-value { font-size: 16px; }
-.subpage-short .menu-setting-row { height: 40px; }
+.subpage-short .menu-setting-row { height: 46px; }
 .subpage-short .menu-setting-row .language-dropdown,
 .subpage-short .menu-setting-row .menu-extra-button { height: 34px; }
 .subpage-short .graphics-note { font-size: 14px; }

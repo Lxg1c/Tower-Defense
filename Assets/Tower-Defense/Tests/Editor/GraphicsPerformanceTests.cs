@@ -2,6 +2,7 @@ using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace TowerDefense.Tests
 {
@@ -145,6 +146,52 @@ namespace TowerDefense.Tests
                 GamePerformanceSettings.LoadGraphicsPreferences();
                 PlayerPrefs.Save();
             }
+        }
+
+        [Test]
+        public void AmbientOcclusionChoicePersistsAcrossQualityChanges()
+        {
+            const string key = GamePerformanceSettings.AmbientOcclusionKey;
+            const string qualityKey = GamePerformanceSettings.AndroidQualityKey;
+            int? original = PlayerPrefs.HasKey(key) ? PlayerPrefs.GetInt(key) : null;
+            int? originalQuality = PlayerPrefs.HasKey(qualityKey) ? PlayerPrefs.GetInt(qualityKey) : null;
+            try
+            {
+                PlayerPrefs.DeleteKey(key);
+                GamePerformanceSettings.SetAndroidQuality(GamePerformanceSettings.AndroidQuality.High);
+                GamePerformanceSettings.LoadGraphicsPreferences();
+                Assert.That(GamePerformanceSettings.AmbientOcclusion,
+                    Is.EqualTo(GamePerformanceSettings.SupportsAndroidQuality));
+
+                GamePerformanceSettings.SetAmbientOcclusion(false);
+                GamePerformanceSettings.LoadGraphicsPreferences();
+                Assert.That(GamePerformanceSettings.AmbientOcclusion, Is.False);
+
+                GamePerformanceSettings.SetAmbientOcclusion(true);
+                GamePerformanceSettings.SetAndroidQuality(GamePerformanceSettings.AndroidQuality.Low);
+                GamePerformanceSettings.LoadGraphicsPreferences();
+                Assert.That(GamePerformanceSettings.AmbientOcclusion, Is.True);
+            }
+            finally
+            {
+                Restore(key, original);
+                Restore(qualityKey, originalQuality);
+                GamePerformanceSettings.LoadGraphicsPreferences();
+                PlayerPrefs.Save();
+            }
+        }
+
+        [TestCase("Mobile_RPAsset", true)]
+        [TestCase("Mobile_RPAsset_Balanced", false)]
+        [TestCase("Mobile_RPAsset_Low", false)]
+        [TestCase("PC_RPAsset", false)]
+        public void GraphicsProfilesProvideBothAmbientOcclusionRenderers(string asset, bool defaultEnabled)
+        {
+            var pipeline = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(
+                $"Assets/Tower-Defense/Settings/{asset}.asset");
+
+            Assert.That(GamePerformanceSettings.FindAmbientOcclusionRenderer(pipeline, defaultEnabled), Is.Zero);
+            Assert.That(GamePerformanceSettings.FindAmbientOcclusionRenderer(pipeline, !defaultEnabled), Is.EqualTo(1));
         }
 
         [Test]

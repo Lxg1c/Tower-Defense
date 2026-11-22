@@ -125,8 +125,10 @@ namespace TowerDefense.Tests
             Assert.That(slot.GetOptions(2), Is.EqualTo(new[] { cheap, firstTie, secondTie, expensive }));
         }
 
-        [Test]
-        public void LongWallChargesForEveryReservedCell()
+        [TestCase(1)]
+        [TestCase(6)]
+        [TestCase(8)]
+        public void WallOfferAndPurchaseUseFixedPrice(int length)
         {
             var loadout = ScriptableObject.CreateInstance<TowerLoadout>();
             created.Add(loadout);
@@ -135,14 +137,22 @@ namespace TowerDefense.Tests
                 prefab = NewObject("Wall template"), slotType = BuildSlotType.Wall, cost = 3
             };
             loadout.options = new[] { wall };
-            var slot = new BuildingSlot(loadout, BuildSlotType.Wall, 1, costMultiplier: 4);
+            var grid = NewObject("Grid").AddComponent<LevelGrid>();
+            var zoneObject = NewObject("Wall zone");
+            zoneObject.AddComponent<LevelGridPlacedZone>().Configure(grid,
+                new RectInt(0, 0, length, 1), new RectInt(0, 1, 1, 1));
+            var zone = zoneObject.AddComponent<TowerPlacementZone>();
+            Set(zone, "allowedType", BuildSlotType.Wall);
+            Set(zone, "loadout", loadout);
+            var slot = new BuildingSlot(loadout, BuildSlotType.Wall, 1);
             PlayerWallet wallet = Wallet();
+            wallet.TrySpend(wallet.Coins - 8);
 
-            Assert.That(slot.GetCost(wall), Is.EqualTo(12));
+            Assert.That(zone.GetOptionCost(wall), Is.EqualTo(3));
             Assert.That(slot.TryBuild(wall, wallet, true, 1, Vector3.zero,
                 Quaternion.identity, out GameObject building), Is.True);
             created.Add(building);
-            Assert.That(wallet.Coins, Is.EqualTo(88));
+            Assert.That(wallet.Coins, Is.EqualTo(5));
         }
 
         [Test]

@@ -11,6 +11,9 @@ internal sealed class PerformanceBenchmark : IDisposable
     private static readonly int[] EnemyCounts = { 0, 16, 32, 64 };
     private const float WarmupSeconds = 1f;
     private const float StageSeconds = 6f;
+    private const float CombatSeconds = 10f;
+    private const float CombatWarmupSeconds = 2.5f;
+    private const int CombatEnemies = 32;
     private const int GridSize = 8;
     private const float ReducedRenderScale = 0.65f;
 
@@ -18,26 +21,37 @@ internal sealed class PerformanceBenchmark : IDisposable
     {
         internal readonly string ProfileKey;
         internal readonly int Enemies;
+        internal readonly int DefenseCount;
+        internal bool IsCombat => DefenseCount >= 0;
 
-        internal Stage(string profileKey, int enemies)
+        internal Stage(string profileKey, int enemies, int defenseCount = -1)
         {
             ProfileKey = profileKey;
             Enemies = enemies;
+            DefenseCount = defenseCount;
         }
     }
 
     private readonly GameObject container;
     private readonly GameObject[] models = new GameObject[EnemyCounts[^1]];
+    private readonly MobCore[] enemySequence = new MobCore[EnemyCounts[^1]];
     private readonly List<Stage> stages = new();
     private readonly List<string> reports = new();
     private readonly List<string> graphicsReports = new();
+    private readonly List<string> workloadReports = new();
     private readonly List<PerformanceMeasurement.StageMetrics> metrics = new();
     private readonly UniversalRenderPipelineAsset pipeline;
     private readonly UniversalAdditionalCameraData cameraData;
-    private readonly ScreenSpaceAmbientOcclusion ssao;
+    private bool ssaoEnabled;
     private readonly float originalScale;
     private readonly bool originalShadows;
     private readonly bool originalSsao;
+    private readonly TowerLoadout loadout;
+    private readonly Transform hero;
+    private readonly Vector3 approach;
+    private readonly PlayerHealth heroHealth;
+    private readonly float originalHeroHealth;
+    private PerformanceBenchmarkCombat combat;
     private bool disposed;
     private PerformanceMeasurement measurement;
     private int stage;
@@ -48,16 +62,30 @@ internal sealed class PerformanceBenchmark : IDisposable
     internal int StageNumber => stage + 1;
     internal int StageCount => stages.Count;
     internal string CurrentProfileKey => stages[stage].ProfileKey;
-    internal int SecondsRemaining => Mathf.CeilToInt(warmup + StageSeconds - (float)(measurement?.Elapsed ?? 0d));
+    internal int DefenseCount => stages[stage].DefenseCount;
+    internal bool IsCombatStage => stages[stage].IsCombat;
+    private float MeasureSeconds => IsCombatStage ? CombatSeconds : StageSeconds;
+    internal int SecondsRemaining => Mathf.CeilToInt(warmup + MeasureSeconds - (float)(measurement?.Elapsed ?? 0d));
     internal string Report { get; private set; }
 
     internal int EnemiesAtStage(int index) => stages[index].Enemies;
     internal string ProfileAtStage(int index) => stages[index].ProfileKey;
     internal string GraphicsAtStage(int index) => graphicsReports[index];
+    internal string WorkloadAtStage(int index) => workloadReports[index];
+    internal int DefensesAtStage(int index) => stages[index].DefenseCount;
     internal PerformanceMeasurement.StageMetrics MetricsAt(int index) => metrics[index];
 
-    internal PerformanceBenchmark(WaveSpawner spawner, Camera camera, Vector3 referencePosition)
+    internal PerformanceBenchmark(WaveSpawner spawner, Camera camera, Transform hero, TowerLoadout loadout)
     {
+        this.hero = hero;
+        this.loadout = loadout;
+        heroHealth = hero.GetComponent<PlayerHealth>();
+        if (heroHealth != null) originalHeroHealth = heroHealth.MaxHealth;
+        Vector3 referencePosition = hero.position;
+        Transform spawnPoint = spawner.GetClosestSpawnPoint(referencePosition);
+        approach = spawnPoint != null
+            ? Vector3.ProjectOnPlane(spawnPoint.position - referencePosition, Vector3.up).normalized
+            : Vector3.forward;
         var prefabs = new List<MobCore>();
         var weights = new List<int>();
         int totalWeight = 0;
@@ -84,19 +112,17 @@ internal sealed class PerformanceBenchmark : IDisposable
         pipeline = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
         camera.TryGetComponent(out cameraData);
         if (pipeline != null)
-        {
             originalScale = pipeline.renderScale;
-            // The benchmark camera uses the default renderer in the project's single-renderer profiles.
-            if (pipeline.rendererDataList.Length == 1 && pipeline.rendererDataList[0] != null)
-                pipeline.rendererDataList[0].TryGetRendererFeature(out ssao);
-        }
-        originalSsao = ssao != null && ssao.isActive;
+        originalSsao = GamePerformanceSettings.ApplyAmbientOcclusion(cameraData, GamePerformanceSettings.AmbientOcclusion);
         originalShadows = cameraData != null && cameraData.renderShadows;
         foreach (int count in EnemyCounts)
             stages.Add(new Stage(LocalizationKeys.PerfProfileBaseline, count));
         if (originalSsao) AddComparison(LocalizationKeys.PerfProfileNoSsao);
         if (ShadowsEnabled) AddComparison(LocalizationKeys.PerfProfileNoShadows);
         if (pipeline != null && originalScale > ReducedRenderScale) AddComparison(LocalizationKeys.PerfProfileReducedScale);
+        if (loadout != null)
+            foreach (int defenses in new[] { 0, 6, 12 })
+                stages.Add(new Stage(LocalizationKeys.PerfProfileCombat, CombatEnemies, defenses));
 
         container = new GameObject("Performance benchmark models");
         container.SetActive(false);
@@ -115,6 +141,7 @@ internal sealed class PerformanceBenchmark : IDisposable
                 type = candidate;
             }
             placed[type]++;
+            enemySequence[i] = prefabs[type];
 
             // Interleave the grid so every stage fills the same part of the view.
             int cell = (i * 27) % models.Length;
@@ -136,6 +163,7 @@ internal sealed class PerformanceBenchmark : IDisposable
                 body.detectCollisions = false;
             }
             GraphicsMaterialProfiles.Apply(model);
+            MobileContactShadows.Track(model);
             model.SetActive(false);
             models[i] = model;
         }
@@ -151,16 +179,25 @@ internal sealed class PerformanceBenchmark : IDisposable
             warmup = Mathf.Max(0f, warmup - deltaTime);
             return;
         }
-        measurement.Tick(deltaTime, 0, false, EnemyCount);
-        if (measurement.Elapsed < StageSeconds) return;
+        combat?.Tick(deltaTime);
+        measurement.Tick(deltaTime, 0, IsCombatStage, combat?.AliveEnemies ?? EnemyCount);
+        if (measurement.Elapsed < MeasureSeconds) return;
 
         string graphics = GraphicsReport();
+        string workload = combat != null
+            ? GameLocalization.Format(LocalizationKeys.PerfCombatWorkload, DefenseCount,
+                combat.SpawnedEnemies, combat.PeakEnemies)
+            : null;
         graphicsReports.Add(graphics);
+        workloadReports.Add(workload);
         reports.Add(GameLocalization.Text(CurrentProfileKey) + "\n" + graphics + "\n" +
+            (workload == null ? string.Empty : workload + "\n") +
             measurement.Report(benchmark: true));
         metrics.Add(measurement.Metrics);
         measurement.Dispose();
         measurement = null;
+        combat?.Dispose();
+        combat = null;
         stage++;
         if (IsComplete)
         {
@@ -176,9 +213,15 @@ internal sealed class PerformanceBenchmark : IDisposable
     {
         ApplyGraphics(CurrentProfileKey);
         for (int i = 0; i < models.Length; i++)
-            models[i].SetActive(i < EnemyCount);
+            models[i].SetActive(!IsCombatStage && i < EnemyCount);
+        if (IsCombatStage)
+        {
+            if (heroHealth != null) heroHealth.SetMaxHealth(10000f);
+            combat = new PerformanceBenchmarkCombat(loadout, hero.position, approach, enemySequence,
+                EnemyCount, DefenseCount, container.transform);
+        }
         measurement = new PerformanceMeasurement();
-        warmup = WarmupSeconds;
+        warmup = IsCombatStage ? CombatWarmupSeconds : WarmupSeconds;
     }
 
     private void AddComparison(string profileKey)
@@ -193,7 +236,8 @@ internal sealed class PerformanceBenchmark : IDisposable
 
     private void ApplyGraphics(string profileKey)
     {
-        if (ssao != null) ssao.SetActive(originalSsao && profileKey != LocalizationKeys.PerfProfileNoSsao);
+        ssaoEnabled = GamePerformanceSettings.ApplyAmbientOcclusion(cameraData,
+            originalSsao && profileKey != LocalizationKeys.PerfProfileNoSsao);
         if (cameraData != null)
             cameraData.renderShadows = originalShadows && profileKey != LocalizationKeys.PerfProfileNoShadows;
         if (pipeline != null)
@@ -206,16 +250,21 @@ internal sealed class PerformanceBenchmark : IDisposable
     {
         string Toggle(bool enabled) => GameLocalization.Text(enabled ? LocalizationKeys.PerfOn : LocalizationKeys.PerfOff);
         return GameLocalization.Format(LocalizationKeys.PerfRenderSettings, pipeline != null ? pipeline.renderScale : 1f,
-            Toggle(ssao != null && ssao.isActive), Toggle(ShadowsEnabled));
+            Toggle(ssaoEnabled), Toggle(ShadowsEnabled));
     }
 
     public void Dispose()
     {
         if (disposed) return;
         disposed = true;
+        combat?.Dispose();
+        combat = null;
+        foreach (var model in models)
+            if (model != null) MobileContactShadows.Untrack(model);
         measurement?.Dispose();
         measurement = null;
         if (!IsComplete) RestoreGraphics();
+        if (heroHealth != null) heroHealth.SetMaxHealth(originalHeroHealth, topUpToFull: false);
         if (container != null) Object.Destroy(container);
     }
 }

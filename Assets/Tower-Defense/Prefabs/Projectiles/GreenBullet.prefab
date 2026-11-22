@@ -49,6 +49,8 @@ MonoBehaviour:
   rotateSpeed: 320
   lifeTime: 5
   hitDistance: 0.5
+  collisionRadius: 0.05
+  impactPrefab: {fileID: 7090305510649025709, guid: 75efdbc7b0e298845881b3483b2dad58, type: 3}
   maxHomingTurnAngle: 30
   missOvershootDistance: 1
 --- !u!1001 &4339376413685915897

@@ -8,6 +8,7 @@ using UnityEngine.UIElements;
 [RequireComponent(typeof(UIDocument))]
 public sealed class GameplayToolkitView : MonoBehaviour
 {
+    private readonly ToolkitPanelMotion motion = new();
     [SerializeField] private ResponsiveGameplayHud responsiveHud;
     [SerializeField] private WaveSpawner spawner;
     [SerializeField] private AudioSource waveStartAudio;
@@ -82,11 +83,13 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private VisualElement benchmarkHud;
     private Button benchmarkExit;
     private Button performanceBack;
+    [SerializeField] private TowerLoadout benchmarkLoadout;
     private PerformanceBenchmark benchmark;
     private bool benchmarkMode;
     private int displayedBenchmarkStage;
     private int displayedBenchmarkSeconds = -1;
     private VisualElement performancePanel;
+    private VisualElement[] overlayPanels;
     private VisualElement benchmarkStages;
     private VisualElement benchmarkProfiles;
     private string performanceClipboard;
@@ -203,6 +206,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         benchmarkExit = root.Q<Button>("benchmarkExit");
         performanceBack = root.Q<Button>("performanceBack");
         performancePanel = root.Q("performancePanel");
+        overlayPanels = new[] { pausePanel, audioPanel, exitConfirmPanel, victoryPanel, defeatPanel, performancePanel };
         benchmarkStages = root.Q("benchmarkStages");
         benchmarkProfiles = root.Q("benchmarkProfiles");
         startWaveButton = root.Q<Button>("startWaveButton");
@@ -331,6 +335,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
 
     private void OnDisable()
     {
+        motion.Clear();
 #if UNITY_EDITOR
         ClearEditorHudPreview();
 #endif
@@ -449,14 +454,14 @@ public sealed class GameplayToolkitView : MonoBehaviour
         rallyButton.EnableInClassList("is-hidden", hideRally);
         desktopRally.EnableInClassList("is-hidden", hideRally);
         orderLayer.EnableInClassList("is-hidden", !order);
-        buildPanel.EnableInClassList("is-hidden", !buildModal.IsOpen || order || paused || won || lost);
-        screenOverlay.EnableInClassList("is-hidden", !paused && !won && !lost && !performanceReportOpen);
-        pausePanel.EnableInClassList("is-hidden", !paused || audioOpen || confirmingExit || performanceReportOpen);
-        audioPanel.EnableInClassList("is-hidden", !paused || !audioOpen || confirmingExit);
-        exitConfirmPanel.EnableInClassList("is-hidden", !confirmingExit);
-        victoryPanel.EnableInClassList("is-hidden", !won || performanceReportOpen);
-        defeatPanel.EnableInClassList("is-hidden", !lost || performanceReportOpen);
-        performancePanel.EnableInClassList("is-hidden", !performanceReportOpen);
+        motion.SetVisible(buildPanel, buildModal.IsOpen && !order && !paused && !won && !lost);
+        var overlayPanel = performanceReportOpen ? performancePanel
+            : won ? victoryPanel
+            : lost ? defeatPanel
+            : confirmingExit ? exitConfirmPanel
+            : paused ? (audioOpen ? audioPanel : pausePanel)
+            : null;
+        ShowOverlay(overlayPanel);
         if (confirmingExit)
         {
             bool restarting = pauseMenu.PendingExitAction == PauseMenu.ExitAction.Restart;
@@ -526,18 +531,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
         }
         if (buildModal.IsOpen && buildModal.Revision != lastModalRevision) RefreshBuildCards();
         if (desktop)
-            FocusKeyboardPanel(DesktopPanel(won, lost, paused, confirmingExit, modal && !order));
+            FocusKeyboardPanel(overlayPanel ?? (modal && !order ? buildPanel : null));
         UpdateSpawnPreview(spawner.IsBuildPhase && !order && !paused && !modal && !won && !lost, desktop);
-    }
-
-    private VisualElement DesktopPanel(bool won, bool lost, bool paused, bool confirmingExit, bool modal)
-    {
-        if (performanceReportOpen) return performancePanel;
-        if (won) return victoryPanel;
-        if (lost) return defeatPanel;
-        if (confirmingExit) return exitConfirmPanel;
-        if (paused) return audioOpen ? audioPanel : pausePanel;
-        return modal ? buildPanel : null;
     }
 
     private void FocusKeyboardPanel(VisualElement panel)
@@ -618,7 +613,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         if (applicationPaused || performanceReportOpen) return;
         if (benchmark == null)
         {
-            benchmark = new PerformanceBenchmark(spawner, Camera.main, movement.transform.position);
+            benchmark = new PerformanceBenchmark(spawner, Camera.main, movement.transform, benchmarkLoadout);
             skipPerformanceFrame = true;
             displayedBenchmarkStage = 0;
         }
@@ -630,8 +625,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
             BuildBenchmarkProfiles();
             performanceReportOpen = true;
             benchmarkHud.AddToClassList("is-hidden");
-            screenOverlay.RemoveFromClassList("is-hidden");
-            performancePanel.RemoveFromClassList("is-hidden");
+            ShowOverlay(performancePanel);
             return;
         }
         int stage = benchmark.StageNumber;
@@ -639,8 +633,17 @@ public sealed class GameplayToolkitView : MonoBehaviour
         if (stage == displayedBenchmarkStage && seconds == displayedBenchmarkSeconds) return;
         displayedBenchmarkStage = stage;
         displayedBenchmarkSeconds = seconds;
-        SetText(benchmarkProgress, GameLocalization.Text(benchmark.CurrentProfileKey) + "\n" +
-            GameLocalization.Format(LocalizationKeys.PerfBenchmarkProgress, stage, benchmark.StageCount, benchmark.EnemyCount, seconds));
+        string progress = GameLocalization.Format(LocalizationKeys.PerfBenchmarkProgress,
+            stage, benchmark.StageCount, benchmark.EnemyCount, seconds);
+        if (benchmark.IsCombatStage)
+            progress += "\n" + GameLocalization.Format(LocalizationKeys.PerfDefenseStage, benchmark.DefenseCount);
+        SetText(benchmarkProgress, GameLocalization.Text(benchmark.CurrentProfileKey) + "\n" + progress);
+    }
+
+    private void ShowOverlay(VisualElement panel)
+    {
+        motion.SetVisible(screenOverlay, panel != null, fadeOnly: true);
+        motion.ShowExclusive(overlayPanels, panel);
     }
 
     private void BuildBenchmarkProfiles()
@@ -673,10 +676,12 @@ public sealed class GameplayToolkitView : MonoBehaviour
             if (first < 0) first = index;
             int selectedIndex = index;
             int enemies = benchmark.EnemiesAtStage(index);
-            string key = enemies is 32 or 64 ? LocalizationKeys.PerfStageTabFew : LocalizationKeys.PerfStageTab;
+            int defenses = benchmark.DefensesAtStage(index);
+            string key = defenses >= 0 ? LocalizationKeys.PerfDefenseStage
+                : enemies is 32 or 64 ? LocalizationKeys.PerfStageTabFew : LocalizationKeys.PerfStageTab;
             var button = new Button(() => ShowBenchmarkStage(selectedIndex))
             {
-                text = GameLocalization.Format(key, enemies),
+                text = GameLocalization.Format(key, defenses >= 0 ? defenses : enemies),
                 userData = selectedIndex
             };
             button.AddToClassList("benchmark-stage-button");
@@ -694,8 +699,10 @@ public sealed class GameplayToolkitView : MonoBehaviour
             ? GameLocalization.Format(LocalizationKeys.PerfMilliseconds, value) : unavailable;
         SetText(performancePanel.Q<Label>("perfDevice"), GameLocalization.Format(LocalizationKeys.PerfDevice,
             SystemInfo.graphicsDeviceName, SystemInfo.graphicsDeviceType, Screen.width, Screen.height));
-        SetText(performancePanel.Q<Label>("perfGraphics"),
-            PerformanceMeasurement.GraphicsPreferencesReport() + "\n" + benchmark.GraphicsAtStage(index));
+        string graphics = PerformanceMeasurement.GraphicsPreferencesReport() + "\n" + benchmark.GraphicsAtStage(index);
+        string workload = benchmark.WorkloadAtStage(index);
+        if (workload != null) graphics += "\n" + workload;
+        SetText(performancePanel.Q<Label>("perfGraphics"), graphics);
         SetText(performancePanel.Q<Label>("perfFpsValue"), Format(values.AverageFps));
         SetText(performancePanel.Q<Label>("perfFrameValue"), Milliseconds(values.FrameP95));
         SetText(performancePanel.Q<Label>("perfCpuValue"), Milliseconds(values.CpuP95));
@@ -720,6 +727,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
 
     private void DiscoverGuideBuilding()
     {
+        if (benchmarkMode) return;
         if (levelSetup.IsFirstLocation && BaseUpgrade.Instance != null && BaseUpgrade.Instance.TownHallLevel >= 2)
             BuildingGuide.DiscoverPulse();
     }

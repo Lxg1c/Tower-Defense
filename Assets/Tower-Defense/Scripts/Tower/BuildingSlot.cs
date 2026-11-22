@@ -11,7 +11,6 @@ public sealed class BuildingSlot
     private readonly TowerLoadout loadout;
     private readonly BuildSlotType allowedType;
     private readonly int requiredTownHallLevel;
-    private readonly int costMultiplier;
     private readonly List<TowerOption> options = new();
 
     public bool IsBuilt { get; private set; }
@@ -20,18 +19,14 @@ public sealed class BuildingSlot
     public BaseUpgrade BuiltBase { get; private set; }
     public TowerOption BuiltOption { get; private set; }
 
-    public BuildingSlot(TowerLoadout loadout, BuildSlotType allowedType, int requiredTownHallLevel,
-        int costMultiplier = 1)
+    public BuildingSlot(TowerLoadout loadout, BuildSlotType allowedType, int requiredTownHallLevel)
     {
-        if (costMultiplier < 1)
-            throw new System.ArgumentOutOfRangeException(nameof(costMultiplier));
         this.loadout = loadout;
         this.allowedType = allowedType;
         this.requiredTownHallLevel = requiredTownHallLevel;
-        this.costMultiplier = costMultiplier;
     }
 
-    public int GetCost(TowerOption option) => checked(option.cost * costMultiplier);
+    public int GetCost(TowerOption option) => option.cost;
 
     public void BeginBuildPhase() => UsedThisPhase = false;
 

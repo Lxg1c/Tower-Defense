@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 [DefaultExecutionOrder(-200)]
 [DisallowMultipleComponent]
@@ -84,8 +85,11 @@ public sealed class LevelSetup : MonoBehaviour
 
     private void Start()
     {
+        if (Camera.main is { } camera && camera.TryGetComponent(out UniversalAdditionalCameraData cameraData))
+            GamePerformanceSettings.ApplyAmbientOcclusion(cameraData, GamePerformanceSettings.AmbientOcclusion);
         foreach (var root in gameObject.scene.GetRootGameObjects())
             GraphicsMaterialProfiles.Apply(root);
+        MobileContactShadows.StartForLevel(this);
     }
 
     public bool TryAwardVictory()

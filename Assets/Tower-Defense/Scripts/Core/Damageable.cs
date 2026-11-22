@@ -30,8 +30,8 @@ public abstract class Damageable : MonoBehaviour
         CurrentHealth = maxHealth;
     }
 
-    protected virtual void OnEnable() { }
-    protected virtual void OnDisable() { }
+    protected virtual void OnEnable() => MobileContactShadows.Track(gameObject);
+    protected virtual void OnDisable() => MobileContactShadows.Untrack(gameObject);
     protected virtual void Start() { }
 
     /// <summary>

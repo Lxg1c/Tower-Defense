@@ -55,11 +55,22 @@ Only retain wider shader adoption if that measurement fits the frame budget.
 
 ## Current direction
 
-Keep the overgrown ruins, saturated vegetation and cyan/pink sci-fi accents.
+Move Level 1 towards an operational high-tech outpost: technical equipment,
+service channels, cargo facilities, and restrained cyan/amber markings. Preserve
+the original textured floor; keep building cells and combat approaches clear.
+Use cyan/pink sci-fi accents consistently with the existing player and buildings.
 Use quieter surfaces behind units, dark UI panels, near-white functional text,
 and cyan for important actions. The UI Toolkit pass uses Oswald Bold for display
 headings and Liberation Sans for functional labels and numbers; legacy screens
 retain their authored fonts.
+
+The November 2026 environment pass uses selected Kenney Space Kit models (CC0),
+with a darker shared URP Simple Lit palette. Generated service scenery has six
+combined material groups and about 7,850 triangles, with no additional lights or
+shadow casting. Solid props carve stationary NavMesh holes. This is an Editor
+visual/navigation check; mobile GPU cost still needs a device measurement.
+Outside the base, a freight terminal, power yard and communications post give
+the approaches distinct silhouettes while leaving the portal routes open.
 
 ## UI Toolkit composition
 

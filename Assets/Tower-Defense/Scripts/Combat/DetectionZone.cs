@@ -55,7 +55,9 @@ public class DetectionZone : MonoBehaviour
             && offset.x * offset.x + offset.z * offset.z <= radius * radius;
     }
 
-    public Damageable GetClosest()
+    public Damageable GetClosest() => GetClosest(null);
+
+    internal Damageable GetClosest(System.Predicate<Damageable> canTarget)
     {
         Damageable closest = null;
         float closestDist = float.MaxValue;
@@ -70,7 +72,7 @@ public class DetectionZone : MonoBehaviour
 
             Vector3 offset = targets[i].transform.position - transform.position;
             float dist = offset.x * offset.x + offset.z * offset.z;
-            if (dist < closestDist)
+            if (dist < closestDist && (canTarget == null || canTarget(targets[i])))
             {
                 closestDist = dist;
                 closest = targets[i];

@@ -705,7 +705,7 @@ MonoBehaviour:
   autoChargeLevel: 0.65
   projectileSpeed: 30
   projectileLifetime: 4
-  hitRadius: 1
+  hitRadius: 2.5
   hitMask:
     serializedVersion: 2
     m_Bits: 128
@@ -837,7 +837,7 @@ Transform:
   m_GameObject: {fileID: 8246063992435225512}
   serializedVersion: 2
   m_LocalRotation: {x: -0.00000022083239, y: -0.0000003158384, z: 0.7071068, w: 0.7071067}
-  m_LocalPosition: {x: 0.0043340875, y: 0.009984416, z: 0.096346505}
+  m_LocalPosition: {x: -0.02078344, y: 0.0009683408, z: 0.09634647}
   m_LocalScale: {x: 0.06440277, y: 0.06440278, z: 0.06440277}
   m_ConstrainProportionsScale: 0
   m_Children: []
