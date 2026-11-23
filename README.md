@@ -527,14 +527,13 @@ licenses for third-party assets and packages.
 
 ### Main menu and sound
 
-The home screen opens level selection, audio settings, or exits the game. Master,
-music and sound effects have separate sliders (0–100%). Changes apply immediately
-and persist in PlayerPrefs. The same calm music plays in the menu and preparation
-phase. Starting a wave crossfades to the combat loop. Clearing the wave or ending
-the run returns to the calm loop. Back returns to the home screen.
+The home screen opens level selection, audio settings, or exits the game. Master
+volume and sound effects have separate sliders (0–100%). Changes apply immediately
+and persist in PlayerPrefs. Game audio consists of effects such as the wave siren,
+weapon fire and explosions. Back returns to the home screen.
 
 During gameplay, Pause offers Resume, Settings, Restart and Main Menu. Audio
-settings work while paused and share the saved music/effects volumes with the
+settings work while paused and share the saved master and effects volumes with the
 home menu. Victory offers Next Level, Replay and Main Menu; defeat offers Main
 Menu. Set Next Level on each LevelDefinition to author progression, and leave it
 empty on the final level. The same Level 1 scene is reused for every encounter.

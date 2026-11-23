@@ -1,22 +1,56 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 [DisallowMultipleComponent]
 public class WaveEnvironmentLighting : MonoBehaviour
 {
+    private static readonly int GroundGlowStrength = Shader.PropertyToID("_Strength");
+
     [SerializeField] private Color combatAmbientColor = new(0.32f, 0.06f, 0.045f, 1f);
     [SerializeField] private float combatAmbientIntensity = 0.45f;
     [SerializeField] private float transitionDuration = 0.75f;
+    [SerializeField] private Light directionalLight;
+    [SerializeField] private Volume lightingVolume;
+    [SerializeField] private Renderer groundGlow;
 
     private WaveSpawner spawner;
     private Coroutine transitionRoutine;
     private Color buildAmbientColor;
     private float buildAmbientIntensity;
+    private Color dayLightColor;
+    private float dayLightIntensity;
+    private float dayShadowStrength;
+    private VolumeProfile ownedProfile;
+    private Bloom bloom;
+    private MaterialPropertyBlock glowProperties;
+    private float nightBlend;
 
     private void Awake()
     {
         buildAmbientColor = RenderSettings.ambientLight;
         buildAmbientIntensity = RenderSettings.ambientIntensity;
+        if (directionalLight != null)
+        {
+            dayLightColor = directionalLight.color;
+            dayLightIntensity = directionalLight.intensity;
+            dayShadowStrength = directionalLight.shadowStrength;
+        }
+
+        if (lightingVolume != null)
+        {
+            bool instantiated = lightingVolume.HasInstantiatedProfile();
+            var profile = lightingVolume.profile;
+            if (!instantiated) ownedProfile = profile;
+            if (profile.TryGet(out bloom))
+            {
+                bloom.highQualityFiltering.Override(false);
+                bloom.maxIterations.Override(4);
+            }
+        }
+
+        if (groundGlow != null) glowProperties = new MaterialPropertyBlock();
     }
 
     private void OnEnable()
@@ -29,8 +63,17 @@ public class WaveEnvironmentLighting : MonoBehaviour
     {
         UnbindSpawner();
 
-        if (transitionRoutine != null)
-            StopCoroutine(transitionRoutine);
+        if (transitionRoutine != null) StopCoroutine(transitionRoutine);
+        transitionRoutine = null;
+    }
+
+    private void OnDestroy()
+    {
+        if (ownedProfile == null) return;
+        if (lightingVolume != null) lightingVolume.profile = null;
+        foreach (var component in ownedProfile.components)
+            Destroy(component);
+        Destroy(ownedProfile);
     }
 
     private void Update()
@@ -67,17 +110,17 @@ public class WaveEnvironmentLighting : MonoBehaviour
 
     private void OnBuildPhaseStarted(int nextWaveIndex, int totalWaves, int reward)
     {
-        StartTransition(buildAmbientColor, buildAmbientIntensity);
+        StartTransition(0f);
     }
 
     private void OnCombatPhaseStarted(int waveIndex, int totalWaves, int reward)
     {
-        StartTransition(combatAmbientColor, combatAmbientIntensity);
+        StartTransition(1f);
     }
 
     private void OnAllWavesCompleted()
     {
-        StartTransition(buildAmbientColor, buildAmbientIntensity);
+        StartTransition(0f);
     }
 
     private void ApplyCurrentPhaseImmediate()
@@ -85,24 +128,25 @@ public class WaveEnvironmentLighting : MonoBehaviour
         if (spawner == null)
             return;
 
-        if (spawner.IsCombatPhase)
-            ApplyLighting(combatAmbientColor, combatAmbientIntensity);
-        else
-            ApplyLighting(buildAmbientColor, buildAmbientIntensity);
+        ApplyLighting(spawner.IsCombatPhase ? 1f : 0f);
     }
 
-    private void StartTransition(Color targetColor, float targetIntensity)
+    private void StartTransition(float target)
     {
         if (transitionRoutine != null)
             StopCoroutine(transitionRoutine);
 
-        transitionRoutine = StartCoroutine(TransitionTo(targetColor, targetIntensity));
+        if (Mathf.Approximately(nightBlend, target))
+        {
+            transitionRoutine = null;
+            return;
+        }
+        transitionRoutine = StartCoroutine(TransitionTo(target));
     }
 
-    private IEnumerator TransitionTo(Color targetColor, float targetIntensity)
+    private IEnumerator TransitionTo(float target)
     {
-        Color startColor = RenderSettings.ambientLight;
-        float startIntensity = RenderSettings.ambientIntensity;
+        float start = nightBlend;
         float duration = Mathf.Max(0.01f, transitionDuration);
         float elapsed = 0f;
 
@@ -110,20 +154,38 @@ public class WaveEnvironmentLighting : MonoBehaviour
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
-            ApplyLighting(
-                Color.Lerp(startColor, targetColor, t),
-                Mathf.Lerp(startIntensity, targetIntensity, t));
+            ApplyLighting(Mathf.Lerp(start, target, t));
             yield return null;
         }
 
-        ApplyLighting(targetColor, targetIntensity);
+        ApplyLighting(target);
         transitionRoutine = null;
     }
 
-    private static void ApplyLighting(Color color, float intensity)
+    private void ApplyLighting(float blend)
     {
-        RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-        RenderSettings.ambientLight = color;
-        RenderSettings.ambientIntensity = Mathf.Max(0f, intensity);
+        nightBlend = blend;
+        RenderSettings.ambientMode = AmbientMode.Flat;
+        RenderSettings.ambientLight = Color.Lerp(buildAmbientColor, combatAmbientColor, blend);
+        RenderSettings.ambientIntensity = Mathf.Max(0f, Mathf.Lerp(buildAmbientIntensity, combatAmbientIntensity, blend));
+
+        if (directionalLight != null)
+        {
+            directionalLight.color = Color.Lerp(dayLightColor, new Color(0.67f, 0.79f, 1f), blend);
+            directionalLight.intensity = dayLightIntensity * Mathf.Lerp(1f, 0.66f, blend);
+            directionalLight.shadowStrength = dayShadowStrength * Mathf.Lerp(1f, 0.8f, blend);
+        }
+
+        if (bloom != null)
+        {
+            bloom.threshold.Override(Mathf.Lerp(1.28f, 1.06f, blend));
+            bloom.intensity.Override(Mathf.Lerp(0.38f, 1.35f, blend));
+        }
+
+        if (groundGlow != null)
+        {
+            glowProperties.SetFloat(GroundGlowStrength, Mathf.Lerp(0.13f, 0.72f, blend));
+            groundGlow.SetPropertyBlock(glowProperties);
+        }
     }
 }

@@ -501,13 +501,10 @@ MainMenuScreens owns home, level selection and settings visibility. MainMenu own
 the selected level and explicitly colors the active page independently of keyboard
 focus or button disabled state.
 
-GameAudioSettings loads master, music and effects preferences before scenes start.
-Effects use AudioListener.volume with master and effects gain. The shared
-BackgroundMusic prefab persists across scenes. It subscribes to the current
-WaveSpawner and crossfades two streaming loops over unscaled time. Its sources
-bypass listener volume and multiply each track's gain by master and music.
-Other sound sources keep listener volume enabled, including spawned and pooled
-effects. UI changes are persisted on leaving settings and disabling the menu.
+GameAudioSettings loads master and effects preferences before scenes start.
+Effects use AudioListener.volume with master and effects gain, including spawned
+and pooled effects. UI changes are persisted on leaving settings and disabling
+the menu.
 
 PauseMenu keeps gameplay paused while its UI Toolkit audio panel is open.
 `GameplayToolkitView` binds the same GameAudioSettings preferences as the home menu.

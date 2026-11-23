@@ -1,6 +1,7 @@
 using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
@@ -8,6 +9,31 @@ namespace TowerDefense.Tests
 {
     public sealed class GraphicsPerformanceTests
     {
+        [Test]
+        public void FirstLevelWiresPhaseLightingAndUsesOneGroundGlowDraw()
+        {
+            var scene = EditorSceneManager.OpenPreviewScene("Assets/Tower-Defense/Scenes/Level 1.unity");
+            try
+            {
+                var phase = scene.GetRootGameObjects()
+                    .SelectMany(root => root.GetComponentsInChildren<WaveEnvironmentLighting>(true)).Single();
+                var settings = new SerializedObject(phase);
+                Assert.That(settings.FindProperty("directionalLight").objectReferenceValue, Is.TypeOf<Light>());
+                Assert.That(settings.FindProperty("lightingVolume").objectReferenceValue, Is.Not.Null);
+
+                var glow = settings.FindProperty("groundGlow").objectReferenceValue as MeshRenderer;
+                Assert.That(glow, Is.Not.Null);
+                Assert.That(glow.GetComponent<MeshFilter>().sharedMesh.subMeshCount, Is.EqualTo(1));
+                Assert.That(glow.sharedMaterials, Has.Length.EqualTo(1));
+                Assert.That(glow.sharedMaterial.passCount, Is.EqualTo(1));
+                Assert.That(glow.shadowCastingMode, Is.EqualTo(UnityEngine.Rendering.ShadowCastingMode.Off));
+            }
+            finally
+            {
+                EditorSceneManager.ClosePreviewScene(scene);
+            }
+        }
+
         [Test]
         public void DesktopBuildUsesNativeResolutionAndMsaaWithoutChangingAndroidDefault()
         {

@@ -11,8 +11,8 @@ namespace TowerDefense.Tests
         GameObject fixture;
         PauseMenu pause;
         WaveSpawner spawner;
-        float oldScale, musicVolume, effectsVolume;
-        bool hadMusic, hadEffects;
+        float oldScale, effectsVolume;
+        bool hadEffects;
 
         static void Set(object owner, string field, object value) => owner.GetType()
             .GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(owner, value);
@@ -27,9 +27,8 @@ namespace TowerDefense.Tests
         public IEnumerator Setup()
         {
             oldScale = Time.timeScale;
-            hadMusic = PlayerPrefs.HasKey(GameAudioSettings.MusicKey);
             hadEffects = PlayerPrefs.HasKey(GameAudioSettings.EffectsKey);
-            musicVolume = GameAudioSettings.Music; effectsVolume = GameAudioSettings.Effects;
+            effectsVolume = GameAudioSettings.Effects;
             fixture = new GameObject("Menu tests"); fixture.SetActive(false);
             spawner = Child("Spawner").AddComponent<WaveSpawner>(); spawner.enabled = false;
             pause = fixture.AddComponent<PauseMenu>();
@@ -83,12 +82,11 @@ namespace TowerDefense.Tests
         public IEnumerator AudioControlsWorkAtZeroTimeScaleAndRefreshOnReopen()
         {
             pause.Pause(); pause.ShowSettings();
-            GameAudioSettings.SetMusic(.25f); GameAudioSettings.SetEffects(.6f);
-            Assert.That(GameAudioSettings.Music,Is.EqualTo(.25f));
+            GameAudioSettings.SetEffects(.6f);
             Assert.That(GameAudioSettings.Effects,Is.EqualTo(.6f));
             Assert.That(Time.timeScale,Is.Zero);
-            pause.ShowPauseOptions(); GameAudioSettings.SetMusic(.8f); pause.ShowSettings();
-            Assert.That(GameAudioSettings.Music, Is.EqualTo(.8f));
+            pause.ShowPauseOptions(); GameAudioSettings.SetEffects(.8f); pause.ShowSettings();
+            Assert.That(GameAudioSettings.Effects, Is.EqualTo(.8f));
             Assert.That(pause.IsSettingsOpen, Is.True);
             yield return null;
         }
@@ -126,7 +124,6 @@ namespace TowerDefense.Tests
         public IEnumerator Cleanup()
         {
             Object.Destroy(fixture); yield return null;
-            if(hadMusic)PlayerPrefs.SetFloat(GameAudioSettings.MusicKey,musicVolume);else PlayerPrefs.DeleteKey(GameAudioSettings.MusicKey);
             if(hadEffects)PlayerPrefs.SetFloat(GameAudioSettings.EffectsKey,effectsVolume);else PlayerPrefs.DeleteKey(GameAudioSettings.EffectsKey);
             GameAudioSettings.Load();GameAudioSettings.Save();Time.timeScale=oldScale;
         }

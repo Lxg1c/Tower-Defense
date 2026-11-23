@@ -35,26 +35,31 @@ namespace TowerDefense.Tests
         };
 
         [Test]
-        public void PlayableScenesShareBothStreamingMusicTracks()
+        public void PlayableScenesKeepSoundEffectsWithoutMusic()
         {
             foreach (string path in ScenePaths)
             {
-                var scene = EditorSceneManager.OpenPreviewScene(path);
-                try
+                var dependencies = AssetDatabase.GetDependencies(path);
+                Assert.That(dependencies, Has.None.EndsWith("/BackgroundMusic.prefab"), path);
+                Assert.That(dependencies, Has.None.EndsWith("/BackgroundMusic.mp3"), path);
+                Assert.That(dependencies, Has.None.EndsWith("/BuildAndMenuTheme.ogg"), path);
+                Assert.That(dependencies, Has.None.EndsWith("/CombatTheme.ogg"), path);
+                if (!path.EndsWith("/MainMenu.unity"))
                 {
-                    var music = scene.GetRootGameObjects()
-                        .SelectMany(root => root.GetComponentsInChildren<BackgroundMusic>(true)).Single();
-                    var config = new SerializedObject(music);
-                    var calm = (AudioClip)config.FindProperty("musicClip").objectReferenceValue;
-                    var combat = (AudioClip)config.FindProperty("combatClip").objectReferenceValue;
-                    Assert.That(calm, Is.Not.Null, path);
-                    Assert.That(combat, Is.Not.Null, path);
-                    Assert.That(calm.name, Is.EqualTo("BuildAndMenuTheme"), path);
-                    Assert.That(combat.name, Is.EqualTo("CombatTheme"), path);
-                    Assert.That(calm.loadType, Is.EqualTo(AudioClipLoadType.Streaming), path);
-                    Assert.That(combat.loadType, Is.EqualTo(AudioClipLoadType.Streaming), path);
+                    Assert.That(dependencies, Has.Some.EndsWith("/WaveStartSiren.wav"), path);
+                    Assert.That(dependencies, Has.Some.EndsWith("/blasterShoot.wav"), path);
+                    Assert.That(dependencies, Has.Some.EndsWith("/etfx_explosion_nuke.wav"), path);
                 }
-                finally { EditorSceneManager.ClosePreviewScene(scene); }
+            }
+
+            foreach (string layout in new[] { "Menu", "Gameplay" })
+            {
+                var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
+                    $"Assets/Tower-Defense/UI/Toolkit/{layout}.uxml");
+                var tree = asset.CloneTree();
+                Assert.That(tree.Q<Slider>("musicSlider"), Is.Null, layout);
+                Assert.That(tree.Q<Slider>("masterSlider"), Is.Not.Null, layout);
+                Assert.That(tree.Q<Slider>("effectsSlider"), Is.Not.Null, layout);
             }
         }
 

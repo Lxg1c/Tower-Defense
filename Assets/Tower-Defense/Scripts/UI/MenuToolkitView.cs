@@ -91,7 +91,6 @@ public sealed class MenuToolkitView : MonoBehaviour
     private Slider masterSlider;
     private Label fpsLabel;
     private Button fpsToggle;
-    private Slider musicSlider;
     private Slider effectsSlider;
     private Button startButton;
     private Button[] difficultyButtons;
@@ -186,7 +185,6 @@ public sealed class MenuToolkitView : MonoBehaviour
         masterSlider = root.Q<Slider>("masterSlider");
         fpsLabel = root.Q<Label>("fpsLabel");
         fpsToggle = root.Q<Button>("fpsToggle");
-        musicSlider = root.Q<Slider>("musicSlider");
         effectsSlider = root.Q<Slider>("effectsSlider");
         startButton = root.Q<Button>("startButton");
         difficultyButtons = new[] { root.Q<Button>("normalButton"), root.Q<Button>("hardButton"),
@@ -206,7 +204,7 @@ public sealed class MenuToolkitView : MonoBehaviour
             lightingDropdown == null || graphicsQualityDropdown == null || screenModeDropdown == null || normalMapsToggle == null ||
             ambientOcclusionToggle == null ||
             renderScaleSlider == null || renderScaleValue == null ||
-            masterSlider == null || musicSlider == null ||
+            masterSlider == null ||
             effectsSlider == null || startButton == null || difficultyButtons.Any(button => button == null))
         {
             if (Application.isPlaying)
@@ -315,7 +313,6 @@ public sealed class MenuToolkitView : MonoBehaviour
             };
         }
         masterSlider.RegisterValueChangedCallback(evt => GameAudioSettings.SetMaster(evt.newValue));
-        musicSlider.RegisterValueChangedCallback(evt => GameAudioSettings.SetMusic(evt.newValue));
         effectsSlider.RegisterValueChangedCallback(evt => GameAudioSettings.SetEffects(evt.newValue));
         fpsToggle.clicked += GamePerformanceSettings.ToggleFps;
         languageDropdown.RegisterValueChangedCallback(evt =>
@@ -408,7 +405,6 @@ public sealed class MenuToolkitView : MonoBehaviour
         RefreshGuide();
         RefreshTutorialSettings();
         RefreshVolumeControl(masterSlider, "master", 1f);
-        RefreshVolumeControl(musicSlider, "music", .7f);
         RefreshVolumeControl(effectsSlider, "effects", .85f);
         languageDropdown.SetValueWithoutNotify(GameLocalization.Language == "en" ? EnglishOption : RussianOption);
         GameLocalization.ApplyTo(root);
@@ -755,7 +751,6 @@ public sealed class MenuToolkitView : MonoBehaviour
     private void RefreshAudio()
     {
         RefreshVolumeControl(masterSlider, "master", GameAudioSettings.Master);
-        RefreshVolumeControl(musicSlider, "music", GameAudioSettings.Music);
         RefreshVolumeControl(effectsSlider, "effects", GameAudioSettings.Effects);
     }
 

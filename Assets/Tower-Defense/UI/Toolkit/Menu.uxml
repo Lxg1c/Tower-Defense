@@ -122,16 +122,6 @@
                 <ui:Label name="masterValue" class="menu-volume-value" picking-mode="Ignore" />
               </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement class="menu-setting-row" picking-mode="Ignore">
-              <ui:Label text="Музыка" class="menu-setting-label l10n-music" />
-              <ui:VisualElement class="menu-setting-slider" picking-mode="Ignore">
-                <ui:VisualElement class="menu-setting-slider-input" picking-mode="Ignore">
-                  <ui:VisualElement class="menu-volume-track" picking-mode="Ignore"><ui:VisualElement name="musicFill" class="menu-volume-fill" picking-mode="Ignore" /></ui:VisualElement>
-                  <ui:Slider name="musicSlider" low-value="0" high-value="1" class="menu-volume-slider l10n-tip-music" tooltip="Музыка" />
-                </ui:VisualElement>
-                <ui:Label name="musicValue" class="menu-volume-value" picking-mode="Ignore" />
-              </ui:VisualElement>
-            </ui:VisualElement>
             <ui:VisualElement class="menu-setting-row menu-setting-row-last" picking-mode="Ignore">
               <ui:Label text="Эффекты" class="menu-setting-label l10n-effects" />
               <ui:VisualElement class="menu-setting-slider" picking-mode="Ignore">

@@ -108,7 +108,6 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private Button ultimateButton;
     private Button desktopUltimate;
     private Slider masterSlider;
-    private Slider musicSlider;
     private Slider effectsSlider;
     private bool audioOpen;
     private VisualElement keyboardPanel;
@@ -217,7 +216,6 @@ public sealed class GameplayToolkitView : MonoBehaviour
         ultimateButton = root.Q<Button>("ultimateButton");
         desktopUltimate = root.Q<Button>("desktopUltimate");
         masterSlider = root.Q<Slider>("masterSlider");
-        musicSlider = root.Q<Slider>("musicSlider");
         effectsSlider = root.Q<Slider>("effectsSlider");
         if (touchControls == null || desktopActions == null || touchActions == null || joystick == null || joystickZone == null || joystickSector == null ||
             joystickKnob == null || buildPanel == null ||
@@ -239,7 +237,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
             startWaveButton == null || homeButton == null || desktopHome == null ||
             rallyButton == null || desktopRally == null ||
             ultimateButton == null || desktopUltimate == null || masterSlider == null ||
-            musicSlider == null || effectsSlider == null)
+            effectsSlider == null)
         {
             Debug.LogError("[GameplayToolkitView] Gameplay.uxml is missing a required named element.", this);
             enabled = false;
@@ -276,7 +274,6 @@ public sealed class GameplayToolkitView : MonoBehaviour
         rallyButton.clicked += AllyCommand.ToggleFollowPlayer;
         desktopRally.clicked += AllyCommand.ToggleFollowPlayer;
         masterSlider.RegisterValueChangedCallback(evt => GameAudioSettings.SetMaster(evt.newValue));
-        musicSlider.RegisterValueChangedCallback(evt => GameAudioSettings.SetMusic(evt.newValue));
         effectsSlider.RegisterValueChangedCallback(evt => GameAudioSettings.SetEffects(evt.newValue));
         fpsToggle.clicked += GamePerformanceSettings.ToggleFps;
         benchmarkExit.clicked += defeat.GoToMainMenu;
@@ -1239,7 +1236,6 @@ public sealed class GameplayToolkitView : MonoBehaviour
     {
         if (masterSlider == null) return;
         RefreshVolumeControl(masterSlider, "masterValue", "masterFill", GameAudioSettings.Master);
-        RefreshVolumeControl(musicSlider, "musicValue", "musicFill", GameAudioSettings.Music);
         RefreshVolumeControl(effectsSlider, "effectsValue", "effectsFill", GameAudioSettings.Effects);
     }
 

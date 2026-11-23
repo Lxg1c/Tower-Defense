@@ -191,18 +191,6 @@
         </ui:VisualElement>
         <ui:VisualElement class="pause-volume-row" picking-mode="Ignore">
           <ui:VisualElement class="pause-volume-caption" picking-mode="Ignore">
-            <ui:Label text="Музыка" class="pause-settings-label l10n-music" />
-            <ui:Label name="musicValue" class="pause-volume-value" />
-          </ui:VisualElement>
-          <ui:VisualElement class="pause-volume-input" picking-mode="Ignore">
-            <ui:VisualElement class="pause-volume-track" picking-mode="Ignore">
-              <ui:VisualElement name="musicFill" class="pause-volume-fill" picking-mode="Ignore" />
-            </ui:VisualElement>
-            <ui:Slider name="musicSlider" low-value="0" high-value="1" tooltip="Музыка" class="audio-slider l10n-tip-music" />
-          </ui:VisualElement>
-        </ui:VisualElement>
-        <ui:VisualElement class="pause-volume-row" picking-mode="Ignore">
-          <ui:VisualElement class="pause-volume-caption" picking-mode="Ignore">
             <ui:Label text="Эффекты" class="pause-settings-label l10n-effects" />
             <ui:Label name="effectsValue" class="pause-volume-value" />
           </ui:VisualElement>
