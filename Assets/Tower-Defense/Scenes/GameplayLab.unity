@@ -2141,6 +2141,7 @@ GameObject:
   - component: {fileID: 915836241}
   - component: {fileID: 915836240}
   - component: {fileID: 915836243}
+  - component: {fileID: 915836244}
   m_Layer: 0
   m_Name: ToolkitUI
   m_TagString: Untagged
@@ -2178,6 +2179,7 @@ MonoBehaviour:
   slowAmmo: {fileID: 1387095694}
   playerHealth: {fileID: 1387095697}
   companionTurrets: {fileID: 1387095693}
+  trapPlacement: {fileID: 915836244}
   benchmarkLoadout: {fileID: 0}
 --- !u!114 &915836241
 MonoBehaviour:
@@ -2310,6 +2312,20 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &915836244
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 915836239}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33dde959f742bd34fa73f3481cf9cff1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefab: {fileID: 5349632222703522979, guid: 828fa9f04bc6b4c4d92044d1c10917cb, type: 3}
+  cost: 2
 --- !u!114 &922898116
 MonoBehaviour:
   m_ObjectHideFlags: 0

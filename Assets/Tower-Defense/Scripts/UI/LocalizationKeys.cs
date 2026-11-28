@@ -1,6 +1,8 @@
 /// <summary>String Table keys used by C# gameplay and menu views.</summary>
 internal static class LocalizationKeys
 {
+    internal const string Follow = "follow";
+    internal const string PlaceTrap = "place-ground-trap";
     internal const string ArmorSlot = "armor-slot";
     internal const string AssaultName = "assault-name";
     internal const string Available = "available";

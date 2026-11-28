@@ -220,6 +220,7 @@
 }
 .action-icon-art { width: 48px; height: 48px; -unity-background-scale-mode: scale-to-fit; }
 .rally-icon { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/hud-flag-penpot.png"); }
+.trap-action .rally-icon { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/hud-ground-trap.png"); }
 .home-icon { background-image: url("project://database/Assets/Tower-Defense/Art/UI/Images/Controls/hud-home-penpot.png"); }
 .small-action:hover .action-icon, .small-action:active .action-icon { background-color: #286578; }
 .small-action:disabled .action-disc { opacity: 0.55; }

@@ -1060,6 +1060,10 @@ MonoBehaviour:
     m_Localized: Soft shading in corners and at contact points
     m_Metadata:
       m_Items: []
+  - m_Id: 5760981790613504
+    m_Localized: "PLACE MINE \xB7 {0}"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

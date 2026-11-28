@@ -1043,6 +1043,10 @@ MonoBehaviour:
     m_Key: tip-graphics-ssao
     m_Metadata:
       m_Items: []
+  - m_Id: 5760981790613504
+    m_Key: place-ground-trap
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

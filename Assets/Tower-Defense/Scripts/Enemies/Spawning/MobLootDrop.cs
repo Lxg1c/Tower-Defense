@@ -12,9 +12,7 @@ public sealed class MobLootDrop : MonoBehaviour
 
     private void Awake() => health = GetComponent<MobHealth>();
 
-    // Enemy buff drops are disabled. Keep the component compatible with existing assets,
-    // but never subscribe it to enemy deaths.
-    private void OnEnable() { }
+    private void OnEnable() => health.OnDeathHandled += Drop;
 
     private void OnDisable()
     {

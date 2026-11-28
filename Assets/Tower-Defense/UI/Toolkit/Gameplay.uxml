@@ -71,7 +71,7 @@
               <ui:VisualElement class="action-icon-art rally-icon" picking-mode="Ignore" />
             </ui:VisualElement>
           </ui:VisualElement>
-          <ui:Label text="ЗА МНОЙ" class="action-label l10n-follow" picking-mode="Ignore" />
+          <ui:Label name="rallyLabel" text="ЗА МНОЙ" class="action-label" picking-mode="Ignore" />
         </ui:Button>
         <ui:Button name="homeButton" class="small-action home-action">
           <ui:VisualElement class="action-disc" picking-mode="Ignore">
@@ -96,7 +96,7 @@
           </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement class="desktop-action-caption" picking-mode="Ignore">
-          <ui:Label text="ЗА МНОЙ" class="desktop-action-caption-text l10n-follow" picking-mode="Ignore" />
+          <ui:Label name="desktopRallyLabel" text="ЗА МНОЙ" class="desktop-action-caption-text" picking-mode="Ignore" />
         </ui:VisualElement>
         <ui:Label text="F" class="desktop-key action-key" picking-mode="Ignore" />
       </ui:Button>

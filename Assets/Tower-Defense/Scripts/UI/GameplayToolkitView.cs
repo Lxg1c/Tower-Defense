@@ -27,6 +27,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
     [SerializeField] private SlowAmmoInventory slowAmmo;
     [SerializeField] private PlayerHealth playerHealth;
     [SerializeField] private CompanionTurretController companionTurrets;
+    [SerializeField] private GroundTrapPlacement trapPlacement;
 #if UNITY_EDITOR
     private VisualElement editorPreviewRoot;
 #endif
@@ -105,6 +106,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private Button desktopHome;
     private Button rallyButton;
     private Button desktopRally;
+    private Label rallyLabel;
+    private Label desktopRallyLabel;
     private Button ultimateButton;
     private Button desktopUltimate;
     private Slider masterSlider;
@@ -213,6 +216,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
         desktopHome = root.Q<Button>("desktopHome");
         rallyButton = root.Q<Button>("rallyButton");
         desktopRally = root.Q<Button>("desktopRally");
+        rallyLabel = root.Q<Label>("rallyLabel");
+        desktopRallyLabel = root.Q<Label>("desktopRallyLabel");
         ultimateButton = root.Q<Button>("ultimateButton");
         desktopUltimate = root.Q<Button>("desktopUltimate");
         masterSlider = root.Q<Slider>("masterSlider");
@@ -235,7 +240,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
             performancePanel == null || performanceBack == null ||
             benchmarkStages == null || benchmarkProfiles == null ||
             startWaveButton == null || homeButton == null || desktopHome == null ||
-            rallyButton == null || desktopRally == null ||
+            rallyButton == null || desktopRally == null || rallyLabel == null || desktopRallyLabel == null ||
             ultimateButton == null || desktopUltimate == null || masterSlider == null ||
             effectsSlider == null)
         {
@@ -271,8 +276,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
         startWaveButton.clicked += spawner.StartNextWave;
         homeButton.clicked += teleport.TeleportToHome;
         desktopHome.clicked += teleport.TeleportToHome;
-        rallyButton.clicked += AllyCommand.ToggleFollowPlayer;
-        desktopRally.clicked += AllyCommand.ToggleFollowPlayer;
+        rallyButton.clicked += UseRallyAction;
+        desktopRally.clicked += UseRallyAction;
         masterSlider.RegisterValueChangedCallback(evt => GameAudioSettings.SetMaster(evt.newValue));
         effectsSlider.RegisterValueChangedCallback(evt => GameAudioSettings.SetEffects(evt.newValue));
         fpsToggle.clicked += GamePerformanceSettings.ToggleFps;
@@ -327,6 +332,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
     private void RefreshLanguage()
     {
         GameLocalization.ApplyTo(root);
+        if (bound) UpdateRallyAction();
         if (!benchmarkMode) RefreshBuildCards();
     }
 
@@ -337,6 +343,8 @@ public sealed class GameplayToolkitView : MonoBehaviour
         ClearEditorHudPreview();
 #endif
         if (!bound) return;
+        rallyButton.clicked -= UseRallyAction;
+        desktopRally.clicked -= UseRallyAction;
         buildModal.onOpened.RemoveListener(RefreshBuildCards);
         buildModal.onClosed.RemoveListener(ClearBuildCards);
         root.Q<Button>("buildClose").clicked -= buildModal.Close;
@@ -443,13 +451,7 @@ public sealed class GameplayToolkitView : MonoBehaviour
         touchControls.EnableInClassList("is-hidden", hideTouchControls);
         root.Q("actionStack").EnableInClassList("is-hidden", modal);
         desktopActions.EnableInClassList("is-hidden", !desktop || order || paused || won || lost || modal);
-        bool hideRally = levelSetup.IsFirstLocation;
-#if UNITY_EDITOR
-        // Temporary placement preview on Level 1.
-        hideRally = false;
-#endif
-        rallyButton.EnableInClassList("is-hidden", hideRally);
-        desktopRally.EnableInClassList("is-hidden", hideRally);
+        UpdateRallyAction();
         orderLayer.EnableInClassList("is-hidden", !order);
         motion.SetVisible(buildPanel, buildModal.IsOpen && !order && !paused && !won && !lost);
         var overlayPanel = performanceReportOpen ? performancePanel
@@ -583,11 +585,48 @@ public sealed class GameplayToolkitView : MonoBehaviour
         if (playerHealth.IsGhost) return;
         orders.ReadKeyboardOrder(keyboard);
         if (orders.IsOrderModeActive) return;
+        if (keyboard.fKey.wasPressedThisFrame)
+            UseRallyAction();
         if (keyboard.eKey.wasPressedThisFrame && spawner.IsBuildPhase && Base.Instance != null)
             spawner.StartNextWave();
         if (keyboard.tKey.wasPressedThisFrame && teleport.gameObject.activeInHierarchy && spawner.IsBuildPhase)
             teleport.TeleportToHome();
-        if (keyboard.fKey.wasPressedThisFrame && !levelSetup.IsFirstLocation)
+    }
+
+    private bool IsTrapAction => spawner.IsBuildPhase && trapPlacement != null;
+    private bool CanRally => spawner.IsCombatPhase && !levelSetup.IsFirstLocation;
+
+    private void UpdateRallyAction()
+    {
+        bool trap = IsTrapAction;
+        bool visible = trap || CanRally;
+        bool enabled = !playerHealth.IsGhost && playerHealth.IsAlive &&
+            (!trap || wallet.Coins >= trapPlacement.Cost);
+        string caption = trap
+            ? GameLocalization.Format(LocalizationKeys.PlaceTrap, trapPlacement.Cost)
+            : GameLocalization.Text(LocalizationKeys.Follow);
+        SetText(rallyLabel, caption);
+        SetText(desktopRallyLabel, caption);
+        UpdateRallyButton(rallyButton, visible, enabled, trap);
+        UpdateRallyButton(desktopRally, visible, enabled, trap);
+    }
+
+    private static void UpdateRallyButton(Button button, bool visible, bool enabled, bool trap)
+    {
+        button.EnableInClassList("is-hidden", !visible);
+        button.EnableInClassList("trap-action", trap);
+        button.SetEnabled(enabled);
+    }
+
+    private void UseRallyAction()
+    {
+        if (pauseMenu.IsPaused || orders.IsOrderModeActive || buildModal.IsOpen ||
+            benchmarkMode || playerHealth.IsGhost || !playerHealth.IsAlive)
+            return;
+
+        if (IsTrapAction)
+            trapPlacement.TryPlace(playerHealth, wallet, spawner);
+        else if (CanRally)
             AllyCommand.ToggleFollowPlayer();
     }
 

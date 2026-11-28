@@ -22,7 +22,7 @@ namespace TowerDefense.Tests
         }
 
         [UnityTest]
-        public IEnumerator DestroyerDeathDoesNotDropShield()
+        public IEnumerator DestroyerDropsShieldThatPlayerCanCollect()
         {
             GameObject template = NewObject("Shield template");
             template.transform.position = Vector3.one * 1000f;
@@ -45,7 +45,19 @@ namespace TowerDefense.Tests
             foreach (ShieldPickup candidate in Object.FindObjectsByType<ShieldPickup>(FindObjectsSortMode.None))
                 if (candidate != pickupPrefab && candidate.name.StartsWith("Shield template"))
                     dropped = candidate;
-            Assert.That(dropped, Is.Null, "Enemy shield drops are disabled.");
+            Assert.That(dropped, Is.Not.Null, "The configured Destroyer should drop its shield.");
+
+            GameObject player = NewObject("Player");
+            PlayerHealth playerHealth = player.AddComponent<PlayerHealth>();
+            player.AddComponent<SphereCollider>();
+            player.transform.position = dropped.transform.position;
+            Physics.SyncTransforms();
+            yield return new WaitForFixedUpdate();
+            yield return null;
+
+            Assert.That(playerHealth.CurrentShield, Is.EqualTo(playerHealth.MaxShield));
+            Assert.That(playerHealth.RemainingShieldSeconds, Is.EqualTo(12f).Within(0.5f));
+            Assert.That(dropped == null, Is.True, "The collected pickup should disappear.");
         }
 
         private GameObject NewObject(string name)

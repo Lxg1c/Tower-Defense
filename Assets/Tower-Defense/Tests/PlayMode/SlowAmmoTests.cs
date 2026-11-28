@@ -46,7 +46,7 @@ namespace TowerDefense.Tests
         }
 
         [UnityTest]
-        public IEnumerator SpiderDeathDoesNotDropSlowAmmo()
+        public IEnumerator SpiderDropCanBePickedUpByPlayer()
         {
             var template = NewObject("Pickup template");
             template.transform.position = Vector3.one * 1000f;
@@ -75,7 +75,17 @@ namespace TowerDefense.Tests
             SlowAmmoPickup dropped = null;
             foreach (SlowAmmoPickup candidate in Object.FindObjectsByType<SlowAmmoPickup>(FindObjectsSortMode.None))
                 if (candidate.gameObject != template) dropped = candidate;
-            Assert.That(dropped, Is.Null, "Enemy slow-ammo drops are disabled.");
+            Assert.That(dropped, Is.Not.Null, "A configured spider must drop its pickup on death.");
+
+            var player = NewObject("Player");
+            var inventory = player.AddComponent<SlowAmmoInventory>();
+            player.AddComponent<SphereCollider>();
+            player.transform.position = dropped.transform.position;
+            Physics.SyncTransforms();
+            yield return new WaitForFixedUpdate();
+            yield return null;
+            Assert.That(inventory.RemainingSeconds, Is.EqualTo(12f).Within(0.5f));
+            Assert.That(dropped == null, Is.True, "Collected pickups must disappear.");
         }
 
         [UnityTest]

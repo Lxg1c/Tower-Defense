@@ -174,6 +174,9 @@ objects. The UI Toolkit build panel shows a building's role and price, or curren
 and next-level health, damage and mine income for an upgrade.
 `MortarTower` uses `DetectionZone` to choose a target position, while
 `MortarShell` owns the arc and one-hit-per-enemy splash at that position.
+`GroundTrapPlacement` validates the ground below the hero and spends credits
+only during preparation. The HUD uses the same action slot and F shortcut for mine placement in preparation and the squad rally command in combat. `GroundTrap` uses a kinematic trigger to detect a
+ground enemy. Each blast damages enemies once, with solid cover blocking damage.
 `WallCollision` keeps the wall's collider and carved NavMesh obstacle active only
 while its `TowerHealth` is alive. `BuildingSlot` sorts available choices by cost,
 preserving loadout order for equal prices.
@@ -211,13 +214,12 @@ Rally button temporarily switches all squads to following the hero and restores
 their own guard/default modes when switched off. A lightweight world ring shows
 the selected barracks and each assigned guard point.
 
-## Disabled enemy buff drops
+## Enemy buff drops
 
-Enemy drops are disabled. WaveSpawner no longer attaches or configures MobLootDrop,
-and MobLootDrop no longer subscribes to MobHealth.OnDeathHandled. This also
-prevents drops from old prefabs that still carry the component. Legacy loadout
-chances and pickup/effect components are retained for compatibility; the
-following effect implementations are inactive during normal gameplay.
+`WaveSpawner` configures `MobLootDrop` from the enemy loadout each time a mob
+spawns. On death the component rolls for one pickup using the configured
+chances. The pickup applies its effect through `OnTriggerEnter` when the player
+collects it.
 
 `SlowAmmoInventory` owns the player's remaining bonus time (capped at 24 seconds).
 While it is active, every normal projectile from the player's `Shooter`
@@ -227,7 +229,7 @@ after hitting a surviving mob. `MobSlow` changes NavMeshAgent speed or the
 pool disable. `GameplayToolkitView` shows a snowflake and remaining seconds
 on the left side of the HUD while the bonus is active.
 
-The same enemy entry has shield drop settings.
+The Spider entry has a 25% chance to drop 12 seconds of slowing ammo.
 Destroyer currently has a 25% chance to drop a 12-second shield pickup. The
 pickup grants 50 shield points, refills them on a second collection, and adds
 remaining time up to 24 seconds. The Level 1 scene contains the effect icons in an

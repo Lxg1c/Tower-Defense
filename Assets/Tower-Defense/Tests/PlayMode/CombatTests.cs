@@ -13,6 +13,45 @@ namespace TowerDefense.Tests
     {
         private readonly List<GameObject> created = new();
 
+        [UnityTest]
+        public IEnumerator GroundTrapIgnoresNonEnemiesAndHitsEachMobOnce()
+        {
+            Vector3 origin = Vector3.one * 100f;
+            var mine = NewObject("Ground mine");
+            mine.transform.position = origin;
+            var trigger = mine.AddComponent<SphereCollider>();
+            trigger.isTrigger = true;
+            trigger.radius = 1f;
+            var body = mine.AddComponent<Rigidbody>();
+            body.isKinematic = true;
+            body.useGravity = false;
+            mine.AddComponent<GroundTrap>();
+
+            var neutral = NewObject("Neutral collider");
+            neutral.transform.position = origin;
+            neutral.AddComponent<SphereCollider>();
+            yield return new WaitForFixedUpdate();
+            Assert.That(mine != null, Is.True);
+
+            neutral.SetActive(false);
+            var enemy = NewObject("Ground enemy");
+            enemy.layer = LayerMask.NameToLayer("Enemy");
+            enemy.transform.position = origin + Vector3.forward * 0.8f;
+            enemy.AddComponent<SphereCollider>().radius = 0.2f;
+            var health = enemy.AddComponent<MobHealth>();
+            var secondCollider = NewObject("Second enemy collider");
+            secondCollider.layer = enemy.layer;
+            secondCollider.transform.SetParent(enemy.transform, false);
+            secondCollider.AddComponent<SphereCollider>().radius = 0.3f;
+            Physics.SyncTransforms();
+
+            yield return new WaitForFixedUpdate();
+            yield return null;
+
+            Assert.That(health.CurrentHealth, Is.EqualTo(health.MaxHealth - 85f));
+            Assert.That(mine == null, Is.True);
+        }
+
         [Test]
         public void MixedWaveOrdersRolesAcrossSpawnPoints()
         {
