@@ -3,7 +3,7 @@
 A Unity 3D tower-defense prototype with a directly controlled hero, automatic
 shooting, build/upgrade phases, enemy waves and allied squads.
 
-Contributor and agent conventions are in [Skills.md](Skills.md).
+Contributor and agent conventions are routed by topic in [AGENTS.md](AGENTS.md).
 The current game design and open decisions are in [Docs/GDD.md](Docs/GDD.md).
 The [GDD implementation plan](Docs/GDD-Implementation-Plan.md) orders the work for
 the first demo and later locations, with checks for each milestone.

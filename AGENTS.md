@@ -1,6 +1,29 @@
-# Project guidance
+# AGENTS.md
 
-Read [Skills.md](Skills.md) before changing this Unity project. It contains the
-project's coding, testing, asset-editing and visual-design conventions.
-Use [README.md](README.md) for setup and [Docs/Architecture.md](Docs/Architecture.md)
-for the current code map.
+## Контекст проекта
+
+Перед обсуждением плана, дизайна или правил игры прочитай [GDD](Docs/GDD.md). Устройство кода описано в [карте архитектуры](Docs/Architecture.md), настройка и запуск — в [README](README.md).
+
+## Процесс работы
+
+Перед правками покажи короткий план с ожидаемым результатом, объёмом и проверкой. Продолжай работу в уже согласованном объёме. Уточняй существенные решения, которые меняют ход работы или результат.
+
+## Маршрутизация по темам
+
+Перед ответом или правкой определи темы задачи и прочитай соответствующие файлы.
+
+| Если задача про… | Прочитай файлы |
+| --- | --- |
+| Спрайты, пиксель-арт, Aseprite, импорт 2D | [2d-art.md](Docs/rules/2d-art.md) |
+| 3D-модели, шейдеры, освещение | [3d-art.md](Docs/rules/3d-art.md) |
+| HUD, меню, интерфейс, локализация | [ui-ux.md](Docs/rules/ui-ux.md) |
+| Музыку, звуки, аудио-шины | [audio.md](Docs/rules/audio.md) |
+| Структуру кода, C#, asmdef, сцены и префабы | [architecture.md](Docs/rules/architecture.md) |
+| Тесты, EditMode, PlayMode, ручные проверки | [testing.md](Docs/rules/testing.md) |
+| Процесс работы, ревью, сборки, релиз | [workflow.md](Docs/rules/workflow.md) |
+
+Для 2D- и 3D-работ применяй правила соответствующей темы.
+
+## Правила и проверенные приёмы
+
+Используй [agents-md-guard](.agents/skills/agents-md-guard/SKILL.md), когда пользователь формулирует правило или когда проверен повторяемый приём. Новое правило согласуй по формулировке и пути, затем внеси в тематический файл. Проверенный приём запиши в соответствующий проектный скилл.
