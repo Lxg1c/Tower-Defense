@@ -1,544 +1,138 @@
-# Tower Defense
+# Рубеж К-7
 
-A Unity 3D tower-defense prototype with a directly controlled hero, automatic
-shooting, build/upgrade phases, enemy waves and allied squads.
+«Рубеж К-7» — одиночная 3D-игра про оборону научно-фантастической базы.
+Между волнами вы строите и улучшаете оборону, а во время атаки сами выходите
+на поле за робота Р-07 «Искра». Цель — сохранить центральный узел и пережить
+последнюю волну.
 
-Contributor and agent conventions are routed by topic in [AGENTS.md](AGENTS.md).
-The current game design and open decisions are in [Docs/GDD.md](Docs/GDD.md).
-The [GDD implementation plan](Docs/GDD-Implementation-Plan.md) orders the work for
-the first demo and later locations, with checks for each milestone.
-The [GDD question register](Docs/GDD-Questions.md) tracks the 344 questions from
-the supplied design workbook and distinguishes author decisions from the current
-prototype and unresolved topics.
-See [Docs/VisualDirection.md](Docs/VisualDirection.md) for the first UI polish pass
-and the remaining visual priorities.
-See [Docs/Balance.md](Docs/Balance.md) for the economy review, measured wave
-results and the next gameplay balance experiments.
+Проект в разработке на Unity. Целевые платформы демоверсии — Android, Windows и macOS.
+В настройках можно выбрать русский или английский язык.
 
-## Where things live
+![Бой на первой карте: Р-07 и башни отражают волну врагов](Docs/Screenshots/level-1-combat.png)
 
-All game-owned assets are under `Assets/Tower-Defense`. The other folders
-directly under `Assets` hold imported packages and vendor art; `Packages`
-contains Unity packages. The main project folders follow responsibility:
+*Первая карта во время ночной волны.*
 
-| Folder | Responsibility |
+## Быстрый запуск
+
+1. Установите **Unity 6.0.72f1 (6000.0.72f1)** через Unity Hub.
+   Точная версия записана в [ProjectVersion.txt](ProjectSettings/ProjectVersion.txt).
+2. Добавьте корневую папку репозитория в Unity Hub и откройте её.
+   Дождитесь импорта ассетов и компиляции.
+3. Откройте [MainMenu.unity](Assets/Tower-Defense/Scenes/MainMenu.unity),
+   нажмите **Play** в редакторе и выберите уровень в меню игры.
+
+Для быстрой проверки боя откройте [GameplayLab.unity](Assets/Tower-Defense/Scenes/GameplayLab.unity)
+или выберите тестовый уровень в главном меню. Это отдельная площадка с четырьмя
+волнами и своим набором настроек. Для работы над кампанией можно открыть
+[Level 1.unity](Assets/Tower-Defense/Scenes/Level%201.unity) напрямую.
+
+## Как играть
+
+1. **Подготовьтесь.** Встаньте в зону строительства и дождитесь, пока заполнится
+   индикатор. Потратьте кредиты на башню, шахту или улучшение. Чтобы закрыть окно
+   строительства, выйдите из зоны.
+2. **Запустите волну.** Башни и Р-07 стреляют автоматически. Перемещайтесь
+   между участками обороны и используйте заряженную атаку против скоплений врагов.
+3. **Усильте оборону.** За пройденную волну начисляются кредиты. Улучшение
+   центрального узла открывает новые постройки, в том числе казармы.
+   Бойцам можно назначить отдельную точку обороны.
+4. **Удержите узел.** Если узел уничтожен, забег заканчивается поражением.
+   За победу начисляется отдельная валюта для навыков и оснащения между забегами.
+
+![Первая карта днём: построенные башни и кнопка запуска волны](Docs/Screenshots/level-1-preparation.png)
+
+*Та же карта в фазе подготовки.*
+
+| Действие | ПК | Сенсорный экран |
+| --- | --- | --- |
+| Движение | WASD или стрелки | Джойстик появляется при касании слева внизу |
+| Начать волну | E | Кнопка «Начать волну» |
+| Заряженная атака | Пробел | Кнопка со звездой |
+| Телепорт к узлу | T | Кнопка телепорта |
+| Позвать отряды за собой | F | Кнопка «За мной» |
+| Выбрать постройку или улучшение | 1–9 в открытой панели или щелчок мышью | Касание карточки |
+| Назначить точку обороны | B, затем стрелки и Enter | Флажок казармы, затем касание точки на карте |
+| Пауза | Esc | Кнопка паузы |
+
+Телепорт доступен во время подготовки. Кнопки отрядов появляются там, где
+доступна соответствующая механика.
+
+## Что есть в проекте
+
+- **Кампания.** В меню три набора волн и три сложности. В текущем прототипе
+  наборы используют одну игровую сцену. План первого демо описан в [GDD](Docs/GDD.md).
+- **Настройки графики.** Можно менять освещение, карты нормалей и SSAO.
+  На Android доступны профили качества и отдельный масштаб 3D, на ПК — режим окна.
+- **Тест производительности.** В настройках графики есть базовый прогон
+  с разным числом моделей и боевой прогон с 0, 6 или 12 башнями.
+  В отчёте выводятся FPS, время кадра и вызовы отрисовки.
+
+## Где искать код и настройки
+
+Игровые файлы находятся в [Assets/Tower-Defense](Assets/Tower-Defense).
+
+| Папка | Что в ней |
 | --- | --- |
-| `Scripts` | Runtime behavior, split by gameplay system |
-| `Data` and `Levels` | Enemy definitions, loadouts and authored wave settings |
-| `Prefabs` | Reusable gameplay objects, UI, effects and level-design helpers |
-| `Scenes` | Main menu, shared campaign scene and gameplay test scene |
-| `Art/Buildings` | Current models and older models still referenced by prefabs or animations |
-| `Art/Characters` | Player, ally and enemy visual sources |
-| `Art/Environment` | Level 1 scenery, tiles, trees, rocks and spawn portal |
-| `Art/Materials`, `Art/Shaders`, `Art/Animations`, `Art/UI` | Rendering, animation and UI artwork |
-| `Audio`, `Resources`, `Settings` | Game audio, runtime-loaded assets and render/build settings |
-| `Editor`, `Tests` | Authoring tools and Unity Test Framework suites |
-| `UI/Toolkit` | UXML, USS and panel settings for the current menu and gameplay screens |
+| [Scenes](Assets/Tower-Defense/Scenes) | Главное меню, сцена кампании и тестовый уровень |
+| [Levels](Assets/Tower-Defense/Levels) и [Data](Assets/Tower-Defense/Data) | Волны, стартовые кредиты, враги, постройки и их параметры |
+| [Scripts](Assets/Tower-Defense/Scripts) | Логика забега, бой, строительство, управление и сохранения |
+| [Prefabs](Assets/Tower-Defense/Prefabs) | Игрок, враги, башни, снаряды и другие игровые объекты |
+| [UI/Toolkit](Assets/Tower-Defense/UI/Toolkit) | Разметка и стили меню и игрового интерфейса |
+| [Tests](Assets/Tower-Defense/Tests) | Edit Mode и Play Mode тесты |
 
-Level 1's high-tech service scenery uses selected models from Kenney's Space Kit
-2.0 (CC0); its original license is in `Art/Environment/HighTech/KenneySpaceKit`.
-The `High Tech Services` scene root adds roof equipment, floor inlays and exterior
-yards for freight, power and communications. It preserves the open arena, its
-authored floor texture and build
-cells. Six shared mesh/material groups avoid a renderer for every small detail;
-the scenery adds no lights or shadow casters. Solid equipment has collision and
-stationary NavMesh carving. To rebuild after editing the layout, open Level 1 and
-use **Tools > Tower Defense > Rebuild Level 1 High Tech Services**, then review
-and save the scene. The tool refuses equipment overlapping reserved building or
-interaction cells. See [asset credits](Docs/ThirdPartyAssets.md).
+Если меняете состав волн или баланс, начните с ассетов в **Levels** и **Data**.
+Точки появления задаются в массиве **Spawn Points** у **WaveSpawner** на сцене.
+Для размещения построек используйте инструмент **Place building zones** у
+**LevelGrid**. Устройство этих систем описано в [карте архитектуры](Docs/Architecture.md).
 
-See [Docs/Architecture.md](Docs/Architecture.md) for code ownership and
-asset references. Unity GUIDs were retained during the asset reorganization.
+Игра написана на C#. Для рендера используется URP, для интерфейса — UI Toolkit,
+для управления — Input System, для маршрутов наземных агентов — AI Navigation.
+Подробности об инструментах и версиях есть в [стеке разработки](Docs/Development-Stack.md).
 
-## Open and play
+## Сборка
 
-The build display name is **Tower Defense**. Application icons for desktop,
-Android and iOS are assigned in Player Settings from `Art/UI/AppIcons`.
+Откройте **File → Build Profiles** и выберите платформу. Установите поддержку
+этой платформы через Unity Hub, если её ещё нет. Сцены в сборке идут в порядке
+**MainMenu → Level 1 → GameplayLab**. Техническое имя приложения в настройках
+сборки сейчас указано как **Tower Defense**.
 
-On Android, Low quality uses soft ground contact shadows for actors,
-buildings and the main scenery. The shadows share one mesh and use no URP
-shadow map. The performance benchmark includes them on the Low profile.
+<a id="testing"></a>
 
-1. Install **Unity 6000.0.72f1** through Unity Hub. This is the version recorded in
-   `ProjectSettings/ProjectVersion.txt`.
-2. Add this repository folder as a project in Unity Hub and open it. Let package
-   resolution, asset import and script compilation finish.
-3. Open `Assets/Tower-Defense/Scenes/MainMenu.unity` and press Play, then Start.
-   Open `Assets/Tower-Defense/Scenes/Level 1.unity` directly when iterating on gameplay.
+## Тесты
 
-The build scenes are **MainMenu**, **Level 1**, then **GameplayLab**. The obsolete `GameScene.unity`
-has been removed. Keep unused scenes out of Build Settings: the installed Test
-Framework includes disabled entries when building a test Player.
+Откройте **Window → General → Test Runner** в Unity.
 
-For a gameplay-only playtest, choose **TEST LEVEL** on the Main Menu Home screen,
-or open `Assets/Tower-Defense/Scenes/GameplayLab.unity` directly and press Play.
-This separate scene keeps the hero, HUD, build zones, squads and
-combat rules, but uses one plain floor instead of Level 1's environment. Its
-four waves test a single approach, ranged pressure from another direction,
-then a stronger mixed attack. The lab has its own level asset and NavMesh; it
-is separate from campaign level selection and awards no campaign money. Changes
-to its waves or placements do not change Level 1.
+- **Edit Mode** — запустите `TowerDefense.EditMode.Tests` для правил и конфигурации.
+- **Play Mode** — запустите `TowerDefense.PlayMode.Tests` для поведения объектов, боя и интерфейса.
 
-In mixed waves, giants advance first and absorb ordinary shots that hit them
-before their intended enemy target. Ground shooters spawn last. Flying raiders
-move faster and prioritize mines, then other structures. Barracks troops can be
-targeted by ground enemies, and each pulse tower attack shows its radius briefly.
+<details>
+<summary>Запуск из терминала Windows</summary>
 
-The lab's neutral floor is 120×120 m. The `Traversal Probe` markers near its
-west and east edges give a 90 m route for checking hero movement and camera
-behavior. Build zones and enemy spawns remain near the center for combat tests;
-the lab's NavMesh was rebaked for the larger floor. Campaign map dimensions
-remain a separate level-art decision.
+Закройте редактор этого проекта. Выполните команды из корня репозитория.
+При необходимости замените путь к установленному Unity.
 
-For a useful first playtest, complete one run without adjusting values. Note
-when you first make a meaningful building choice, when you feel you are only
-waiting, whether you use the ultimate and squad orders, where the defense
-breaks, and whether you want to retry after the result. Then change one thing
-at a time in `Assets/Tower-Defense/Levels/GameplayLab.asset` and replay. This
-tests the gameplay loop without art and layout changes masking the result.
-
-On Android and iOS, use the on-screen joystick to move. By default, one tap on
-the ultimate button charges the orb to 65% and fires it automatically; releasing
-the button does not change the shot. Desktop builds use a compact HUD without
-the joystick: move with WASD or the arrow keys and press Space for the ultimate.
-Use E to start the wave, T to teleport, F to toggle follow, and Esc to pause or
-go back. Press 1–9 to choose a building or upgrade when the blueprint panel is
-open. B opens squad orders or cycles through barracks. Use the arrow keys to move
-the order marker, Enter to confirm, and Backspace to clear the selected squad's
-order. Use Tab, Shift+Tab, and Enter to navigate menus. The hero aims and
-shoots automatically on both platforms. The `Manual Charge` checkbox on
-`PlayerUltimate` restores hold-to-charge input; `Auto Charge Level` sets the
-automatic shot strength. The existing cooldown applies in either mode.
-`ResponsiveGameplayHud` selects the layout from the build target. In the Editor,
-`Automatic` previews the active build target; the `Editor Preview` field on
-`GameplayControllers` can force Mobile or Desktop during Play Mode and updates the HUD
-immediately. This is not a player setting. Stand in a building zone until its
-progress circle fills to choose a building or upgrade. Movement stays available while
-the building panel is open: drive out of the zone to close it without Escape or
-spending credits. Use Start Wave to begin
-combat after the town hall exists. The melee barracks opens at town hall level 2
-and the ranged barracks at level 3; the chosen type stays with that barracks.
-
-Bullets, ultimate orbs, and mortar shells collide with solid buildings and level
-scenery, including Default-layer meshes. Bullets create a brief spark impact.
-Mortar shells arc through the air with the same green orb and explosion as the
-player's ultimate. The shooter and trigger volumes are ignored.
-Cover blocks the blast from reaching targets behind it.
-
-Open the building guide from the Main Menu. To see the first-level hints again,
-select **Repeat hints** in the main menu settings and enter Level 01.
-
-Desktop **Settings → Graphics → Screen mode** switches between fullscreen,
-borderless fullscreen, and a window. The choice is saved and applies immediately.
-The default is borderless fullscreen. Building panels have a close button.
-Standalone builds use the Desktop quality profile with the PC render pipeline,
-100% render scale and 4x MSAA. The desktop renderer disables SSAO and additional-light
-shadows, and uses two main-light shadow cascades over 32 meters. Android keeps its separate mobile quality profiles
-and render-scale setting.
-
-**Settings → Graphics** selects standard or simplified lighting and toggles
-normal maps on supported materials. The separate ambient occlusion (SSAO)
-switch applies on level entry and leaves shadow settings unaffected.
-Android also offers High, Medium, and Low render quality. Medium disables SSAO
-and reduces shadow distance. Low also disables dynamic shadows. The separate
-3D render scale slider ranges from 50% to 100% and defaults to 80%.
-Use **Performance test** in Graphics to run a fixed-camera test on the first map.
-It measures six seconds each with 0, 16, 32 and 64 enemy models after a short
-warm-up. It then repeats the 0- and 64-model cases separately with SSAO disabled,
-camera shadows disabled, and render scale at 65%, where each change applies.
-The comparison report records the settings, FPS, CPU and GPU timings, and
-average and peak draw calls where available. Enemy combat and AI
-are inactive during the test. For the full gameplay workload, open **Run
-statistics** after victory or defeat to see the complete unpaused run.
-
-The Main Menu, campaign level and GameplayLab use UI Toolkit for every gameplay
-screen and indicator. The UXML and USS files are in `UI/Toolkit`;
-`MenuToolkitView` and `GameplayToolkitView` in `Scripts/UI` connect them to the
-existing gameplay controllers. The old Canvas objects and UI prefabs have been
-removed from playable scenes. Build-zone rings, spawn previews and health bars
-are projected onto the gameplay UI Toolkit panel. Missing UI Toolkit references
-are logged as configuration errors. The new
-on-screen joystick follows the first touch in the lower-left control area
-and feeds `PlayerMovement` directly, while desktop movement
-still uses the existing keyboard path. The UI Toolkit building panel leaves
-movement available so stepping out of a zone closes the panel.
-Menu pages and gameplay panels use brief opacity/scale transitions; buttons have
-hover and press feedback. Panel closing blocks repeat clicks, runs during pause,
-and cancels safely when reopened. Settings rows have additional vertical space
-in both full-height and compact layouts.
-The top HUD uses separate compact wave, time, enemy and supply indicators. The
-Main Menu **Equipment** screen lets the player buy the Overdrive gun module for
-300 permanent money and equip either module before a level. Standard preserves
-the authored guns; Overdrive increases their fire rate by 40% and reduces shot
-damage by 15%. This choice is saved with permanent progression and applied when
-the player enters a level.
-
-To order a squad, tap the flag icon above its completed barracks. The HUD hides,
-the camera pulls back from the hero at its usual angle, and only **Cancel**
-stays on screen. Tap a
-reachable floor position to send that barracks' soldiers there. A cyan line
-briefly shows their NavMesh route, and the HUD and player camera return.
-Tap **Cancel** to leave without changing the order, or tap the same flag again
-in map view to clear that barracks' station order. You can issue orders during
-preparation or combat; each barracks keeps its own position.
-**Rally** temporarily recalls all squads to the hero; turning it off restores
-each squad's station order (or its default barracks behavior). Station orders
-remain in force between waves and after soldiers respawn.
-
-Defense build choices appear from cheapest to most expensive. The Mortar unlocks
-at town hall level 3. Its turret turns toward the enemy before firing an arcing
-shell from the raised barrel. The pulse tower winds up and releases its wave
-as the head strikes down. A Wall is a separate build-zone type and blocks
-movement while intact. It opens the path when destroyed and is repaired after a
-wave like other buildings. To author a Wall point, select a `LevelGrid`, start
-placing zones, press **5**, click the first and last wall cells, then click a
-highlighted cell along one of its long sides for the interaction marker. The
-span follows the horizontal or vertical grid axis, and the chosen side sets
-the wall's facing. The built wall reveals one section per cell from left to right; its
-Height Multiplier is adjustable on the Wall prefab. The whole wall costs 3 build
-coins. Select a
-placed wall and use **Resize wall** to change its length later. Level 1 has one
-Wall point at town hall level 2 and another at level 3.
-
-Enemy buff drops are disabled. Killing an enemy does not spawn slowing ammo,
-a shield, or a companion capsule. The legacy pickup/effect components and loadout
-data remain in the project, but the wave spawner no longer attaches loot and
-the legacy loot component does not listen for enemy deaths.
-
-The hero passes through enemy colliders, so mobs cannot serve as platforms.
-
-Building panels leave movement available and do not darken the world. Walk out
-of the building zone to dismiss its panel, or use its close button. A successful
-build or upgrade also closes the panel and consumes that zone's action for the phase.
-Construction and upgrades share one UI Toolkit build panel. Build choices show
-the role and price; upgrades show current and next-level stats. The current level is shown,
-and only buildings with an unlocked next upgrade show an interaction point.
-Upgrade the Town Hall to reveal newly eligible points. Maximum-level buildings
-have no upgrade point. Hold progress appears above each point on the HUD, so
-scenery cannot hide the ring. It stays full while the panel is open and clears
-when walking away or completing the purchase.
-
-The loop is: build/upgrade, fight a wave, receive rewards and repairs, then repeat.
-Player death enters a ghost/respawn state. Destroyed towers recover after a wave.
-Base destruction ends the run; clearing the final wave wins.
-
-The blue value above the health bar shows active shield strength, and a
-transparent sphere surrounds the hero while the bonus is active. Shield is
-not granted by enemy drops; respawning does not restore it.
-
-### Frame rate and FPS display
-
-The settings panels in the main menu and pause menu include **FPS: ON/OFF**.
-The preference is saved locally. The counter reports frames per real second over
-a 0.25-second window, including while gameplay is paused.
-`GamePerformanceSettings` disables desktop VSync and the software frame limit.
-On mobile it requests the current display refresh rate instead of Unity's default
-30 FPS; actual performance still depends on the device and operating system.
-
-### Permanent money and skill tree
-
-The Main Menu has a **Skills** screen. Each victory awards permanent money:
-100 on Normal, 150 on Hard and 225 on Nightmare. Replaying a cleared difficulty
-pays again; reopening the Victory panel within the same run does not. The money
-balance and purchases are saved locally with PlayerPrefs and are separate from
-the per-run coins used to build towers. Use **Skills** on the Victory screen to
-open the tree between levels, or open it from the main menu. This same permanent
-balance also funds the Equipment module purchase.
-
-Buy **Vitality** first to unlock the two branches. Each branch has three ranks:
-Vitality adds 15% maximum player HP per rank, Firepower adds 10% normal-shot
-damage per rank, and Rapid Fire adds 8% normal-shot fire rate per rank. Rank
-costs are 100, 200, then 300 money. Bonuses apply when a level starts and do
-not change an already-running level. Existing skill saves are migrated once:
-one unused old point becomes 100 money, purchased ranks remain purchased, and
-an old first-clear claim counts as Normal cleared. The three `LevelDefinition`
-assets hold stable progression IDs and reward amounts; keep an ID unchanged
-after release so existing saves still recognize cleared difficulties.
-
-### Authored levels on one map
-
-Main Menu shows one level card at a time. Swipe horizontally, use the side arrows,
-or choose a page number to select **Level 1**, **Level 2**, or **Level 3**, and
-choose Normal, Hard or Nightmare, then press **Play Level**. Hard opens after
-beating Normal on that level, and Nightmare after beating Hard. Cleared
-difficulties remain replayable. All choices load the same Level 1 scene with
-different authored waves, spawn directions and starting coins. Restart retains
-the selected level and difficulty; returning to the menu clears the selection.
-Direct Editor play uses the explicitly assigned **Direct Play Level** on the
-scene's LevelSetup (currently Level 1) on Normal.
-
-`Level 1.unity` contains the shared gameplay setup, eight build zones and four
-enemy spawn points. The new terrain has a MeshCollider; buildings, rocks and
-fences have simple static colliders. Its `Surface` object uses the baked
-`Scenes/Level 1/NavMesh-Surface.asset`. If you move the terrain or obstacles,
-rebake that NavMeshSurface and check that all four spawn points remain on it.
-The five buildable prefabs were reduced to fit this map; keep their model scale
-and placement zones in sync when changing the environment.
-
-To lay out more building spots, drag `Prefabs/LevelDesign/LevelGrid.prefab` into the
-scene and select it. The Scene view shows a 20 × 20 grid with 3-unit cells;
-adjust its dimensions, cell size and position in the Inspector to match the
-buildable floor. Optionally assign the scene's `TowerBuildZones` as Zones Parent
-so new spots sit alongside the existing ones. Choose a building type, press
-**Place building zones**, then click a free building footprint. The purple ghost
-previews the building, while the green footprint shows
-where it will stand; red means that position is blocked. Next, move the pointer
-to one of the highlighted cells directly beside that footprint and click to
-place the interaction zone there. The zone snaps only to those adjacent cells;
-press Esc to cancel the building position. Town Hall and Barracks default to
-2 × 2 cells, Defense and Mine to 1 × 1; these sizes are editable. The second
-click creates an undoable `TowerBuildZone` prefab instance. Its marker sits in
-the chosen adjacent cell, while its spawn point and building rotation stay at
-the selected footprint and faces the interaction zone. The chosen model remains as a bright cyan editor-only
-ghost after placement, including
-when placement mode is stopped. Red marked cells are occupied building
-footprints; orange marked cells are occupied interaction zones. These marks
-also cover manually placed zones while the grid is selected. They are not
-saved as scene objects and do not appear in the game. While placement mode is
-active in Scene view, use
-1–4 to select Town Hall, Defense, Mine or Barracks. Hover a grid-created
-building or its interaction marker and press Delete/Backspace to remove its
-zone; Ctrl+Z restores it. Click either cell to select the pair: a cyan line
-connects its building footprint to its interaction cell. In the LevelGrid
-Inspector, use **Move building** to choose a new footprint and then its adjacent
-interaction cell, **Move interaction zone** to change only the marker side, or
-**Delete selected zone** to remove the pair. **Face existing buildings toward their zones**
-updates the rotation of previously placed grid buildings. Esc cancels a pending move or
-clears the selection. Manually placed zones can be deleted with Unity's
-normal selection and Delete. Stop placement with the same
-button. Multiple grids can coexist in one scene, each with its own transform and
-dimensions. Select only the building type in the grid Inspector. The editor
-automatically shows the first matching `TowerLoadout` model as a placement ghost;
-it does not choose the tower for the player. The grid is an Editor authoring aid, not 225 floor objects or a
-runtime building system; existing spots are left where they were.
-
-For an optional tiled floor, use the grid's `LevelGridTileSurface`. Enable
-**Show Tiles** to display `Art/Materials/LevelGridTile.mat`, made from the imported
-tile base and normal maps. The supplied mask map has constant channels, so its
-metallic, occlusion and smoothness values are stored as material constants
-instead of an extra mobile texture sample. The material is assigned to the LevelGrid
-prefab; rerun **Tools > Tower Defense > Configure Level Grid Tile Material**
-if the source maps change. The texture is
-mapped once onto each cell, but all cells share one mesh and material for mobile
-rendering. **Height Above Grid** raises it slightly to avoid overlapping the
-underlying ground. Leave **Solid Floor** off when the existing terrain supplies
-collision; turn it on only when the tiles themselves are the walkable floor, then
-rebake the NavMesh. The existing Level 1 floor is not replaced automatically.
-
-| Level | Focus | Waves | Starting coins |
-|---|---|---|---|
-| 1 | One enemy approach; learn building and economy, then defend a large mixed wave | 5 | 8 |
-| 2 | Introduce flight and different approaches | 4 | 10 |
-| 3 | Mixed enemies with armored threats | 4 | 10 |
-
-These are starting balance presets, not fully playtested difficulty guarantees.
-Each level asset contains its Normal waves plus two additional difficulty
-variants. Level 1 grows from 6 enemies in its first Normal wave to 66 in its
-fifth. Hard and Nightmare raise enemy HP and movement speed, with a small
-increase in enemy counts; they keep the same enemy types in each wave. Some
-Level 1 build points also require an earlier mine or turret to be built before
-they appear, in addition to their town-hall requirement. Wave counts, intervals,
-enemy packs and difficulty multipliers can be tuned in the Inspector. The
-level's descriptive difficulty text is separate from this three-step selection.
-
-To create or tune a level:
-
-1. Select an asset in Assets/Tower-Defense/Levels, duplicate one, or use
-   **Create > Tower Defense > Level**.
-2. Give it a unique progression ID and edit its title, description, Normal
-   waves, starting coins and permanent money reward.
-3. Expand **Waves**. Each wave has a coin reward and ordered **Spawn Groups**.
-   Each group has a spawn-point index and enemy entries with counts and intervals.
-4. Indices 0–3 refer to the four transforms in the scene WaveSpawner's
-   **Spawn Points** array, in Inspector order. Groups execute sequentially.
-5. Set both **Additional Difficulties** entries with their own starting coins,
-   money rewards and waves. Add the asset to the Main Menu `MenuControllers` component's
-   **Levels** list.
-   Its selection button is created automatically. No additional scene is needed.
-6. For direct iteration, assign that asset to **LevelSetup > Direct Play Level**
-   in Level 1. Run the EditMode and PlayMode suites after changing code or settings.
-
-Invalid level data is rejected. Runtime waves are copied, so playing or restarting
-does not mutate authored assets. LevelDefinition assets are the sole authored
-wave source; the earlier seeded-wave prototype and inline scene waves have been removed.
-During the build phase, the HUD previews the next wave at each authored spawn
-point. Each indicator points toward its spawn position and shows enemy icons
-with total counts by type; repeated groups from the same point are combined.
-The indicators disappear when combat starts and update for the following wave.
-
-
-The new rock material uses `TowerDefense/Mobile/Environment`. It preserves the
-original texture and adds soft directional shading and a restrained edge tint.
-See [Docs/VisualDirection.md](Docs/VisualDirection.md) for its rendering scope and
-the remaining physical-device performance checks.
-
-## Dependencies
-
-Unity Package Manager resolves the versions pinned in `Packages/manifest.json`
-and `Packages/packages-lock.json`. Key packages include URP 17.0.4, Input System
-1.19.0, AI Navigation 2.0.12, Cinemachine 3.1.6 and Unity Test Framework 1.6.0.
-The project also contains Joystick Pack, DOTween and art/audio assets.
-
-Unity Pipeline and the Unity CLI support automation against an open Editor.
-They are not required to run the game or use the Test Runner window.
-
-## Code map
-
-Gameplay source is under `Assets/Tower-Defense/Scripts`.
-
-| Area | Entry points | Responsibility |
-|---|---|---|
-| Session | `GameSession` | Legal phase transitions, victory/defeat and one reward per cleared wave |
-| Wave loop | `WaveSpawner` | Spawning, base-death observation and forwarding session notifications |
-| Health | `Damageable`, `MobHealth`, `PlayerHealth`, `TowerHealth`, `Base` | Damage and entity-specific death/recovery |
-| Enemies | `MobCore`, target selectors, combat behaviors, navigation modules | Composable enemy AI |
-| Shooting | `DetectionZone`, `Shooter`, `Projectile` | Target detection, volleys and projectile damage |
-| Building | `BuildingSlot`, `TowerPlacementZone` | Validated building operations and zone interaction |
-| Upgrades | `TowerUpgrade`, `BaseUpgrade`, `BuildingStats` | Costs, unlocks and numeric stats |
-| Presentation | `HealthBarBinding`, `HealthBarManager`, `UpgradeStatsFormatter`, modals, HUDs | Health display, formatting and user interaction |
-| Allies | `BarracksBuilding`, `AllySoldier`, `AllyCommand` | Player-selected melee or ranged barracks, combat, formation and following |
-
-Start reading `GameSession`, then `WaveSpawner.Start`, `StartNextWave` and `RunCombat`. Then follow
-`Damageable.TakeDamage` to `MobHealth.OnDeath` and back to the spawner's death
-handler. See `Docs/Architecture.md` for the building flow and refactoring roadmap.
-
-The gameplay assembly is `TowerDefense.Runtime`. Joystick code has separate
-runtime/editor assemblies so gameplay and tests can reference it explicitly.
-The Input Actions asset and its generated C# wrapper live together under
-`Scripts/Input`; regenerate the wrapper through the Input Actions importer,
-rather than editing generated code.
-
-## Configuration belongs in assets
-
-- Level assets define waves, timings, rewards and starting coins. The scene WaveSpawner owns spawn transforms; LevelSetup assigns the selected level and passes its starting coins to PlayerWallet before play. PlayerWallet has no Inspector override for this balance.
-- Game-over and victory screens require an assigned spawner; they observe session
-  outcomes. The game-over screen does not decide whether the session is defeated.
-- Entities with health bars require `HealthBarBinding`, with their own `Damageable`
-  assigned. Anchors and visibility on death belong on this binding.
-  `HealthBarManager` requires the scene camera and draws bars on the gameplay UI Toolkit panel.
-- `Data/Loadouts/TowerLoadout.asset` lists buildings, costs and the town hall level
-  required to show each build option. Town hall is available first; Cannon Tower
-  and Mine unlock at level 1; Pulse Tower, a melee Barracks and Wall unlock at
-  level 2; Mortar and a ranged Barracks unlock at level 3. Level 1 exposes two
-  Mine points and one Defense point at level 1, then more points as the town hall
-  grows. New grid points default to the first tier for Mine/Defense and the
-  second tier for Wall/Barracks; adjust each point's Required Town Hall Level in
-  the Inspector to place it in a later tier.
-- Enemy option assets point at enemy prefabs. Each enemy prefab explicitly
-  assigns its targeting, combat and navigation modules on `MobCore`.
-  Imported enemy meshes, clips, and materials live in `Assets/Units/enemies`.
-  Fit each model using the nested `Visual` transform on the gameplay prefab.
-- `Data/Loadouts/EnemyLoadout.asset` contains one entry per enemy with slow-ammo,
-  shield and companion pickup chances and durations. One roll selects at most one
-  pickup per enemy; the chances in an entry must total no more than 100%.
-  Set a chance to 0% to disable that drop;
-  assign the shared pickup prefabs there. The Level 1 scene's WaveSpawner references
-  this asset.
-- Shooter components require a nonempty fire-point array and a prefab containing
-  `Projectile`. A missing projectile is a setup error, not an instant-hit weapon.
-- Upgrade levels are configured on the building prefabs. Multipliers apply to
-  original prefab stats, not cumulatively to the previous upgrade.
-- Keep `.meta` files with their assets. Move assets through Unity so GUID-based
-  scene and prefab references survive.
-
-## Testing
-
-The project uses **Unity Test Framework + NUnit**. No separate test package
-installation is needed. [Unity's testing guide](https://docs.unity.com/en-us/engine/6000.7/manual/scripting/test-framework-introduction)
-explains the framework; the installed package is 1.6.0.
-
-### Run in the Editor
-
-1. Open **Window > General > Test Runner**.
-2. In **EditMode**, select `TowerDefense.EditMode.Tests` and run the selected tests.
-3. In **PlayMode**, select `TowerDefense.PlayMode.Tests` and run the selected tests.
-
-Select the project assemblies to avoid mixing these results with tests supplied
-by third-party packages. Play Mode tests temporarily enter Play mode.
-
-| Suite | What it protects |
-|---|---|
-| Edit Mode | Wallet transactions; legal session transitions and terminal outcomes; duplicate/reentrant rewards; prefab health bindings; phase/unlock restrictions; enemy/shooter configuration; upgrade calculations and action limits; skill rewards, prerequisites, save data and scene bindings |
-| Play Mode | Missing-projectile rejection; repeated firing; damage on contact; single death notification; defeat during wave startup; health-bar creation order, enable/disable, death, revival and scene teardown; build-objective lifecycle |
-
-The earlier 41-assertion architecture regression sweep is also called from the
-Edit Mode suite. Its menu shortcut, **Tools > Tower Defense > Run Architecture
-Checks**, remains available. That shortcut only runs the sweep, not every test.
-
-### Run from a terminal or CI
-
-For batch execution, close this project's Editor first. From the repository root
-in PowerShell, using the installed Unity Editor executable:
-
-```powershell
+~~~powershell
 $unityEditor = 'C:\Program Files\Unity\Hub\Editor\6000.0.72f1\Editor\Unity.exe'
 $projectPath = (Get-Location).Path
 New-Item -ItemType Directory -Force TestResults | Out-Null
-& $unityEditor -batchmode -projectPath $projectPath -runTests -testPlatform EditMode -assemblyNames TowerDefense.EditMode.Tests -testResults "$projectPath/TestResults/editmode.xml" -logFile "$projectPath/TestResults/editmode.log" | Out-Host
-$editModeExitCode = $LASTEXITCODE
-& $unityEditor -batchmode -projectPath $projectPath -runTests -testPlatform PlayMode -assemblyNames TowerDefense.PlayMode.Tests -testResults "$projectPath/TestResults/playmode.xml" -logFile "$projectPath/TestResults/playmode.log" | Out-Host
-$playModeExitCode = $LASTEXITCODE
-if ($editModeExitCode -ne 0 -or $playModeExitCode -ne 0) { throw 'Unity tests failed; inspect TestResults.' }
-```
 
-Inspect each process exit code (`$LASTEXITCODE`) and NUnit XML report. Do not add
-`-quit`: the test runner exits when the run is complete. CI should run each suite
-as a separate step and retain its report and log even on failure. `TestResults`
-is ignored by Git.
+foreach ($mode in 'EditMode', 'PlayMode') {
+    & $unityEditor -batchmode -projectPath $projectPath -runTests -testPlatform $mode `
+        -assemblyNames "TowerDefense.$mode.Tests" `
+        -testResults "$projectPath/TestResults/$mode.xml" `
+        -logFile "$projectPath/TestResults/$mode.log" | Out-Host
+    if ($LASTEXITCODE -ne 0) {
+        throw "Тесты $mode завершились с ошибкой. См. TestResults/$mode.log"
+    }
+}
+~~~
 
-### Adding tests
+</details>
 
-Use `[Test]` and `[TestCase]` for rules that can be checked immediately. Use a
-`[UnityTest]` returning `IEnumerator` when a behavior needs frames or coroutines.
-Put tests in the matching folder under `Assets/Tower-Defense/Tests`; their test
-assembly definitions exclude them from normal game builds.
+## Документация и лицензии
 
-When fixing a bug, first add a test that fails for its specific trigger. Assert
-observable outcomes such as coins, health, spawned objects and events. Avoid
-tests that merely duplicate the implementation. Configuration tests are useful
-for required references that compilation alone cannot check.
-
-These suites are a starting regression net, not proof that every game system is
-correct. Navigation, whole-level victory/defeat, pause interactions, mobile input
-and visual/audio behavior still need additional coverage and a manual playthrough.
-
-## Dependency and fallback policy
-
-Required references must be explicit and validated. A broken configuration should
-produce an actionable error and stop the affected operation. Fix the asset or
-initialization order instead of guessing a replacement or adding retry delays.
-Build/upgrade menus require a wallet; they never assume unlimited money.
-
-Expected gameplay states need explicit behavior too: a projectile losing a dead
-target, an enemy finding no nearby threat, or a building reaching its last upgrade
-are normal states. They should have documented rules and tests.
-
-Cleanup is incremental. Existing delayed singleton binding, legacy wave fields,
-animation compatibility and automatic tower-component shutdown still need review.
-Do not remove a compatibility field until all dependent assets have been migrated
-and a regression test covers the resulting contract.
-
-Local `.vscode` and `.claude` settings are ignored and are not tracked.
-
-## License
-
-Project code is covered by the repository's MIT `LICENSE`. Consult the included
-licenses for third-party assets and packages.
-
-### Main menu and sound
-
-The home screen opens level selection, audio settings, or exits the game. Master
-volume and sound effects have separate sliders (0–100%). Changes apply immediately
-and persist in PlayerPrefs. Game audio consists of effects such as the wave siren,
-weapon fire and explosions. Back returns to the home screen.
-
-During gameplay, Pause offers Resume, Settings, Restart and Main Menu. Audio
-settings work while paused and share the saved master and effects volumes with the
-home menu. Victory offers Next Level, Replay and Main Menu; defeat offers Main
-Menu. Set Next Level on each LevelDefinition to author progression, and leave it
-empty on the final level. The same Level 1 scene is reused for every encounter.
-
-The ultimate waits eight seconds after a short charge and ten seconds after a
-full charge: the 3–5 second charge cooldown has an additional five-second delay.
-Its button shows the remaining seconds, while
-the radial fill drains from the charge reached before firing.
+- [GDD](Docs/GDD.md) и [план реализации](Docs/GDD-Implementation-Plan.md) — дизайн игры и объём демо.
+- [Баланс](Docs/Balance.md) — экономика забега, состав волн и результаты замеров.
+- [Визуальное направление](Docs/VisualDirection.md) — интерфейс, оформление и визуальные проверки.
+- [Правила проекта](AGENTS.md) — соглашения для работы с кодом и ассетами.
+- [Лицензия MIT](LICENSE) — условия для кода проекта. Сторонние ассеты перечислены в [списке источников](Docs/ThirdPartyAssets.md).
